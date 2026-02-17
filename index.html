@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supabase Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0a0c0f;
+      --bg2:       #0f1218;
+      --bg3:       #161b24;
+      --bg4:       #1c2330;
+      --border:    #2a3444;
+      --border2:   #3d4f66;
+      --accent:    #3ecf8e;
+      --accent2:   #10b981;
+      --accent3:   #34d399;
+      --muted:     #4a6080;
+      --text:      #d0dcea;
+      --text2:     #8aa0bc;
+      --text3:     #5a7a9e;
+      --red:       #f87171;
+      --yellow:    #fbbf24;
+      --blue:      #60a5fa;
+      --purple:    #a78bfa;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ─── TOP BAR ─── */
+    #topbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-family: var(--font-sans);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .divider-v { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+    .conn-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .conn-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .conn-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(62,207,142,.12); }
+    .conn-input::placeholder { color: var(--muted); }
+    #url-input { width: 340px; }
+    #key-input { width: 280px; }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover { background: var(--accent3); transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: rgba(248,113,113,.15);
+      border: 1px solid rgba(248,113,113,.3);
+      color: var(--red);
+    }
+    .btn-danger:hover { background: rgba(248,113,113,.25); }
+
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.3s;
+    }
+    .status-dot.connected { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 2s infinite; }
+    .status-dot.error { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+
+    /* ─── MAIN LAYOUT ─── */
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── SIDEBAR ─── */
+    #sidebar {
+      width: 220px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 12px 16px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--text3);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #tables-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    #tables-list::-webkit-scrollbar { width: 4px; }
+    #tables-list::-webkit-scrollbar-track { background: transparent; }
+    #tables-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .table-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .table-item:hover { background: var(--bg3); color: var(--text); }
+    .table-item.active { background: rgba(62,207,142,.08); color: var(--accent); border-left-color: var(--accent); }
+    .table-item-icon { font-size: 12px; opacity: .6; }
+    .table-item-name { flex: 1; font-size: 12px; }
+    .table-row-count {
+      font-size: 10px;
+      color: var(--muted);
+      background: var(--bg4);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .sidebar-empty {
+      padding: 20px 16px;
+      color: var(--text3);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* ─── CONTENT AREA ─── */
+    #content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── TABS ─── */
+    #tabs {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 16px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+    .tab {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 0 14px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text3);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text2); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ─── TOOLBAR ─── */
+    #toolbar {
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .toolbar-label {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    #table-title {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+
+    /* ─── SQL EDITOR ─── */
+    #sql-panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    #sql-panel.visible { display: flex; }
+
+    #sql-editor-wrap {
+      padding: 12px 16px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+    }
+    #sql-editor {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--accent3);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #sql-editor:focus { border-color: var(--accent); }
+    .sql-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .sql-hint { font-size: 10px; color: var(--muted); flex: 1; }
+
+    /* ─── TABLE VIEW ─── */
+    #data-panel {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+    }
+    #data-panel::-webkit-scrollbar { width: 6px; height: 6px; }
+    #data-panel::-webkit-scrollbar-track { background: var(--bg2); }
+    #data-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    #data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    #data-table th {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      color: var(--text3);
+      text-transform: uppercase;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    #data-table th:last-child { border-right: none; }
+    #data-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid rgba(42,52,68,.5);
+      color: var(--text);
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    #data-table td:last-child { border-right: none; }
+    #data-table tr:hover td { background: rgba(62,207,142,.04); }
+    #data-table tr:last-child td { border-bottom: none; }
+
+    .cell-null { color: var(--muted); font-style: italic; }
+    .cell-bool-true { color: var(--accent); }
+    .cell-bool-false { color: var(--red); }
+    .cell-number { color: var(--blue); }
+    .cell-string { color: var(--text); }
+    .cell-json { color: var(--purple); }
+
+    /* ─── BOTTOM BAR ─── */
+    #bottombar {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 5px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text3);
+      flex-shrink: 0;
+    }
+    #bottombar span { display: flex; align-items: center; gap: 4px; }
+
+    /* ─── STATES ─── */
+    #placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 16px;
+      color: var(--text3);
+    }
+    .placeholder-icon { font-size: 48px; opacity: .3; }
+    .placeholder-title {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+    .placeholder-sub { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.8; }
+
+    .loading-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      animation: shimmer 1.2s infinite;
+      display: none;
+    }
+    .loading-bar.visible { display: block; }
+    @keyframes shimmer { 0% { transform: translateX(-100%) } 100% { transform: translateX(100%) } }
+
+    /* ─── TOAST ─── */
+    #toast {
+      position: fixed;
+      bottom: 50px;
+      right: 20px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      display: none;
+      z-index: 1000;
+      animation: fadeIn .2s ease;
+      max-width: 360px;
+    }
+    #toast.success { background: rgba(62,207,142,.15); border: 1px solid rgba(62,207,142,.3); color: var(--accent); }
+    #toast.error   { background: rgba(248,113,113,.15); border: 1px solid rgba(248,113,113,.3); color: var(--red); }
+    #toast.info    { background: rgba(96,165,250,.15);  border: 1px solid rgba(96,165,250,.3);  color: var(--blue); }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+
+    /* ─── PAGINATION ─── */
+    #pagination {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .page-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .page-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .page-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .page-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* ─── SCHEMA VIEW ─── */
+    #schema-panel {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      gap: 16px;
+    }
+    #schema-panel.visible { display: flex; flex-direction: column; }
+    .schema-col {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 14px;
+      background: var(--bg3);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .schema-col-name { font-weight: 600; color: var(--text); flex: 1; }
+    .schema-col-type { font-size: 11px; color: var(--purple); background: rgba(167,139,250,.1); padding: 2px 7px; border-radius: 4px; }
+    .schema-col-nullable { font-size: 10px; color: var(--muted); }
+    .schema-col-pk { font-size: 10px; color: var(--yellow); background: rgba(251,191,36,.1); padding: 2px 6px; border-radius: 4px; }
+
+    .mono-sm { font-family: var(--font-mono); font-size: 11px; }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">S</div>
+    Explorer
+  </div>
+  <div class="divider-v"></div>
+  <div class="conn-form">
+    <input id="url-input" class="conn-input" type="text" placeholder="https://xxxx.supabase.co" />
+    <input id="key-input" class="conn-input" type="password" placeholder="anon / service_role key" />
+    <button class="btn btn-primary" onclick="connect()">Connecter</button>
+    <button class="btn btn-ghost" onclick="disconnect()" id="disconnect-btn" style="display:none">Déconnecter</button>
+  </div>
+  <div class="status-badge">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Non connecté</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      Tables
+      <button class="btn btn-ghost mono-sm" onclick="refreshTables()" style="padding:2px 7px;font-size:10px">↻</button>
+    </div>
+    <div id="tables-list">
+      <div class="sidebar-empty">Connectez-vous pour voir les tables</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- TABS -->
+    <div id="tabs">
+      <div class="tab active" id="tab-data" onclick="switchTab('data')">⊞ Données</div>
+      <div class="tab" id="tab-sql"  onclick="switchTab('sql')">› SQL</div>
+      <div class="tab" id="tab-schema" onclick="switchTab('schema')">⟨⟩ Schéma</div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div id="toolbar" style="display:none">
+      <span id="table-title">—</span>
+      <div id="pagination"></div>
+    </div>
+
+    <!-- PLACEHOLDER -->
+    <div id="placeholder">
+      <div class="placeholder-icon">⬡</div>
+      <div class="placeholder-title">Supabase Explorer</div>
+      <div class="placeholder-sub">
+        Entrez votre URL et votre clé API Supabase<br>
+        puis connectez-vous pour explorer vos tables
+      </div>
+    </div>
+
+    <!-- DATA PANEL -->
+    <div id="data-panel" style="display:none;position:relative;">
+      <div class="loading-bar" id="loading-bar"></div>
+      <table id="data-table"></table>
+    </div>
+
+    <!-- SQL PANEL -->
+    <div id="sql-panel">
+      <div id="sql-editor-wrap">
+        <textarea id="sql-editor" placeholder="SELECT * FROM ma_table LIMIT 10;"></textarea>
+        <div class="sql-actions">
+          <span class="sql-hint">Ctrl+Enter pour exécuter</span>
+          <button class="btn btn-ghost" onclick="clearSql()">Effacer</button>
+          <button class="btn btn-primary" onclick="runSql()">▶ Exécuter</button>
+        </div>
+      </div>
+      <div id="sql-results" style="flex:1;overflow:auto;position:relative;">
+        <div class="loading-bar" id="sql-loading"></div>
+        <table id="sql-table"></table>
+      </div>
+    </div>
+
+    <!-- SCHEMA PANEL -->
+    <div id="schema-panel"></div>
+
+    <!-- BOTTOM BAR -->
+    <div id="bottombar">
+      <span id="row-count">— lignes</span>
+      <span style="margin-left:auto" id="query-time"></span>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ─── STATE ───────────────────────────────────────────────────────────────
+  let STATE = {
+    url: '',
+    key: '',
+    connected: false,
+    tables: [],
+    activeTable: null,
+    activeTab: 'data',
+    page: 0,
+    pageSize: 100,
+    totalRows: 0,
+    schema: [],
+  };
+
+  const HEADERS = () => ({
+    'apikey': STATE.key,
+    'Authorization': `Bearer ${STATE.key}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'count=exact',
+  });
+
+  // ─── CONNECT ─────────────────────────────────────────────────────────────
+  async function connect() {
+    const url = document.getElementById('url-input').value.trim().replace(/\/$/, '');
+    const key  = document.getElementById('key-input').value.trim();
+
+    if (!url || !key) { toast('URL et clé requis', 'error'); return; }
+
+    STATE.url = url;
+    STATE.key = key;
+
+    setStatus('loading');
+    try {
+      await refreshTables();
+      STATE.connected = true;
+      setStatus('connected');
+      document.getElementById('disconnect-btn').style.display = '';
+      toast('Connexion réussie', 'success');
+    } catch (e) {
+      setStatus('error');
+      toast('Connexion échouée : ' + e.message, 'error');
+    }
+  }
+
+  function disconnect() {
+    STATE = { ...STATE, connected: false, tables: [], activeTable: null, page: 0 };
+    setStatus('off');
+    document.getElementById('tables-list').innerHTML = '<div class="sidebar-empty">Connectez-vous pour voir les tables</div>';
+    document.getElementById('placeholder').style.display = '';
+    document.getElementById('data-panel').style.display = 'none';
+    document.getElementById('schema-panel').classList.remove('visible');
+    document.getElementById('sql-panel').classList.remove('visible');
+    document.getElementById('toolbar').style.display = 'none';
+    document.getElementById('table-title').textContent = '—';
+    document.getElementById('disconnect-btn').style.display = 'none';
+  }
+
+  // ─── TABLES ──────────────────────────────────────────────────────────────
+  async function refreshTables() {
+    const res = await fetch(
+      `${STATE.url}/rest/v1/?apikey=${STATE.key}`,
+      { headers: HEADERS() }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    // Try OpenAPI spec
+    const spec = await res.json();
+    const tables = Object.keys(spec.definitions || spec.paths || {})
+      .filter(k => !k.startsWith('/'))
+      .sort();
+
+    STATE.tables = tables;
+    renderTableList();
+    return tables;
+  }
+
+  function renderTableList() {
+    const list = document.getElementById('tables-list');
+    if (!STATE.tables.length) {
+      list.innerHTML = '<div class="sidebar-empty">Aucune table trouvée</div>';
+      return;
+    }
+    list.innerHTML = STATE.tables.map(t => `
+      <div class="table-item ${STATE.activeTable === t ? 'active' : ''}" onclick="selectTable('${t}')">
+        <span class="table-item-icon">⊞</span>
+        <span class="table-item-name">${t}</span>
+      </div>
+    `).join('');
+  }
+
+  // ─── SELECT TABLE ─────────────────────────────────────────────────────────
+  async function selectTable(name) {
+    STATE.activeTable = name;
+    STATE.page = 0;
+    renderTableList();
+    document.getElementById('toolbar').style.display = '';
+    document.getElementById('table-title').textContent = name;
+    document.getElementById('placeholder').style.display = 'none';
+
+    // Load schema + data
+    await Promise.all([loadSchema(name), loadData()]);
+  }
+
+  // ─── LOAD DATA ────────────────────────────────────────────────────────────
+  async function loadData() {
+    if (!STATE.activeTable) return;
+    const from = STATE.page * STATE.pageSize;
+    const to   = from + STATE.pageSize - 1;
+
+    document.getElementById('data-panel').style.display = '';
+    document.getElementById('schema-panel').classList.remove('visible');
+    document.getElementById('sql-panel').classList.remove('visible');
+    document.getElementById('loading-bar').classList.add('visible');
+
+    const t0 = Date.now();
+    try {
+      const res = await fetch(
+        `${STATE.url}/rest/v1/${STATE.activeTable}?select=*`,
+        {
+          headers: {
+            ...HEADERS(),
+            'Range': `${from}-${to}`,
+            'Range-Unit': 'items',
+          }
+        }
+      );
+      const count = res.headers.get('content-range')?.split('/')[1];
+      STATE.totalRows = count ? parseInt(count) : '?';
+
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      renderTable('data-table', data);
+      renderPagination();
+      document.getElementById('row-count').textContent =
+        `${data.length} lignes (total : ${STATE.totalRows})`;
+      document.getElementById('query-time').textContent =
+        `${Date.now() - t0}ms`;
+    } catch (e) {
+      toast('Erreur chargement : ' + e.message, 'error');
+    } finally {
+      document.getElementById('loading-bar').classList.remove('visible');
+    }
+  }
+
+  // ─── LOAD SCHEMA ──────────────────────────────────────────────────────────
+  async function loadSchema(name) {
+    try {
+      const res = await fetch(
+        `${STATE.url}/rest/v1/?apikey=${STATE.key}`,
+        { headers: HEADERS() }
+      );
+      const spec = await res.json();
+      const def = (spec.definitions || {})[name] || {};
+      const props = def.properties || {};
+
+      STATE.schema = Object.entries(props).map(([col, info]) => ({
+        name: col,
+        type: info.type || info.format || '?',
+        description: info.description || '',
+        nullable: !((def.required || []).includes(col)),
+      }));
+
+      renderSchemaPanel();
+    } catch (e) { /* silent */ }
+  }
+
+  function renderSchemaPanel() {
+    const panel = document.getElementById('schema-panel');
+    if (!STATE.schema.length) {
+      panel.innerHTML = '<div class="sidebar-empty">Schéma non disponible</div>';
+      return;
+    }
+    panel.innerHTML = STATE.schema.map(c => `
+      <div class="schema-col">
+        <span class="schema-col-name">${c.name}</span>
+        <span class="schema-col-type">${c.type}</span>
+        ${c.description.includes('Primary') ? '<span class="schema-col-pk">PK</span>' : ''}
+        <span class="schema-col-nullable">${c.nullable ? 'nullable' : 'not null'}</span>
+      </div>
+    `).join('');
+  }
+
+  // ─── RENDER TABLE ─────────────────────────────────────────────────────────
+  function renderTable(tableId, rows) {
+    const table = document.getElementById(tableId);
+    if (!rows || !rows.length) {
+      table.innerHTML = '<tr><td colspan="99" style="color:var(--muted);text-align:center;padding:40px">Aucune donnée</td></tr>';
+      return;
+    }
+    const cols = Object.keys(rows[0]);
+    const thead = `<thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
+    const tbody = `<tbody>${rows.map(row =>
+      `<tr>${cols.map(col => `<td>${formatCell(row[col])}</td>`).join('')}</tr>`
+    ).join('')}</tbody>`;
+    table.innerHTML = thead + tbody;
+  }
+
+  function formatCell(val) {
+    if (val === null || val === undefined)
+      return `<span class="cell-null">null</span>`;
+    if (typeof val === 'boolean')
+      return `<span class="cell-bool-${val}">${val}</span>`;
+    if (typeof val === 'number')
+      return `<span class="cell-number">${val}</span>`;
+    if (typeof val === 'object')
+      return `<span class="cell-json">${JSON.stringify(val).slice(0, 80)}</span>`;
+    const s = String(val);
+    if (s.length > 120) return `<span class="cell-string" title="${s.replace(/"/g, '&quot;')}">${s.slice(0, 120)}…</span>`;
+    return `<span class="cell-string">${s}</span>`;
+  }
+
+  // ─── PAGINATION ───────────────────────────────────────────────────────────
+  function renderPagination() {
+    const total = Math.ceil(STATE.totalRows / STATE.pageSize);
+    const pg = document.getElementById('pagination');
+    if (total <= 1) { pg.innerHTML = ''; return; }
+
+    let btns = `<button class="page-btn" onclick="goPage(${STATE.page-1})" ${STATE.page===0?'disabled':''}>‹</button>`;
+    for (let i = 0; i < Math.min(total, 10); i++) {
+      btns += `<button class="page-btn ${i===STATE.page?'active':''}" onclick="goPage(${i})">${i+1}</button>`;
+    }
+    if (total > 10) btns += `<span style="color:var(--muted);padding:0 4px">…${total}</span>`;
+    btns += `<button class="page-btn" onclick="goPage(${STATE.page+1})" ${STATE.page>=total-1?'disabled':''}>›</button>`;
+    pg.innerHTML = btns;
+  }
+
+  function goPage(p) {
+    const total = Math.ceil(STATE.totalRows / STATE.pageSize);
+    if (p < 0 || p >= total) return;
+    STATE.page = p;
+    loadData();
+  }
+
+  // ─── SQL ──────────────────────────────────────────────────────────────────
+  async function runSql() {
+    const sql = document.getElementById('sql-editor').value.trim();
+    if (!sql) return;
+    if (!STATE.connected) { toast('Non connecté', 'error'); return; }
+
+    document.getElementById('sql-loading').classList.add('visible');
+    const t0 = Date.now();
+    try {
+      const res = await fetch(`${STATE.url}/rest/v1/rpc/`, {
+        method: 'POST',
+        headers: { ...HEADERS(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: sql }),
+      });
+      // Fallback: try the pg proxy endpoint (Supabase edge)
+      const data = await res.json();
+      renderTable('sql-table', Array.isArray(data) ? data : [data]);
+      document.getElementById('row-count').textContent = `${Array.isArray(data)?data.length:1} résultats`;
+      document.getElementById('query-time').textContent = `${Date.now()-t0}ms`;
+    } catch (e) {
+      toast('Erreur SQL : ' + e.message, 'error');
+    } finally {
+      document.getElementById('sql-loading').classList.remove('visible');
+    }
+  }
+
+  function clearSql() { document.getElementById('sql-editor').value = ''; }
+
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && STATE.activeTab === 'sql') {
+      e.preventDefault(); runSql();
+    }
+  });
+
+  // ─── TABS ─────────────────────────────────────────────────────────────────
+  function switchTab(tab) {
+    STATE.activeTab = tab;
+    ['data','sql','schema'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+    });
+
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('data-panel').style.display   = tab === 'data' && STATE.activeTable ? '' : 'none';
+    document.getElementById('sql-panel').classList.toggle('visible',   tab === 'sql');
+    document.getElementById('schema-panel').classList.toggle('visible', tab === 'schema' && !!STATE.activeTable);
+
+    if (!STATE.activeTable && tab !== 'sql') {
+      document.getElementById('placeholder').style.display = '';
+    }
+    if (tab === 'sql') {
+      document.getElementById('toolbar').style.display = 'none';
+    } else if (STATE.activeTable) {
+      document.getElementById('toolbar').style.display = '';
+    }
+  }
+
+  // ─── STATUS ───────────────────────────────────────────────────────────────
+  function setStatus(s) {
+    const dot  = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+    dot.className = 'status-dot';
+    if (s === 'connected')  { dot.classList.add('connected'); text.textContent = 'Connecté'; }
+    else if (s === 'error') { dot.classList.add('error');     text.textContent = 'Erreur'; }
+    else if (s === 'loading') { text.textContent = 'Connexion…'; }
+    else { text.textContent = 'Non connecté'; }
+  }
+
+  // ─── TOAST ────────────────────────────────────────────────────────────────
+  let _toastTimer;
+  function toast(msg, type = 'info') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = type;
+    el.style.display = '';
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+  }
+</script>
+</body>
+</html>
