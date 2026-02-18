@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Météo-France AROME — API Explorer</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; }
+    header { padding: 16px; border-bottom: 1px solid #ddd; }
+    main { padding: 16px; display: grid; grid-template-columns: 420px 1fr; gap: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+    label { display: block; font-size: 12px; margin-top: 10px; color: #333; }
+    input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { padding: 10px 12px; cursor: pointer; }
+    .row { display:flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .muted { color: #666; font-size: 12px; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    img { max-width: 100%; height: auto; border: 1px solid #eee; border-radius: 8px; }
+    .pill { font-size: 12px; padding: 2px 8px; border: 1px solid #ddd; border-radius: 999px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="row" style="justify-content: space-between;">
+    <div>
+      <strong>Météo-France AROME — API Explorer</strong>
+      <div class="muted">Interface dynamique à partir du Swagger (OpenAPI 3)</div>
+    </div>
+    <div class="row">
+      <span id="tokenStatus" class="pill">Token : (absent)</span>
+      <button id="logoutBtn" type="button">Déconnexion</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h3 style="margin:0 0 8px 0;">1) Swagger</h3>
+
+    <label>Charger le Swagger (JSON)</label>
+    <input id="swaggerFile" type="file" accept="application/json" />
+
+    <div class="muted" style="margin-top:8px;">
+      Astuce : exportez votre swagger en fichier .json (comme celui que vous avez téléchargé),
+      puis chargez-le ici.
+    </div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:14px 0;" />
+
+    <h3 style="margin:0 0 8px 0;">2) Auth (OAuth2 implicit)</h3>
+
+    <label>Authorization URL</label>
+    <input id="authUrl" type="text" />
+
+    <label>Client ID</label>
+    <input id="clientId" type="text" placeholder="Votre client_id (fourni par Météo-France / portail)" />
+
+    <label>Redirect URI</label>
+    <input id="redirectUri" type="text" />
+
+    <div class="row" style="margin-top:10px;">
+      <button id="loginBtn" type="button">Se connecter</button>
+      <button id="saveAuthBtn" type="button">Sauvegarder</button>
+    </div>
+
+    <div class="muted" style="margin-top:8px;">
+      Cette API annonce un flux <code>implicit</code> (token dans l’URL après redirection). :contentReference[oaicite:2]{index=2}
+    </div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:14px 0;" />
+
+    <h3 style="margin:0 0 8px 0;">3) Endpoint</h3>
+
+    <label>Serveur (base URL)</label>
+    <select id="serverSelect"></select>
+
+    <label>Path</label>
+    <select id="pathSelect"></select>
+
+    <label>Méthode</label>
+    <select id="methodSelect"></select>
+
+    <div id="params"></div>
+
+    <div class="row" style="margin-top:12px;">
+      <button id="sendBtn" type="button">Envoyer</button>
+      <button id="copyCurlBtn" type="button">Copier cURL</button>
+    </div>
+
+    <div class="muted" style="margin-top:8px;">
+      Les endpoints AROME sont surtout des services WMS/WCS (GetCapabilities, GetMap, GetCoverage…) avec paramètres query. :contentReference[oaicite:3]{index=3}
+    </div>
+  </section>
+
+  <section class="card">
+    <h3 style="margin:0 0 8px 0;">Réponse</h3>
+
+    <div class="muted" id="lastRequest"></div>
+    <div style="margin-top:12px;" id="resultArea"></div>
+
+    <hr style="border:none;border-top:1px solid #eee;margin:14px 0;" />
+
+    <h3 style="margin:0 0 8px 0;">Logs</h3>
+    <pre id="log" class="muted"></pre>
+  </section>
+</main>
+
+<script>
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+  const $ = (id) => document.getElementById(id);
+  const log = (msg) => { $("log").textContent += msg + "\\n"; };
+  const setTokenStatus = () => {
+    const t = localStorage.getItem("mf_access_token");
+    $("tokenStatus").textContent = "Token : " + (t ? "présent" : "(absent)");
+  };
+
+  function parseImplicitTokenFromUrl() {
+    // Implicit flow -> access_token in URL hash: #access_token=...&token_type=...&expires_in=...
+    const hash = window.location.hash || "";
+    if (!hash.startsWith("#")) return null;
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get("access_token");
+    if (token) {
+      localStorage.setItem("mf_access_token", token);
+      // Nettoyage URL
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+      log("✅ Token récupéré depuis l'URL (implicit flow).");
+      setTokenStatus();
+      return token;
+    }
+    return null;
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // -----------------------------
+  // Swagger state
+  // -----------------------------
+  let openapi = null;
+
+  function fillAuthDefaultsFromSwagger(spec) {
+    // From your swagger: securitySchemes.default.flows.implicit.authorizationUrl = https://public-api.meteofrance.fr/authorize :contentReference[oaicite:4]{index=4}
+    const authUrl =
+      spec?.components?.securitySchemes?.default?.flows?.implicit?.authorizationUrl
+      || "https://public-api.meteofrance.fr/authorize";
+    $("authUrl").value = localStorage.getItem("mf_auth_url") || authUrl;
+    $("clientId").value = localStorage.getItem("mf_client_id") || "";
+    $("redirectUri").value = localStorage.getItem("mf_redirect_uri") || window.location.origin + window.location.pathname;
+  }
+
+  function fillServers(spec) {
+    $("serverSelect").innerHTML = "";
+    const servers = spec.servers?.length ? spec.servers : [{ url: window.location.origin }];
+    const saved = localStorage.getItem("mf_server_url") || servers[0].url;
+
+    for (const s of servers) {
+      const opt = document.createElement("option");
+      opt.value = s.url;
+      opt.textContent = s.url;
+      if (s.url === saved) opt.selected = true;
+      $("serverSelect").appendChild(opt);
+    }
+  }
+
+  function listPaths(spec) {
+    const paths = Object.keys(spec.paths || {});
+    $("pathSelect").innerHTML = "";
+    for (const p of paths) {
+      const opt = document.createElement("option");
+      opt.value = p;
+      opt.textContent = p;
+      $("pathSelect").appendChild(opt);
+    }
+    if (paths.length) {
+      $("pathSelect").value = paths[0];
+      listMethods();
+    }
+  }
+
+  function listMethods() {
+    const p = $("pathSelect").value;
+    const item = openapi?.paths?.[p];
+    const methods = item ? Object.keys(item).filter(m => ["get","post","put","delete","patch"].includes(m)) : [];
+    $("methodSelect").innerHTML = "";
+    for (const m of methods) {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m.toUpperCase();
+      $("methodSelect").appendChild(opt);
+    }
+    if (methods.length) {
+      $("methodSelect").value = methods[0];
+      renderParams();
+    } else {
+      $("params").innerHTML = "<div class='muted'>Aucune méthode HTTP trouvée sur ce path.</div>";
+    }
+  }
+
+  function renderParams() {
+    const p = $("pathSelect").value;
+    const m = $("methodSelect").value.toLowerCase();
+    const op = openapi?.paths?.[p]?.[m];
+    const params = op?.parameters || [];
+    const container = $("params");
+    container.innerHTML = "";
+
+    if (!params.length) {
+      container.innerHTML = "<div class='muted'>Aucun paramètre.</div>";
+      return;
+    }
+
+    // Build form fields
+    for (const param of params) {
+      const name = param.name;
+      const where = param.in; // query, header, path...
+      const required = !!param.required;
+      const schema = param.schema || {};
+      const desc = (param.description || "").trim();
+
+      const label = document.createElement("label");
+      label.textContent = `${name} (${where})${required ? " *" : ""}`;
+      container.appendChild(label);
+
+      let input;
+      if (schema.enum) {
+        input = document.createElement("select");
+        for (const v of schema.enum) {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          input.appendChild(opt);
+        }
+      } else {
+        input = document.createElement("input");
+        input.type = "text";
+      }
+
+      input.dataset.paramName = name;
+      input.dataset.paramIn = where;
+      input.placeholder = desc || "";
+      input.value = param.example || (schema.default ?? "");
+
+      // Add a hint line
+      if (desc) {
+        const hint = document.createElement("div");
+        hint.className = "muted";
+        hint.textContent = desc;
+        hint.style.marginTop = "4px";
+        container.appendChild(input);
+        container.appendChild(hint);
+      } else {
+        container.appendChild(input);
+      }
+    }
+  }
+
+  function buildRequest() {
+    const baseUrl = $("serverSelect").value.replace(/\/$/, "");
+    const path = $("pathSelect").value;
+    const method = $("methodSelect").value.toUpperCase();
+
+    const p = $("pathSelect").value;
+    const m = $("methodSelect").value.toLowerCase();
+    const op = openapi?.paths?.[p]?.[m];
+    const params = op?.parameters || [];
+
+    const url = new URL(baseUrl + path);
+
+    const headers = new Headers();
+    const token = localStorage.getItem("mf_access_token");
+    if (token) headers.set("Authorization", "Bearer " + token);
+
+    // Collect values from rendered inputs
+    const inputs = Array.from($("params").querySelectorAll("input,select,textarea"));
+    const values = new Map(inputs.map(el => [el.dataset.paramName, el.value]));
+
+    // Apply params
+    for (const param of params) {
+      const name = param.name;
+      const where = param.in;
+      const value = values.get(name);
+
+      if (where === "query") {
+        if (value !== undefined && value !== "") url.searchParams.set(name, value);
+      } else if (where === "header") {
+        if (value !== undefined && value !== "") headers.set(name, value);
+      }
+      // (path params non gérés ici car vos endpoints sont majoritairement query)
+    }
+
+    return { method, url: url.toString(), headers };
+  }
+
+  function toCurl({ method, url, headers }) {
+    const parts = [`curl -X ${method} "${url}"`];
+    headers.forEach((v,k) => parts.push(`-H "${k}: ${v}"`));
+    return parts.join(" \\\n  ");
+  }
+
+  // -----------------------------
+  // Events
+  // -----------------------------
+  $("swaggerFile").addEventListener("change", async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const txt = await f.text();
+    openapi = JSON.parse(txt);
+    log("✅ Swagger chargé : " + (openapi.info?.title || "sans titre") + " v" + (openapi.info?.version || "?"));
+
+    fillAuthDefaultsFromSwagger(openapi);
+    fillServers(openapi);
+    listPaths(openapi);
+  });
+
+  $("pathSelect").addEventListener("change", listMethods);
+  $("methodSelect").addEventListener("change", renderParams);
+
+  $("saveAuthBtn").addEventListener("click", () => {
+    localStorage.setItem("mf_auth_url", $("authUrl").value.trim());
+    localStorage.setItem("mf_client_id", $("clientId").value.trim());
+    localStorage.setItem("mf_redirect_uri", $("redirectUri").value.trim());
+    localStorage.setItem("mf_server_url", $("serverSelect").value.trim());
+    log("💾 Paramètres auth/serveur sauvegardés (localStorage).");
+  });
+
+  $("loginBtn").addEventListener("click", () => {
+    const authUrl = $("authUrl").value.trim();
+    const clientId = $("clientId").value.trim();
+    const redirectUri = $("redirectUri").value.trim();
+
+    if (!authUrl || !clientId || !redirectUri) {
+      alert("Renseignez authUrl, clientId et redirectUri.");
+      return;
+    }
+
+    // OAuth2 implicit: response_type=token
+    const u = new URL(authUrl);
+    u.searchParams.set("response_type", "token");
+    u.searchParams.set("client_id", clientId);
+    u.searchParams.set("redirect_uri", redirectUri);
+    // scopes are empty in your swagger :contentReference[oaicite:5]{index=5}
+    // u.searchParams.set("scope", "");
+    log("➡️ Redirection OAuth2 (implicit)...");
+    window.location.href = u.toString();
+  });
+
+  $("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("mf_access_token");
+    setTokenStatus();
+    log("🚪 Token supprimé.");
+  });
+
+  $("copyCurlBtn").addEventListener("click", async () => {
+    try {
+      const req = buildRequest();
+      await navigator.clipboard.writeText(toCurl(req));
+      log("📋 cURL copié dans le presse-papier.");
+    } catch (err) {
+      log("❌ Erreur copy cURL: " + err);
+    }
+  });
+
+  $("sendBtn").addEventListener("click", async () => {
+    if (!openapi) {
+      alert("Chargez d'abord le swagger JSON.");
+      return;
+    }
+
+    const { method, url, headers } = buildRequest();
+    $("lastRequest").textContent = `${method} ${url}`;
+    $("resultArea").innerHTML = "<div class='muted'>Chargement...</div>";
+
+    try {
+      const res = await fetch(url, { method, headers });
+      const ct = res.headers.get("content-type") || "";
+      log(`⬅️ HTTP ${res.status} (${ct})`);
+
+      if (!res.ok) {
+        const txt = await res.text();
+        $("resultArea").innerHTML = `<pre><code>${escapeHtml(txt)}</code></pre>`;
+        return;
+      }
+
+      // Display based on content-type
+      if (ct.includes("image/")) {
+        const blob = await res.blob();
+        const objUrl = URL.createObjectURL(blob);
+        $("resultArea").innerHTML = `
+          <div class="row" style="justify-content:space-between;margin-bottom:8px;">
+            <div class="muted">Image reçue (${ct})</div>
+            <button id="dlImgBtn" type="button">Télécharger</button>
+          </div>
+          <img src="${objUrl}" alt="Réponse image" />
+        `;
+        $("dlImgBtn").addEventListener("click", () => downloadBlob(blob, "result"));
+        return;
+      }
+
+      // For binary (e.g., WCS GetCoverage returns grib/tiff) :contentReference[oaicite:6]{index=6}
+      if (ct.includes("application/octet-stream") || ct.includes("application/wmo-grib") || ct.includes("image/tiff")) {
+        const blob = await res.blob();
+        $("resultArea").innerHTML = `
+          <div class="row" style="justify-content:space-between;">
+            <div class="muted">Binaire reçu (${ct})</div>
+            <button id="dlBinBtn" type="button">Télécharger</button>
+          </div>
+        `;
+        $("dlBinBtn").addEventListener("click", () => downloadBlob(blob, "coverage"));
+        return;
+      }
+
+      const text = await res.text();
+      // Try JSON pretty print
+      try {
+        const obj = JSON.parse(text);
+        $("resultArea").innerHTML = `<pre><code>${escapeHtml(JSON.stringify(obj, null, 2))}</code></pre>`;
+      } catch {
+        $("resultArea").innerHTML = `<pre><code>${escapeHtml(text)}</code></pre>`;
+      }
+    } catch (err) {
+      $("resultArea").innerHTML = `<pre><code>${escapeHtml(String(err))}</code></pre>`;
+      log("❌ Erreur fetch: " + err);
+    }
+  });
+
+  function escapeHtml(s) {
+    return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  // -----------------------------
+  // Init
+  // -----------------------------
+  parseImplicitTokenFromUrl();
+  setTokenStatus();
+
+  // Pre-fill saved auth fields even before swagger load
+  $("authUrl").value = localStorage.getItem("mf_auth_url") || "https://public-api.meteofrance.fr/authorize";
+  $("clientId").value = localStorage.getItem("mf_client_id") || "";
+  $("redirectUri").value = localStorage.getItem("mf_redirect_uri") || (window.location.origin + window.location.pathname);
+</script>
+</body>
+</html>
