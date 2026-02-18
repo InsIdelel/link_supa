@@ -28,8 +28,8 @@
       <div class="muted">Interface dynamique à partir du Swagger (OpenAPI 3)</div>
     </div>
     <div class="row">
-      <span id="tokenStatus" class="pill">Token : (absent)</span>
-      <button id="logoutBtn" type="button">Déconnexion</button>
+      <span id="tokenStatus" class="pill">Clé API : (absente)</span>
+      <button id="logoutBtn" type="button">Effacer la clé</button>
     </div>
   </div>
 </header>
@@ -42,30 +42,24 @@
     <input id="swaggerFile" type="file" accept="application/json" />
 
     <div class="muted" style="margin-top:8px;">
-      Astuce : exportez votre swagger en fichier .json (comme celui que vous avez téléchargé),
-      puis chargez-le ici.
+      Chargez votre swagger .json pour lister automatiquement les endpoints.
     </div>
 
     <hr style="border:none;border-top:1px solid #eee;margin:14px 0;" />
 
-    <h3 style="margin:0 0 8px 0;">2) Auth (OAuth2 implicit)</h3>
+    <h3 style="margin:0 0 8px 0;">2) Auth (API Key)</h3>
 
-    <label>Authorization URL</label>
-    <input id="authUrl" type="text" />
-
-    <label>Client ID</label>
-    <input id="clientId" type="text" placeholder="Votre client_id (fourni par Météo-France / portail)" />
-
-    <label>Redirect URI</label>
-    <input id="redirectUri" type="text" />
+    <label>API Key (token)</label>
+    <input id="apiKey" type="password" placeholder="Collez ici votre token / API key" />
 
     <div class="row" style="margin-top:10px;">
-      <button id="loginBtn" type="button">Se connecter</button>
       <button id="saveAuthBtn" type="button">Sauvegarder</button>
+      <button id="toggleKeyBtn" type="button">Afficher / masquer</button>
     </div>
 
     <div class="muted" style="margin-top:8px;">
-      Cette API annonce un flux <code>implicit</code> (token dans l’URL après redirection). :contentReference[oaicite:2]{index=2}
+      La redirection OAuth vers <code>/authorize</code> est instable/inaccessible chez vous : on passe donc en mode
+      <strong>API Key</strong> envoyée dans l’en-tête.
     </div>
 
     <hr style="border:none;border-top:1px solid #eee;margin:14px 0;" />
@@ -86,10 +80,6 @@
     <div class="row" style="margin-top:12px;">
       <button id="sendBtn" type="button">Envoyer</button>
       <button id="copyCurlBtn" type="button">Copier cURL</button>
-    </div>
-
-    <div class="muted" style="margin-top:8px;">
-      Les endpoints AROME sont surtout des services WMS/WCS (GetCapabilities, GetMap, GetCoverage…) avec paramètres query. :contentReference[oaicite:3]{index=3}
     </div>
   </section>
 
@@ -112,27 +102,11 @@
   // -----------------------------
   const $ = (id) => document.getElementById(id);
   const log = (msg) => { $("log").textContent += msg + "\\n"; };
-  const setTokenStatus = () => {
-    const t = localStorage.getItem("mf_access_token");
-    $("tokenStatus").textContent = "Token : " + (t ? "présent" : "(absent)");
-  };
 
-  function parseImplicitTokenFromUrl() {
-    // Implicit flow -> access_token in URL hash: #access_token=...&token_type=...&expires_in=...
-    const hash = window.location.hash || "";
-    if (!hash.startsWith("#")) return null;
-    const params = new URLSearchParams(hash.slice(1));
-    const token = params.get("access_token");
-    if (token) {
-      localStorage.setItem("mf_access_token", token);
-      // Nettoyage URL
-      history.replaceState(null, "", window.location.pathname + window.location.search);
-      log("✅ Token récupéré depuis l'URL (implicit flow).");
-      setTokenStatus();
-      return token;
-    }
-    return null;
-  }
+  const setKeyStatus = () => {
+    const k = localStorage.getItem("mf_api_key");
+    $("tokenStatus").textContent = "Clé API : " + (k ? "présente" : "(absente)");
+  };
 
   function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
@@ -145,20 +119,14 @@
     URL.revokeObjectURL(url);
   }
 
+  function escapeHtml(s) {
+    return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
   // -----------------------------
   // Swagger state
   // -----------------------------
   let openapi = null;
-
-  function fillAuthDefaultsFromSwagger(spec) {
-    // From your swagger: securitySchemes.default.flows.implicit.authorizationUrl = https://public-api.meteofrance.fr/authorize :contentReference[oaicite:4]{index=4}
-    const authUrl =
-      spec?.components?.securitySchemes?.default?.flows?.implicit?.authorizationUrl
-      || "https://public-api.meteofrance.fr/authorize";
-    $("authUrl").value = localStorage.getItem("mf_auth_url") || authUrl;
-    $("clientId").value = localStorage.getItem("mf_client_id") || "";
-    $("redirectUri").value = localStorage.getItem("mf_redirect_uri") || window.location.origin + window.location.pathname;
-  }
 
   function fillServers(spec) {
     $("serverSelect").innerHTML = "";
@@ -221,10 +189,9 @@
       return;
     }
 
-    // Build form fields
     for (const param of params) {
       const name = param.name;
-      const where = param.in; // query, header, path...
+      const where = param.in;
       const required = !!param.required;
       const schema = param.schema || {};
       const desc = (param.description || "").trim();
@@ -252,7 +219,6 @@
       input.placeholder = desc || "";
       input.value = param.example || (schema.default ?? "");
 
-      // Add a hint line
       if (desc) {
         const hint = document.createElement("div");
         hint.className = "muted";
@@ -279,8 +245,14 @@
     const url = new URL(baseUrl + path);
 
     const headers = new Headers();
-    const token = localStorage.getItem("mf_access_token");
-    if (token) headers.set("Authorization", "Bearer " + token);
+
+    // ✅ Mode API Key (header)
+    const apiKey = ($("apiKey").value || "").trim() || (localStorage.getItem("mf_api_key") || "");
+    if (apiKey) {
+      // Par défaut on envoie "apiKey". Si l’API attend un autre nom d’en-tête,
+      // changez ici (ex: "apikey" / "Authorization" / "x-api-key")
+      headers.set("apiKey", apiKey);
+    }
 
     // Collect values from rendered inputs
     const inputs = Array.from($("params").querySelectorAll("input,select,textarea"));
@@ -297,7 +269,6 @@
       } else if (where === "header") {
         if (value !== undefined && value !== "") headers.set(name, value);
       }
-      // (path params non gérés ici car vos endpoints sont majoritairement query)
     }
 
     return { method, url: url.toString(), headers };
@@ -319,7 +290,6 @@
     openapi = JSON.parse(txt);
     log("✅ Swagger chargé : " + (openapi.info?.title || "sans titre") + " v" + (openapi.info?.version || "?"));
 
-    fillAuthDefaultsFromSwagger(openapi);
     fillServers(openapi);
     listPaths(openapi);
   });
@@ -328,38 +298,21 @@
   $("methodSelect").addEventListener("change", renderParams);
 
   $("saveAuthBtn").addEventListener("click", () => {
-    localStorage.setItem("mf_auth_url", $("authUrl").value.trim());
-    localStorage.setItem("mf_client_id", $("clientId").value.trim());
-    localStorage.setItem("mf_redirect_uri", $("redirectUri").value.trim());
+    localStorage.setItem("mf_api_key", ($("apiKey").value || "").trim());
     localStorage.setItem("mf_server_url", $("serverSelect").value.trim());
-    log("💾 Paramètres auth/serveur sauvegardés (localStorage).");
+    log("💾 Clé API + serveur sauvegardés (localStorage).");
+    setKeyStatus();
   });
 
-  $("loginBtn").addEventListener("click", () => {
-    const authUrl = $("authUrl").value.trim();
-    const clientId = $("clientId").value.trim();
-    const redirectUri = $("redirectUri").value.trim();
-
-    if (!authUrl || !clientId || !redirectUri) {
-      alert("Renseignez authUrl, clientId et redirectUri.");
-      return;
-    }
-
-    // OAuth2 implicit: response_type=token
-    const u = new URL(authUrl);
-    u.searchParams.set("response_type", "token");
-    u.searchParams.set("client_id", clientId);
-    u.searchParams.set("redirect_uri", redirectUri);
-    // scopes are empty in your swagger :contentReference[oaicite:5]{index=5}
-    // u.searchParams.set("scope", "");
-    log("➡️ Redirection OAuth2 (implicit)...");
-    window.location.href = u.toString();
+  $("toggleKeyBtn").addEventListener("click", () => {
+    $("apiKey").type = $("apiKey").type === "password" ? "text" : "password";
   });
 
   $("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("mf_access_token");
-    setTokenStatus();
-    log("🚪 Token supprimé.");
+    localStorage.removeItem("mf_api_key");
+    $("apiKey").value = "";
+    setKeyStatus();
+    log("🧹 Clé API effacée.");
   });
 
   $("copyCurlBtn").addEventListener("click", async () => {
@@ -393,7 +346,6 @@
         return;
       }
 
-      // Display based on content-type
       if (ct.includes("image/")) {
         const blob = await res.blob();
         const objUrl = URL.createObjectURL(blob);
@@ -408,7 +360,6 @@
         return;
       }
 
-      // For binary (e.g., WCS GetCoverage returns grib/tiff) :contentReference[oaicite:6]{index=6}
       if (ct.includes("application/octet-stream") || ct.includes("application/wmo-grib") || ct.includes("image/tiff")) {
         const blob = await res.blob();
         $("resultArea").innerHTML = `
@@ -422,7 +373,6 @@
       }
 
       const text = await res.text();
-      // Try JSON pretty print
       try {
         const obj = JSON.parse(text);
         $("resultArea").innerHTML = `<pre><code>${escapeHtml(JSON.stringify(obj, null, 2))}</code></pre>`;
@@ -435,20 +385,11 @@
     }
   });
 
-  function escapeHtml(s) {
-    return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-  }
-
   // -----------------------------
   // Init
   // -----------------------------
-  parseImplicitTokenFromUrl();
-  setTokenStatus();
-
-  // Pre-fill saved auth fields even before swagger load
-  $("authUrl").value = localStorage.getItem("mf_auth_url") || "https://public-api.meteofrance.fr/authorize";
-  $("clientId").value = localStorage.getItem("mf_client_id") || "";
-  $("redirectUri").value = localStorage.getItem("mf_redirect_uri") || (window.location.origin + window.location.pathname);
+  $("apiKey").value = localStorage.getItem("mf_api_key") || "";
+  setKeyStatus();
 </script>
 </body>
 </html>
