@@ -81,6 +81,12 @@
       <button id="sendBtn" type="button">Envoyer</button>
       <button id="copyCurlBtn" type="button">Copier cURL</button>
     </div>
+
+    <div class="muted" style="margin-top:8px;">
+      <strong>Astuce WCS subset :</strong> pour plusieurs subsets, tapez par ex.<br/>
+      <code>long(1.9,2.6);lat(48.7,49.1);time("2026-02-14T06:00:00Z")</code><br/>
+      (séparateur <code>;</code> ou retour à la ligne). Ne mettez pas <code>subset=</code>.
+    </div>
   </section>
 
   <section class="card">
@@ -192,12 +198,11 @@
     for (const param of params) {
       const name = param.name;
       const where = param.in;
-      const required = !!param.required;
       const schema = param.schema || {};
       const desc = (param.description || "").trim();
 
       const label = document.createElement("label");
-      label.textContent = `${name} (${where})${required ? " *" : ""}`;
+      label.textContent = `${name} (${where})${param.required ? " *" : ""}`;
       container.appendChild(label);
 
       let input;
@@ -218,6 +223,11 @@
       input.dataset.paramIn = where;
       input.placeholder = desc || "";
       input.value = param.example || (schema.default ?? "");
+
+      // ✅ Pré-remplissage utile pour subset (multi-valeurs) + aide visuelle
+      if (name.toLowerCase() === "subset") {
+        input.placeholder = input.placeholder || 'Ex: long(1.9,2.6);lat(48.7,49.1);time("2026-02-14T06:00:00Z")';
+      }
 
       if (desc) {
         const hint = document.createElement("div");
@@ -249,8 +259,7 @@
     // ✅ Mode API Key (header)
     const apiKey = ($("apiKey").value || "").trim() || (localStorage.getItem("mf_api_key") || "");
     if (apiKey) {
-      // Par défaut on envoie "apiKey". Si l’API attend un autre nom d’en-tête,
-      // changez ici (ex: "apikey" / "Authorization" / "x-api-key")
+      // Si l’API attend un autre nom d’en-tête, changez ici.
       headers.set("apiKey", apiKey);
     }
 
@@ -265,7 +274,26 @@
       const value = values.get(name);
 
       if (where === "query") {
-        if (value !== undefined && value !== "") url.searchParams.set(name, value);
+        if (value !== undefined && value !== "") {
+
+          // ✅ FIX: subset est un paramètre répétable (WCS). On veut &subset=long(... )&subset=lat(...)
+          if (name.toLowerCase() === "subset") {
+            // Autorise plusieurs subsets séparés par ; ou retour ligne
+            // Ex: long(1.9,2.6);lat(48.7,49.1);time("2026-02-14T06:00:00Z")
+            const parts = value
+              .split(/[\n;]+/)
+              .map(s => s.trim())
+              .filter(Boolean);
+
+            for (const part of parts) {
+              // Si l'utilisateur a collé "subset=long(...)" on nettoie
+              const cleaned = part.replace(/^subset\s*=\s*/i, "");
+              url.searchParams.append(name, cleaned);
+            }
+          } else {
+            url.searchParams.set(name, value);
+          }
+        }
       } else if (where === "header") {
         if (value !== undefined && value !== "") headers.set(name, value);
       }
