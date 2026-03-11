@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messages · Supabase</title>
+  <title>Ajouter un message · Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -14,7 +14,6 @@
       --text: #e8edf2;
       --muted: #9fb0c3;
       --accent: #4ea1ff;
-      --accent-2: #2d7dd2;
       --success: #1f9d67;
       --danger: #d9534f;
       --warning: #d39e00;
@@ -33,7 +32,7 @@
     }
 
     .container {
-      width: min(1200px, calc(100% - 32px));
+      width: min(760px, calc(100% - 32px));
       margin: 32px auto 56px;
     }
 
@@ -55,19 +54,13 @@
     .title-wrap p {
       margin: 0;
       color: var(--muted);
-      max-width: 720px;
+      max-width: 680px;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 940px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .card {
@@ -118,7 +111,7 @@
       padding: 12px 14px;
       font: inherit;
       outline: none;
-      transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+      transition: border-color .15s ease, box-shadow .15s ease;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -127,35 +120,32 @@
     }
 
     textarea {
-      min-height: 160px;
+      min-height: 220px;
       resize: vertical;
     }
 
-    .actions {
+    .actions, .nav-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    button {
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border: 0;
       border-radius: 12px;
       padding: 12px 16px;
       font: inherit;
       font-weight: 600;
+      text-decoration: none;
       cursor: pointer;
       transition: transform .15s ease, opacity .15s ease, background .15s ease;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
     .primary {
       background: var(--accent);
@@ -168,16 +158,6 @@
       border: 1px solid var(--border);
     }
 
-    .danger {
-      background: rgba(217, 83, 79, .16);
-      color: #ffb4b1;
-      border: 1px solid rgba(217, 83, 79, .35);
-    }
-
-    .danger:hover {
-      background: rgba(217, 83, 79, .22);
-    }
-
     .status {
       margin-top: 8px;
       min-height: 22px;
@@ -188,115 +168,6 @@
     .status.success { color: #64d6a0; }
     .status.error { color: #ff8b87; }
     .status.warning { color: #f3c965; }
-
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .toolbar .left,
-    .toolbar .right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .small-select {
-      width: auto;
-      min-width: 170px;
-      padding: 10px 12px;
-    }
-
-    .messages-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .message-item {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255,255,255,.02);
-      padding: 16px;
-    }
-
-    .message-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .message-top h3 {
-      margin: 0 0 6px;
-      font-size: 1.05rem;
-    }
-
-    .meta {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: .85rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: .8rem;
-      line-height: 1;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,.08);
-      text-transform: uppercase;
-      letter-spacing: .03em;
-    }
-
-    .badge.meteo {
-      background: rgba(78,161,255,.14);
-      color: #9cc9ff;
-    }
-
-    .badge.traffic {
-      background: rgba(243, 201, 101, .14);
-      color: #f6db95;
-    }
-
-    .badge.autre {
-      background: rgba(159,176,195,.12);
-      color: #c3d0dc;
-    }
-
-    .message-body {
-      white-space: pre-wrap;
-      line-height: 1.55;
-      color: #dde7f1;
-    }
-
-    .message-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 14px;
-    }
-
-    .delete-btn {
-      padding: 10px 14px;
-    }
-
-    .empty {
-      padding: 28px;
-      border: 1px dashed var(--border);
-      border-radius: 14px;
-      color: var(--muted);
-      text-align: center;
-    }
 
     code.inline {
       padding: 2px 6px;
@@ -312,78 +183,62 @@
   <div class="container">
     <header class="header">
       <div class="title-wrap">
-        <h1>Gestion des messages</h1>
-        <p>Lecture de la table <code class="inline">Messages</code> et ajout d’un nouveau message dans Supabase.</p>
+        <h1>Ajouter un message</h1>
+        <p>Création d’un nouveau message dans la table <code class="inline">Messages</code> avec catégorie, type, sujet et corps.</p>
+      </div>
+      <div class="nav-actions">
+        <a class="btn secondary" href="messages-liste.html">Voir les messages</a>
       </div>
     </header>
 
-    <main class="grid">
-      <section class="card">
-        <div class="card-header">
-          <h2>Ajouter un message</h2>
-          <p>Les champs <strong>catégorie</strong>, <strong>sujet</strong> et <strong>corps</strong> sont obligatoires.</p>
-        </div>
-        <div class="card-body">
-          <form id="message-form">
-            <label>
-              Catégorie
-              <select id="categorie" name="categorie" required>
-                <option value="meteo">meteo</option>
-                <option value="traffic">traffic</option>
-                <option value="autre">autre</option>
-              </select>
-            </label>
+    <section class="card">
+      <div class="card-header">
+        <h2>Nouveau message</h2>
+        <p>Les champs <strong>catégorie</strong>, <strong>type</strong>, <strong>sujet</strong> et <strong>corps</strong> sont obligatoires.</p>
+      </div>
+      <div class="card-body">
+        <form id="message-form">
+          <label>
+            Catégorie
+            <select id="categorie" name="categorie" required>
+              <option value="meteo">meteo</option>
+              <option value="trafic">trafic</option>
+              <option value="autre">autre</option>
+            </select>
+          </label>
 
-            <label>
-              Sujet
-              <input id="sujet" name="sujet" type="text" maxlength="250" placeholder="Ex. Alerte pluie intense" required />
-            </label>
+          <label>
+            Type d’envoi
+            <select id="type" name="type" required>
+              <option value="mail">mail</option>
+              <option value="whatsapp">whatsapp</option>
+            </select>
+          </label>
 
-            <label>
-              Corps
-              <textarea id="corps" name="corps" placeholder="Saisissez le contenu du message…" required></textarea>
-            </label>
+          <label>
+            Sujet
+            <input id="sujet" name="sujet" type="text" maxlength="250" placeholder="Ex. Alerte pluie intense" required />
+          </label>
 
-            <div class="actions">
-              <button class="primary" id="submit-btn" type="submit">Enregistrer</button>
-              <button class="secondary" type="button" id="reset-btn">Réinitialiser</button>
-            </div>
+          <label>
+            Corps
+            <textarea id="corps" name="corps" placeholder="Saisissez le contenu du message…" required></textarea>
+          </label>
 
-            <div id="form-status" class="status"></div>
-          </form>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <h2>Messages enregistrés</h2>
-          <p>Affichage des derniers messages, triés du plus récent au plus ancien.</p>
-        </div>
-        <div class="card-body">
-          <div class="toolbar">
-            <div class="left">
-              <button class="secondary" id="refresh-btn" type="button">Actualiser</button>
-            </div>
-            <div class="right">
-              <select id="filter-categorie" class="small-select">
-                <option value="all">Toutes les catégories</option>
-                <option value="meteo">meteo</option>
-                <option value="traffic">traffic</option>
-                <option value="autre">autre</option>
-              </select>
-            </div>
+          <div class="actions">
+            <button class="btn primary" id="submit-btn" type="submit">Enregistrer</button>
+            <button class="btn secondary" type="button" id="reset-btn">Réinitialiser</button>
           </div>
 
-          <div id="list-status" class="status"></div>
-          <div id="messages-list" class="messages-list"></div>
-        </div>
-      </section>
-    </main>
+          <div id="form-status" class="status"></div>
+        </form>
+      </div>
+    </section>
   </div>
 
   <script>
     const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
+    const SUPABASE_ANON_KEY = "VOTRE_CLE_ICI";
 
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -391,124 +246,22 @@
     const form = document.getElementById('message-form');
     const resetBtn = document.getElementById('reset-btn');
     const submitBtn = document.getElementById('submit-btn');
-    const refreshBtn = document.getElementById('refresh-btn');
-    const filterSelect = document.getElementById('filter-categorie');
     const formStatus = document.getElementById('form-status');
-    const listStatus = document.getElementById('list-status');
-    const listContainer = document.getElementById('messages-list');
 
     function setStatus(element, message = '', type = '') {
       element.textContent = message;
       element.className = `status ${type}`.trim();
     }
 
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function formatDate(value) {
-      if (!value) return 'Date inconnue';
-      const date = new Date(value);
-      return new Intl.DateTimeFormat('fr-FR', {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-      }).format(date);
-    }
-
-    function renderMessages(messages) {
-      if (!Array.isArray(messages) || messages.length === 0) {
-        listContainer.innerHTML = `<div class="empty">Aucun message trouvé.</div>`;
-        return;
-      }
-
-      listContainer.innerHTML = messages.map((message) => {
-        const categorie = (message.categorie || 'autre').toLowerCase();
-        const badgeClass = ['meteo', 'traffic', 'autre'].includes(categorie) ? categorie : 'autre';
-
-        return `
-          <article class="message-item">
-            <div class="message-top">
-              <div>
-                <h3>${escapeHtml(message.sujet)}</h3>
-                <div class="meta">
-                  <span>#${escapeHtml(message.id)}</span>
-                  <span>Créé le ${escapeHtml(formatDate(message.created_at))}</span>
-                  ${message.source ? `<span>Source : ${escapeHtml(message.source)}</span>` : ''}
-                </div>
-              </div>
-              <span class="badge ${badgeClass}">${escapeHtml(categorie)}</span>
-            </div>
-            <div class="message-body">${escapeHtml(message.corps)}</div>
-            <div class="message-actions">
-              <button
-                type="button"
-                class="danger delete-btn"
-                data-delete-id="${escapeHtml(message.id)}"
-              >
-                Supprimer
-              </button>
-            </div>
-          </article>
-        `;
-      }).join('');
-    }
-
-    async function loadMessages() {
-      setStatus(listStatus, 'Chargement des messages…');
-      listContainer.innerHTML = '';
-
-      try {
-        let query = db
-          .from('Messages')
-          .select('id, categorie, sujet, corps, source, created_at')
-          .order('created_at', { ascending: false })
-          .limit(100);
-
-        const filterValue = filterSelect.value;
-        if (filterValue !== 'all') {
-          query = query.eq('categorie', filterValue);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        renderMessages(data || []);
-        setStatus(listStatus, `${(data || []).length} message(s) chargé(s).`, 'success');
-      } catch (error) {
-        console.error(error);
-        setStatus(
-          listStatus,
-          `Impossible de charger les messages : ${error.message || 'erreur inconnue'}`,
-          'error'
-        );
-        listContainer.innerHTML = `<div class="empty">La liste n’a pas pu être chargée.</div>`;
-      }
-    }
-
     async function createMessage(payload) {
       const { data, error } = await db
         .from('Messages')
         .insert(payload)
-        .select('id, categorie, sujet, corps, source, created_at')
+        .select('id, categorie, type, sujet, corps, source, created_at')
         .single();
 
       if (error) throw error;
       return data;
-    }
-
-    async function deleteMessage(messageId) {
-      const { error } = await db
-        .from('Messages')
-        .delete()
-        .eq('id', messageId);
-
-      if (error) throw error;
     }
 
     form.addEventListener('submit', async (event) => {
@@ -518,6 +271,7 @@
 
       const payload = {
         categorie: document.getElementById('categorie').value,
+        type: document.getElementById('type').value,
         sujet: document.getElementById('sujet').value.trim(),
         corps: document.getElementById('corps').value.trim(),
         source: 'interface_web'
@@ -530,11 +284,11 @@
       }
 
       try {
-        await createMessage(payload);
-        setStatus(formStatus, 'Message enregistré avec succès.', 'success');
+        const created = await createMessage(payload);
+        setStatus(formStatus, `Message #${created.id} enregistré avec succès.`, 'success');
         form.reset();
         document.getElementById('categorie').value = 'meteo';
-        await loadMessages();
+        document.getElementById('type').value = 'mail';
       } catch (error) {
         console.error(error);
         setStatus(
@@ -550,44 +304,9 @@
     resetBtn.addEventListener('click', () => {
       form.reset();
       document.getElementById('categorie').value = 'meteo';
+      document.getElementById('type').value = 'mail';
       setStatus(formStatus, '');
     });
-
-    refreshBtn.addEventListener('click', loadMessages);
-    filterSelect.addEventListener('change', loadMessages);
-
-    listContainer.addEventListener('click', async (event) => {
-      const button = event.target.closest('[data-delete-id]');
-      if (!button) return;
-
-      const messageId = Number(button.dataset.deleteId);
-      if (!messageId) return;
-
-      const confirmed = window.confirm(`Supprimer le message #${messageId} ?`);
-      if (!confirmed) return;
-
-      const originalText = button.textContent;
-      button.disabled = true;
-      button.textContent = 'Suppression…';
-      setStatus(listStatus, `Suppression du message #${messageId}…`);
-
-      try {
-        await deleteMessage(messageId);
-        setStatus(listStatus, `Message #${messageId} supprimé avec succès.`, 'success');
-        await loadMessages();
-      } catch (error) {
-        console.error(error);
-        setStatus(
-          listStatus,
-          `Impossible de supprimer le message : ${error.message || 'erreur inconnue'}`,
-          'error'
-        );
-        button.disabled = false;
-        button.textContent = originalText;
-      }
-    });
-
-    loadMessages();
   </script>
 </body>
 </html>
