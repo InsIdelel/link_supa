@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liste des messages · Supabase</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111821;
+      --panel-2: #17212b;
+      --border: #263241;
+      --text: #e8edf2;
+      --muted: #9fb0c3;
+      --accent: #4ea1ff;
+      --success: #1f9d67;
+      --danger: #d9534f;
+      --warning: #d39e00;
+      --shadow: 0 12px 30px rgba(0,0,0,.28);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #091017 0%, #0b0f14 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1200px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      line-height: 1.1;
+    }
+
+    .title-wrap p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .nav-actions, .toolbar, .toolbar .left, .toolbar .right, .message-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.015));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      padding: 18px 18px 8px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+
+    .card-header h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+    }
+
+    .card-header p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .card-body {
+      padding: 18px;
+    }
+
+    .toolbar {
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    input, select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(78,161,255,.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .primary {
+      background: var(--accent);
+      color: #07111c;
+    }
+
+    .secondary {
+      background: #243140;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .danger {
+      background: rgba(217, 83, 79, .16);
+      color: #ffb4b1;
+      border: 1px solid rgba(217, 83, 79, .35);
+    }
+
+    .danger:hover {
+      background: rgba(217, 83, 79, .22);
+    }
+
+    .status {
+      margin-top: 8px;
+      min-height: 22px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .status.success { color: #64d6a0; }
+    .status.error { color: #ff8b87; }
+    .status.warning { color: #f3c965; }
+
+    .messages-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .message-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.02);
+      padding: 16px;
+    }
+
+    .message-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .message-top h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: .85rem;
+      margin-top: 4px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .8rem;
+      line-height: 1;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,.08);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .badge.meteo {
+      background: rgba(78,161,255,.14);
+      color: #9cc9ff;
+    }
+
+    .badge.trafic {
+      background: rgba(243, 201, 101, .14);
+      color: #f6db95;
+    }
+
+    .badge.autre {
+      background: rgba(159,176,195,.12);
+      color: #c3d0dc;
+    }
+
+    .badge.type {
+      background: rgba(100, 214, 160, .12);
+      color: #9ee6c0;
+    }
+
+    .message-body {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: #dde7f1;
+      margin-top: 10px;
+    }
+
+    .message-actions {
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+
+    .empty {
+      padding: 28px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    code.inline {
+      padding: 2px 6px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 8px;
+      color: #b8d9ff;
+      font-size: .9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>Liste des messages</h1>
+        <p>Consultation, tri, filtrage et suppression des messages de la table <code class="inline">Messages</code>.</p>
+      </div>
+      <div class="nav-actions">
+        <a class="btn primary" href="ajouter-message.html">Ajouter un message</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Messages enregistrés</h2>
+        <p>Vous pouvez filtrer par catégorie et type, choisir le tri, puis supprimer un message.</p>
+      </div>
+      <div class="card-body">
+        <div class="toolbar">
+          <div class="left">
+            <button class="btn secondary" id="refresh-btn" type="button">Actualiser</button>
+            <select id="filter-categorie">
+              <option value="all">Toutes les catégories</option>
+              <option value="meteo">meteo</option>
+              <option value="trafic">trafic</option>
+              <option value="autre">autre</option>
+            </select>
+            <select id="filter-type">
+              <option value="all">Tous les types</option>
+              <option value="mail">mail</option>
+              <option value="whatsapp">whatsapp</option>
+            </select>
+          </div>
+          <div class="right">
+            <select id="sort-order">
+              <option value="desc">Plus récents d’abord</option>
+              <option value="asc">Plus anciens d’abord</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="list-status" class="status"></div>
+        <div id="messages-list" class="messages-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
+
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const refreshBtn = document.getElementById('refresh-btn');
+    const filterCategorie = document.getElementById('filter-categorie');
+    const filterType = document.getElementById('filter-type');
+    const sortOrder = document.getElementById('sort-order');
+    const listStatus = document.getElementById('list-status');
+    const listContainer = document.getElementById('messages-list');
+
+    function setStatus(element, message = '', type = '') {
+      element.textContent = message;
+      element.className = `status ${type}`.trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(value) {
+      if (!value) return 'Date inconnue';
+      const date = new Date(value);
+      return new Intl.DateTimeFormat('fr-FR', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }).format(date);
+    }
+
+    function renderMessages(messages) {
+      if (!Array.isArray(messages) || messages.length === 0) {
+        listContainer.innerHTML = `<div class="empty">Aucun message trouvé.</div>`;
+        return;
+      }
+
+      listContainer.innerHTML = messages.map((message) => {
+        const categorie = (message.categorie || 'autre').toLowerCase();
+        const badgeClass = ['meteo', 'trafic', 'autre'].includes(categorie) ? categorie : 'autre';
+        const type = (message.type || 'inconnu').toLowerCase();
+
+        return `
+          <article class="message-item">
+            <div class="message-top">
+              <div>
+                <h3>${escapeHtml(message.sujet)}</h3>
+                <div class="meta">
+                  <span>#${escapeHtml(message.id)}</span>
+                  <span>Créé le ${escapeHtml(formatDate(message.created_at))}</span>
+                  ${message.source ? `<span>Source : ${escapeHtml(message.source)}</span>` : ''}
+                </div>
+              </div>
+              <div class="badges">
+                <span class="badge ${badgeClass}">${escapeHtml(categorie)}</span>
+                <span class="badge type">${escapeHtml(type)}</span>
+              </div>
+            </div>
+            <div class="message-body">${escapeHtml(message.corps)}</div>
+            <div class="message-actions">
+              <button type="button" class="btn danger" data-delete-id="${escapeHtml(message.id)}">
+                Supprimer
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    async function loadMessages() {
+      setStatus(listStatus, 'Chargement des messages…');
+      listContainer.innerHTML = '';
+
+      try {
+        let query = db
+          .from('Messages')
+          .select('id, categorie, type, sujet, corps, source, created_at')
+          .order('created_at', { ascending: sortOrder.value === 'asc' })
+          .limit(200);
+
+        if (filterCategorie.value !== 'all') {
+          query = query.eq('categorie', filterCategorie.value);
+        }
+
+        if (filterType.value !== 'all') {
+          query = query.eq('type', filterType.value);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        renderMessages(data || []);
+        setStatus(listStatus, `${(data || []).length} message(s) chargé(s).`, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          listStatus,
+          `Impossible de charger les messages : ${error.message || 'erreur inconnue'}`,
+          'error'
+        );
+        listContainer.innerHTML = `<div class="empty">La liste n’a pas pu être chargée.</div>`;
+      }
+    }
+
+    async function deleteMessage(messageId) {
+      const { error } = await db
+        .from('Messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+    }
+
+    refreshBtn.addEventListener('click', loadMessages);
+    filterCategorie.addEventListener('change', loadMessages);
+    filterType.addEventListener('change', loadMessages);
+    sortOrder.addEventListener('change', loadMessages);
+
+    listContainer.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-delete-id]');
+      if (!button) return;
+
+      const messageId = Number(button.dataset.deleteId);
+      if (!messageId) return;
+
+      const confirmed = window.confirm(`Supprimer le message #${messageId} ?`);
+      if (!confirmed) return;
+
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Suppression…';
+      setStatus(listStatus, `Suppression du message #${messageId}…`);
+
+      try {
+        await deleteMessage(messageId);
+        setStatus(listStatus, `Message #${messageId} supprimé avec succès.`, 'success');
+        await loadMessages();
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          listStatus,
+          `Impossible de supprimer le message : ${error.message || 'erreur inconnue'}`,
+          'error'
+        );
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    });
+
+    loadMessages();
+  </script>
+</body>
+</html>
