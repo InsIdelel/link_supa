@@ -58,18 +58,6 @@
       max-width: 720px;
     }
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      color: var(--muted);
-      font-size: .92rem;
-    }
-
     .grid {
       display: grid;
       grid-template-columns: 380px 1fr;
@@ -180,6 +168,16 @@
       border: 1px solid var(--border);
     }
 
+    .danger {
+      background: rgba(217, 83, 79, .16);
+      color: #ffb4b1;
+      border: 1px solid rgba(217, 83, 79, .35);
+    }
+
+    .danger:hover {
+      background: rgba(217, 83, 79, .22);
+    }
+
     .status {
       margin-top: 8px;
       min-height: 22px;
@@ -282,6 +280,16 @@
       color: #dde7f1;
     }
 
+    .message-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 14px;
+    }
+
+    .delete-btn {
+      padding: 10px 14px;
+    }
+
     .empty {
       padding: 28px;
       border: 1px dashed var(--border);
@@ -374,11 +382,8 @@
   </div>
 
   <script>
-    // ==============================
-    // 1) REMPLACEZ CES 2 VALEURS
-    // ==============================
     const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
+    const SUPABASE_ANON_KEY = "VOTRE_CLE_ICI";
 
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -439,6 +444,15 @@
               <span class="badge ${badgeClass}">${escapeHtml(categorie)}</span>
             </div>
             <div class="message-body">${escapeHtml(message.corps)}</div>
+            <div class="message-actions">
+              <button
+                type="button"
+                class="danger delete-btn"
+                data-delete-id="${escapeHtml(message.id)}"
+              >
+                Supprimer
+              </button>
+            </div>
           </article>
         `;
       }).join('');
@@ -488,6 +502,15 @@
       return data;
     }
 
+    async function deleteMessage(messageId) {
+      const { error } = await db
+        .from('Messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+    }
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       setStatus(formStatus, 'Enregistrement en cours…');
@@ -532,6 +555,37 @@
 
     refreshBtn.addEventListener('click', loadMessages);
     filterSelect.addEventListener('change', loadMessages);
+
+    listContainer.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-delete-id]');
+      if (!button) return;
+
+      const messageId = Number(button.dataset.deleteId);
+      if (!messageId) return;
+
+      const confirmed = window.confirm(`Supprimer le message #${messageId} ?`);
+      if (!confirmed) return;
+
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Suppression…';
+      setStatus(listStatus, `Suppression du message #${messageId}…`);
+
+      try {
+        await deleteMessage(messageId);
+        setStatus(listStatus, `Message #${messageId} supprimé avec succès.`, 'success');
+        await loadMessages();
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          listStatus,
+          `Impossible de supprimer le message : ${error.message || 'erreur inconnue'}`,
+          'error'
+        );
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    });
 
     loadMessages();
   </script>
