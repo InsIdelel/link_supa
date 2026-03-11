@@ -3,569 +3,538 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Supabase Explorer</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <title>Messages · Supabase</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg:      #0a0c0f; --bg2: #0f1218; --bg3: #161b24; --bg4: #1c2330;
-      --border:  #2a3444; --border2: #3d4f66;
-      --accent:  #3ecf8e; --accent2: #10b981; --accent3: #34d399;
-      --muted:   #4a6080; --text: #d0dcea; --text2: #8aa0bc; --text3: #5a7a9e;
-      --red: #f87171; --yellow: #fbbf24; --blue: #60a5fa; --purple: #a78bfa;
-      --font-mono: 'JetBrains Mono', monospace;
-      --font-sans: 'Syne', sans-serif;
+      --bg: #0b0f14;
+      --panel: #111821;
+      --panel-2: #17212b;
+      --border: #263241;
+      --text: #e8edf2;
+      --muted: #9fb0c3;
+      --accent: #4ea1ff;
+      --accent-2: #2d7dd2;
+      --success: #1f9d67;
+      --danger: #d9534f;
+      --warning: #d39e00;
+      --shadow: 0 12px 30px rgba(0,0,0,.28);
+      --radius: 14px;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 13px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    /* TOPBAR */
-    #topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 20px; display: flex; align-items: center; gap: 14px; height: 52px; flex-shrink: 0; }
-    .logo { font-family: var(--font-sans); font-size: 17px; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-    .logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--bg); font-size: 14px; font-weight: 700; }
-    .divider-v { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
-    .conn-form { display: flex; align-items: center; gap: 8px; flex: 1; }
-    .conn-input { background: var(--bg3); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; border-radius: 6px; outline: none; transition: border-color .2s; }
-    .conn-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(62,207,142,.12); }
-    .conn-input::placeholder { color: var(--muted); }
-    #url-input { width: 300px; }
-    #key-input { width: 250px; }
-    .btn { font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; transition: all .15s; white-space: nowrap; }
-    .btn-primary { background: var(--accent); color: var(--bg); }
-    .btn-primary:hover { background: var(--accent3); transform: translateY(-1px); }
-    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-warn { background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.3); color: var(--yellow); }
-    .btn-warn:hover { background: rgba(251,191,36,.22); }
-    .status-badge { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); white-space: nowrap; }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background .3s; }
-    .status-dot.connected { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 2s infinite; }
-    .status-dot.error { background: var(--red); box-shadow: 0 0 6px var(--red); }
-    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+    * { box-sizing: border-box; }
 
-    /* LAYOUT */
-    #main { display: flex; flex: 1; overflow: hidden; }
-    #sidebar { width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-    .sidebar-header { padding: 10px 14px; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    #tables-list { flex: 1; overflow-y: auto; padding: 6px 0; }
-    #tables-list::-webkit-scrollbar { width: 4px; }
-    #tables-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    .table-item { display: flex; align-items: center; gap: 8px; padding: 7px 14px; cursor: pointer; color: var(--text2); transition: all .15s; border-left: 2px solid transparent; font-size: 12px; }
-    .table-item:hover { background: var(--bg3); color: var(--text); }
-    .table-item.active { background: rgba(62,207,142,.08); color: var(--accent); border-left-color: var(--accent); }
-    .sidebar-empty { padding: 16px 14px; color: var(--text3); font-size: 11px; line-height: 1.8; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #091017 0%, #0b0f14 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-    /* CONTENT */
-    #content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    #tabs { background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; height: 40px; flex-shrink: 0; }
-    .tab { font-size: 12px; font-weight: 500; padding: 0 14px; height: 40px; display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; }
-    .tab:hover { color: var(--text2); }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    #toolbar { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 8px 16px; display: none; align-items: center; gap: 8px; flex-shrink: 0; }
-    #table-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+    .container {
+      width: min(1200px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
 
-    /* PLACEHOLDER */
-    #placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 14px; }
-    .ph-icon { font-size: 44px; opacity: .2; }
-    .ph-title { font-family: var(--font-sans); font-size: 18px; font-weight: 700; color: var(--text2); }
-    .ph-sub { font-size: 12px; color: var(--muted); text-align: center; line-height: 2; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
 
-    /* DATA PANEL */
-    #data-panel { flex: 1; overflow: auto; display: none; position: relative; }
-    #data-panel::-webkit-scrollbar { width: 6px; height: 6px; }
-    #data-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    #data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    #data-table th { background: var(--bg2); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 8px 12px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .5px; color: var(--text3); text-transform: uppercase; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
-    #data-table th:last-child { border-right: none; }
-    #data-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid rgba(42,52,68,.5); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #data-table td:last-child { border-right: none; }
-    #data-table tr:hover td { background: rgba(62,207,142,.04); }
-    .c-null { color: var(--muted); font-style: italic; }
-    .c-t    { color: var(--accent); }
-    .c-f    { color: var(--red); }
-    .c-num  { color: var(--blue); }
-    .c-json { color: var(--purple); }
+    .title-wrap h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      line-height: 1.1;
+    }
 
-    /* SQL PANEL */
-    #sql-panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
-    #sql-panel.on { display: flex; }
-    #sql-editor-wrap { padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); }
-    #sql-editor { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--accent3); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; padding: 12px 14px; border-radius: 8px; resize: vertical; min-height: 80px; outline: none; transition: border-color .2s; }
-    #sql-editor:focus { border-color: var(--accent); }
-    .sql-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-    .sql-hint { font-size: 10px; color: var(--muted); flex: 1; }
-    #sql-results { flex: 1; overflow: auto; position: relative; }
-    #sql-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    #sql-table th { background: var(--bg2); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 8px 12px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; white-space: nowrap; position: sticky; top: 0; z-index: 10; }
-    #sql-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); border-right: 1px solid rgba(42,52,68,.5); }
+    .title-wrap p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 720px;
+    }
 
-    /* SCHEMA PANEL */
-    #schema-panel { display: none; flex: 1; overflow-y: auto; padding: 16px; gap: 8px; flex-direction: column; }
-    #schema-panel.on { display: flex; }
-    .schema-col { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--bg3); border-radius: 8px; border: 1px solid var(--border); }
-    .sc-name { font-weight: 600; color: var(--text); flex: 1; font-size: 12px; }
-    .sc-type { font-size: 10px; color: var(--purple); background: rgba(167,139,250,.1); padding: 2px 7px; border-radius: 4px; }
-    .sc-null { font-size: 10px; color: var(--muted); }
-    .sc-pk   { font-size: 10px; color: var(--yellow); background: rgba(251,191,36,.1); padding: 2px 6px; border-radius: 4px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      font-size: .92rem;
+    }
 
-    /* LOADING */
-    .lbar { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg,transparent,var(--accent),transparent); animation: shimmer 1.2s infinite; display: none; }
-    .lbar.on { display: block; }
-    @keyframes shimmer { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+    }
 
-    /* BOTTOMBAR */
-    #bottombar { background: var(--bg2); border-top: 1px solid var(--border); padding: 5px 16px; display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text3); flex-shrink: 0; }
-    #pagination { display: flex; align-items: center; gap: 3px; margin-left: auto; }
-    .pgbtn { font-family: var(--font-mono); font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; transition: all .15s; }
-    .pgbtn:hover { border-color: var(--accent); color: var(--accent); }
-    .pgbtn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
-    .pgbtn:disabled { opacity: .3; cursor: not-allowed; }
+    @media (max-width: 940px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
-    /* TOAST */
-    #toast { position: fixed; bottom: 48px; right: 20px; padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; display: none; z-index: 999; animation: fadein .2s ease; max-width: 420px; }
-    #toast.success { background: rgba(62,207,142,.15); border: 1px solid rgba(62,207,142,.3); color: var(--accent); }
-    #toast.error   { background: rgba(248,113,113,.15); border: 1px solid rgba(248,113,113,.3); color: var(--red); }
-    #toast.info    { background: rgba(96,165,250,.15);  border: 1px solid rgba(96,165,250,.3);  color: var(--blue); }
-    @keyframes fadein { from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none} }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.015));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
 
-    /* MODAL */
-    #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.78); backdrop-filter: blur(4px); z-index: 800; align-items: center; justify-content: center; }
-    #modal-overlay.on { display: flex; }
-    #modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 12px; padding: 28px; max-width: 620px; width: 92%; box-shadow: 0 24px 64px rgba(0,0,0,.6); }
-    .m-title { font-family: var(--font-sans); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .m-sub   { font-size: 12px; color: var(--text2); margin-bottom: 18px; line-height: 1.8; }
-    .m-code  { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 11px; color: var(--accent3); white-space: pre; overflow-x: auto; margin-bottom: 16px; line-height: 1.8; }
-    .m-steps { font-size: 12px; color: var(--text2); line-height: 2.2; margin-bottom: 16px; }
-    .m-steps b { color: var(--accent); }
-    .m-or { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; color: var(--muted); font-size: 11px; }
-    .m-or::before, .m-or::after { content:''; flex:1; height:1px; background: var(--border); }
-    .m-actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; font-family: var(--font-mono); }
-    .badge-anon    { background: rgba(96,165,250,.12);  color: var(--blue);   border: 1px solid rgba(96,165,250,.3); }
-    .badge-service { background: rgba(251,191,36,.12);  color: var(--yellow); border: 1px solid rgba(251,191,36,.3); }
+    .card-header {
+      padding: 18px 18px 8px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+
+    .card-header h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+    }
+
+    .card-header p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .card-body {
+      padding: 18px;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-size: .95rem;
+      color: var(--text);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(78,161,255,.15);
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #07111c;
+    }
+
+    .secondary {
+      background: #243140;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .status {
+      margin-top: 8px;
+      min-height: 22px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .status.success { color: #64d6a0; }
+    .status.error { color: #ff8b87; }
+    .status.warning { color: #f3c965; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar .left,
+    .toolbar .right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .small-select {
+      width: auto;
+      min-width: 170px;
+      padding: 10px 12px;
+    }
+
+    .messages-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .message-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.02);
+      padding: 16px;
+    }
+
+    .message-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .message-top h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .8rem;
+      line-height: 1;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,.08);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .badge.meteo {
+      background: rgba(78,161,255,.14);
+      color: #9cc9ff;
+    }
+
+    .badge.traffic {
+      background: rgba(243, 201, 101, .14);
+      color: #f6db95;
+    }
+
+    .badge.autre {
+      background: rgba(159,176,195,.12);
+      color: #c3d0dc;
+    }
+
+    .message-body {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: #dde7f1;
+    }
+
+    .empty {
+      padding: 28px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    code.inline {
+      padding: 2px 6px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 8px;
+      color: #b8d9ff;
+      font-size: .9em;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>Gestion des messages</h1>
+        <p>Lecture de la table <code class="inline">Messages</code> et ajout d’un nouveau message dans Supabase.</p>
+      </div>
+      <div class="pill">Interface sombre · simple · front seul</div>
+    </header>
 
-<div id="topbar">
-  <div class="logo"><div class="logo-icon">S</div>Explorer</div>
-  <div class="divider-v"></div>
-  <div class="conn-form">
-    <input id="url-input" class="conn-input" type="text"     placeholder="https://xxxx.supabase.co" />
-    <input id="key-input" class="conn-input" type="password" placeholder="anon ou service_role key" />
-    <button class="btn btn-primary" onclick="connect()">Connecter</button>
-    <button class="btn btn-ghost"   onclick="disconnect()" id="btn-disc"   style="display:none">Déconnecter</button>
-    <button class="btn btn-warn"    onclick="showHelp()"   id="btn-help"   style="display:none" title="Aide — pourquoi les tables ne s'affichent pas">⚠ Aide</button>
-  </div>
-  <div class="status-badge">
-    <div class="status-dot" id="sdot"></div>
-    <span id="stxt">Non connecté</span>
-  </div>
-</div>
-
-<div id="main">
-  <div id="sidebar">
-    <div class="sidebar-header">
-      Tables
-      <button class="btn btn-ghost" onclick="doRefresh()" style="padding:2px 7px;font-size:10px">↻</button>
-    </div>
-    <div id="tables-list"><div class="sidebar-empty">Connectez-vous pour voir les tables</div></div>
-  </div>
-
-  <div id="content">
-    <div id="tabs">
-      <div class="tab active" id="tab-data"   onclick="switchTab('data')">⊞ Données</div>
-      <div class="tab"        id="tab-sql"    onclick="switchTab('sql')">› SQL</div>
-      <div class="tab"        id="tab-schema" onclick="switchTab('schema')">⟨⟩ Schéma</div>
-    </div>
-
-    <div id="toolbar">
-      <span id="table-title">—</span>
-      <div id="pagination"></div>
-    </div>
-
-    <div id="placeholder">
-      <div class="ph-icon">⬡</div>
-      <div class="ph-title">Supabase Explorer</div>
-      <div class="ph-sub">Entrez votre URL et clé API Supabase<br>puis cliquez <b style="color:var(--accent)">Connecter</b></div>
-    </div>
-
-    <div id="data-panel">
-      <div class="lbar" id="lbar-data"></div>
-      <table id="data-table"></table>
-    </div>
-
-    <div id="sql-panel">
-      <div id="sql-editor-wrap">
-        <textarea id="sql-editor" placeholder="SELECT * FROM ma_table LIMIT 10;"></textarea>
-        <div class="sql-actions">
-          <span class="sql-hint">Ctrl+Enter pour exécuter</span>
-          <button class="btn btn-ghost" onclick="clearSql()">Effacer</button>
-          <button class="btn btn-primary" onclick="runSql()">▶ Exécuter</button>
+    <main class="grid">
+      <section class="card">
+        <div class="card-header">
+          <h2>Ajouter un message</h2>
+          <p>Les champs <strong>catégorie</strong>, <strong>sujet</strong> et <strong>corps</strong> sont obligatoires.</p>
         </div>
-      </div>
-      <div id="sql-results">
-        <div class="lbar" id="lbar-sql"></div>
-        <table id="sql-table"></table>
-      </div>
-    </div>
+        <div class="card-body">
+          <form id="message-form">
+            <label>
+              Catégorie
+              <select id="categorie" name="categorie" required>
+                <option value="meteo">meteo</option>
+                <option value="traffic">traffic</option>
+                <option value="autre">autre</option>
+              </select>
+            </label>
 
-    <div id="schema-panel"></div>
+            <label>
+              Sujet
+              <input id="sujet" name="sujet" type="text" maxlength="250" placeholder="Ex. Alerte pluie intense" required />
+            </label>
 
-    <div id="bottombar">
-      <span id="row-count">—</span>
-      <span id="qtime" style="margin-left:auto"></span>
-    </div>
+            <label>
+              Corps
+              <textarea id="corps" name="corps" placeholder="Saisissez le contenu du message…" required></textarea>
+            </label>
+
+            <div class="actions">
+              <button class="primary" id="submit-btn" type="submit">Enregistrer</button>
+              <button class="secondary" type="button" id="reset-btn">Réinitialiser</button>
+            </div>
+
+            <div id="form-status" class="status"></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Messages enregistrés</h2>
+          <p>Affichage des derniers messages, triés du plus récent au plus ancien.</p>
+        </div>
+        <div class="card-body">
+          <div class="toolbar">
+            <div class="left">
+              <button class="secondary" id="refresh-btn" type="button">Actualiser</button>
+            </div>
+            <div class="right">
+              <select id="filter-categorie" class="small-select">
+                <option value="all">Toutes les catégories</option>
+                <option value="meteo">meteo</option>
+                <option value="traffic">traffic</option>
+                <option value="autre">autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="list-status" class="status"></div>
+          <div id="messages-list" class="messages-list"></div>
+        </div>
+      </section>
+    </main>
   </div>
-</div>
 
-<!-- MODAL AIDE -->
-<div id="modal-overlay">
-  <div id="modal">
-    <div class="m-title">⚠ Pourquoi les tables ne s'affichent pas ?</div>
-    <div class="m-sub">
-      Supabase bloque la lecture du schéma via <span class="badge badge-anon">anon</span>.
-      Choisissez l'une de ces deux solutions :
-    </div>
+  <script>
+    // ==============================
+    // 1) REMPLACEZ CES 2 VALEURS
+    // ==============================
+    const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
 
-    <b style="font-size:11px;color:var(--text2)">Solution 1 — Créer une fonction SQL (recommandé)</b>
-    <p style="font-size:11px;color:var(--muted);margin:8px 0 10px">Dans <b>supabase.com → SQL Editor</b>, exécutez ce code une seule fois :</p>
-    <div class="m-code">create or replace function get_tables()
-returns table(table_name text)
-language sql security definer
-set search_path = public
-as $$
-  select table_name::text
-  from information_schema.tables
-  where table_schema = 'public'
-    and table_type = 'BASE TABLE'
-  order by table_name;
-$$;
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-grant execute on function get_tables() to anon, authenticated;</div>
-    <div class="m-steps">
-      <b>1.</b> Ouvrez votre projet Supabase → <b>SQL Editor</b><br>
-      <b>2.</b> Collez et exécutez le code ci-dessus<br>
-      <b>3.</b> Reconnectez-vous ici avec votre clé <span class="badge badge-anon">anon</span>
-    </div>
+    const form = document.getElementById('message-form');
+    const resetBtn = document.getElementById('reset-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const filterSelect = document.getElementById('filter-categorie');
+    const formStatus = document.getElementById('form-status');
+    const listStatus = document.getElementById('list-status');
+    const listContainer = document.getElementById('messages-list');
 
-    <div class="m-or">ou</div>
+    function setStatus(element, message = '', type = '') {
+      element.textContent = message;
+      element.className = `status ${type}`.trim();
+    }
 
-    <b style="font-size:11px;color:var(--text2)">Solution 2 — Clé <span class="badge badge-service">service_role</span></b>
-    <p style="font-size:11px;color:var(--muted);margin:8px 0 18px">
-      Dans <b>Settings → API</b>, copiez la clé <span class="badge badge-service">service_role</span>.<br>
-      ⚠ Ne l'exposez jamais côté client en production.
-    </p>
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
-    <div class="m-actions">
-      <button class="btn btn-ghost" onclick="closeHelp()">Fermer</button>
-      <button class="btn btn-primary" onclick="copySQL()">Copier le SQL</button>
-    </div>
-  </div>
-</div>
+    function formatDate(value) {
+      if (!value) return 'Date inconnue';
+      const date = new Date(value);
+      return new Intl.DateTimeFormat('fr-FR', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }).format(date);
+    }
 
-<div id="toast"></div>
+    function renderMessages(messages) {
+      if (!Array.isArray(messages) || messages.length === 0) {
+        listContainer.innerHTML = `<div class="empty">Aucun message trouvé.</div>`;
+        return;
+      }
 
-<script>
-// ── STATE ──────────────────────────────────────────────────────────────────
-let S = {
-  url:'', key:'', connected:false,
-  tables:[], activeTable:null, activeTab:'data',
-  page:0, pageSize:100, totalRows:0,
-  schema:[],
-};
+      listContainer.innerHTML = messages.map((message) => {
+        const categorie = (message.categorie || 'autre').toLowerCase();
+        const badgeClass = ['meteo', 'traffic', 'autre'].includes(categorie) ? categorie : 'autre';
 
-const H = (extra={}) => ({
-  'apikey': S.key,
-  'Authorization': `Bearer ${S.key}`,
-  'Content-Type': 'application/json',
-  ...extra,
-});
+        return `
+          <article class="message-item">
+            <div class="message-top">
+              <div>
+                <h3>${escapeHtml(message.sujet)}</h3>
+                <div class="meta">
+                  <span>#${escapeHtml(message.id)}</span>
+                  <span>Créé le ${escapeHtml(formatDate(message.created_at))}</span>
+                  ${message.source ? `<span>Source : ${escapeHtml(message.source)}</span>` : ''}
+                </div>
+              </div>
+              <span class="badge ${badgeClass}">${escapeHtml(categorie)}</span>
+            </div>
+            <div class="message-body">${escapeHtml(message.corps)}</div>
+          </article>
+        `;
+      }).join('');
+    }
 
-// ── CONNECT ────────────────────────────────────────────────────────────────
-async function connect() {
-  const url = document.getElementById('url-input').value.trim().replace(/\/$/,'');
-  const key  = document.getElementById('key-input').value.trim();
-  if (!url || !key) { toast('URL et clé requises', 'error'); return; }
-  S.url = url; S.key = key;
-  setStatus('loading');
-  try {
-    const tables = await fetchTables();
-    if (!tables.length) throw new Error('Aucune table trouvée dans le schéma public');
-    S.connected = true; S.tables = tables;
-    renderTableList();
-    setStatus('connected');
-    document.getElementById('btn-disc').style.display = '';
-    document.getElementById('btn-help').style.display = 'none';
-    toast(`Connecté — ${tables.length} table(s)`, 'success');
-  } catch(e) {
-    setStatus('error');
-    document.getElementById('btn-help').style.display = '';
-    toast('Échec : ' + e.message, 'error');
-  }
-}
+    async function loadMessages() {
+      setStatus(listStatus, 'Chargement des messages…');
+      listContainer.innerHTML = '';
 
-// ── FETCH TABLES — 3 stratégies ─────────────────────────────────────────
-async function fetchTables() {
+      try {
+        let query = db
+          .from('Messages')
+          .select('id, categorie, sujet, corps, source, created_at')
+          .order('created_at', { ascending: false })
+          .limit(100);
 
-  // 1) Fonction RPC get_tables() personnalisée
-  try {
-    const r = await fetch(`${S.url}/rest/v1/rpc/get_tables`, {
-      method:'POST', headers:H(), body:'{}',
-    });
-    if (r.ok) {
-      const d = await r.json();
-      if (Array.isArray(d) && d.length) {
-        return d.map(row => row.table_name || row.name || Object.values(row)[0]).filter(Boolean).sort();
+        const filterValue = filterSelect.value;
+        if (filterValue !== 'all') {
+          query = query.eq('categorie', filterValue);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+
+        renderMessages(data || []);
+        setStatus(listStatus, `${(data || []).length} message(s) chargé(s).`, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          listStatus,
+          `Impossible de charger les messages : ${error.message || 'erreur inconnue'}`,
+          'error'
+        );
+        listContainer.innerHTML = `<div class="empty">La liste n’a pas pu être chargée.</div>`;
       }
     }
-  } catch(_) {}
 
-  // 2) OpenAPI spec (fonctionne avec service_role)
-  try {
-    const r = await fetch(`${S.url}/rest/v1/`, {
-      headers:{'apikey':S.key,'Authorization':`Bearer ${S.key}`},
-    });
-    if (r.ok) {
-      const spec = await r.json();
-      const names = Object.keys(spec.definitions||{})
-        .filter(k => k !== 'rpc' && !k.startsWith('/'))
-        .sort();
-      if (names.length) return names;
+    async function createMessage(payload) {
+      const { data, error } = await db
+        .from('Messages')
+        .insert(payload)
+        .select('id, categorie, sujet, corps, source, created_at')
+        .single();
+
+      if (error) throw error;
+      return data;
     }
-  } catch(_) {}
 
-  // 3) Echec total
-  throw new Error(
-    'Impossible de lister les tables. Cliquez sur ⚠ Aide pour les solutions.'
-  );
-}
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setStatus(formStatus, 'Enregistrement en cours…');
+      submitBtn.disabled = true;
 
-async function doRefresh() {
-  if (!S.url || !S.key) return;
-  try {
-    S.tables = await fetchTables();
-    renderTableList();
-    toast('Tables actualisées', 'success');
-  } catch(e) { toast(e.message,'error'); }
-}
+      const payload = {
+        categorie: document.getElementById('categorie').value,
+        sujet: document.getElementById('sujet').value.trim(),
+        corps: document.getElementById('corps').value.trim(),
+        source: 'interface_web'
+      };
 
-// ── TABLE LIST ──────────────────────────────────────────────────────────
-function renderTableList() {
-  const el = document.getElementById('tables-list');
-  if (!S.tables.length) { el.innerHTML = '<div class="sidebar-empty">Aucune table trouvée</div>'; return; }
-  el.innerHTML = S.tables.map(t => `
-    <div class="table-item ${S.activeTable===t?'active':''}" onclick="selectTable('${t}')">
-      <span style="font-size:11px;opacity:.5">⊞</span>
-      <span style="flex:1">${t}</span>
-    </div>`).join('');
-}
+      if (!payload.sujet || !payload.corps) {
+        setStatus(formStatus, 'Le sujet et le corps sont obligatoires.', 'warning');
+        submitBtn.disabled = false;
+        return;
+      }
 
-// ── SELECT TABLE ────────────────────────────────────────────────────────
-async function selectTable(name) {
-  S.activeTable = name; S.page = 0;
-  renderTableList();
-  document.getElementById('toolbar').style.display = 'flex';
-  document.getElementById('table-title').textContent = name;
-  document.getElementById('placeholder').style.display = 'none';
-  if (S.activeTab === 'data') await loadData();
-  else if (S.activeTab === 'schema') { await loadSchema(name); showSchemaPanel(); }
-}
-
-// ── LOAD DATA ────────────────────────────────────────────────────────────
-async function loadData() {
-  if (!S.activeTable) return;
-  const from = S.page * S.pageSize, to = from + S.pageSize - 1;
-  showPanel('data');
-  const bar = document.getElementById('lbar-data'); bar.classList.add('on');
-  const t0 = Date.now();
-  try {
-    const r = await fetch(`${S.url}/rest/v1/${S.activeTable}?select=*`, {
-      headers:{...H(),'Prefer':'count=exact','Range':`${from}-${to}`,'Range-Unit':'items'},
+      try {
+        await createMessage(payload);
+        setStatus(formStatus, 'Message enregistré avec succès.', 'success');
+        form.reset();
+        document.getElementById('categorie').value = 'meteo';
+        await loadMessages();
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          formStatus,
+          `Impossible d’enregistrer le message : ${error.message || 'erreur inconnue'}`,
+          'error'
+        );
+      } finally {
+        submitBtn.disabled = false;
+      }
     });
-    const cr = r.headers.get('content-range')||'';
-    const tot = cr.split('/')[1];
-    S.totalRows = tot && tot!=='*' ? parseInt(tot) : '?';
-    if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.message||`HTTP ${r.status}`); }
-    const rows = await r.json();
-    renderTable('data-table', rows);
-    renderPagination();
-    document.getElementById('row-count').textContent =
-      `${rows.length} ligne(s) affichée(s)${S.totalRows!=='?'?' / '+S.totalRows+' total':''}`;
-    document.getElementById('qtime').textContent = `${Date.now()-t0}ms`;
-  } catch(e) { toast('Erreur : '+e.message,'error'); }
-  finally { bar.classList.remove('on'); }
-}
 
-// ── LOAD SCHEMA ──────────────────────────────────────────────────────────
-async function loadSchema(name) {
-  try {
-    const r = await fetch(`${S.url}/rest/v1/`, {headers:H()});
-    if (!r.ok) return;
-    const spec=await r.json(), def=(spec.definitions||{})[name]||{}, props=def.properties||{};
-    S.schema = Object.entries(props).map(([col,info])=>({
-      name:col, type:info.type||info.format||'?',
-      nullable:!((def.required||[]).includes(col)),
-      pk:(info.description||'').toLowerCase().includes('primary'),
-    }));
-  } catch(_) { S.schema=[]; }
-}
+    resetBtn.addEventListener('click', () => {
+      form.reset();
+      document.getElementById('categorie').value = 'meteo';
+      setStatus(formStatus, '');
+    });
 
-function showSchemaPanel() {
-  document.getElementById('schema-panel').className = 'on';
-  document.getElementById('data-panel').style.display='none';
-  document.getElementById('sql-panel').className='';
-  if (!S.schema.length) {
-    document.getElementById('schema-panel').innerHTML =
-      '<div class="sidebar-empty" style="color:var(--text3);padding:20px">Schéma non disponible (nécessite service_role)</div>';
-    return;
-  }
-  document.getElementById('schema-panel').innerHTML = S.schema.map(c=>`
-    <div class="schema-col">
-      <span class="sc-name">${c.name}</span>
-      <span class="sc-type">${c.type}</span>
-      ${c.pk?'<span class="sc-pk">PK</span>':''}
-      <span class="sc-null">${c.nullable?'nullable':'not null'}</span>
-    </div>`).join('');
-}
+    refreshBtn.addEventListener('click', loadMessages);
+    filterSelect.addEventListener('change', loadMessages);
 
-// ── RENDER TABLE ─────────────────────────────────────────────────────────
-function renderTable(id, rows) {
-  const el=document.getElementById(id);
-  if (!rows||!rows.length) { el.innerHTML=`<tr><td colspan="99" style="color:var(--muted);text-align:center;padding:40px;font-size:12px">Aucune donnée</td></tr>`; return; }
-  const cols=Object.keys(rows[0]);
-  el.innerHTML=
-    `<thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>`+
-    `<tbody>${rows.map(row=>`<tr>${cols.map(col=>`<td>${fmt(row[col])}</td>`).join('')}</tr>`).join('')}</tbody>`;
-}
-
-function fmt(v) {
-  if (v===null||v===undefined) return `<span class="c-null">null</span>`;
-  if (v===true)  return `<span class="c-t">true</span>`;
-  if (v===false) return `<span class="c-f">false</span>`;
-  if (typeof v==='number') return `<span class="c-num">${v}</span>`;
-  if (typeof v==='object') { const s=JSON.stringify(v); return `<span class="c-json" title="${s.replace(/"/g,'&quot;')}">${s.slice(0,80)}${s.length>80?'…':''}</span>`; }
-  const s=String(v);
-  return `<span title="${s.length>140?s.replace(/"/g,'&quot;'):''}">${s.length>140?s.slice(0,140)+'…':s}</span>`;
-}
-
-// ── PAGINATION ────────────────────────────────────────────────────────────
-function renderPagination() {
-  const total=typeof S.totalRows==='number'?Math.ceil(S.totalRows/S.pageSize):1;
-  const el=document.getElementById('pagination');
-  if (total<=1){el.innerHTML='';return;}
-  let h=`<button class="pgbtn" onclick="goPage(${S.page-1})" ${S.page===0?'disabled':''}>‹</button>`;
-  let lo=Math.max(0,S.page-4), hi=Math.min(total-1,S.page+4);
-  if(lo>0) h+=`<button class="pgbtn" onclick="goPage(0)">1</button><span style="color:var(--muted);padding:0 3px">…</span>`;
-  for(let i=lo;i<=hi;i++) h+=`<button class="pgbtn ${i===S.page?'active':''}" onclick="goPage(${i})">${i+1}</button>`;
-  if(hi<total-1) h+=`<span style="color:var(--muted);padding:0 3px">…</span><button class="pgbtn" onclick="goPage(${total-1})">${total}</button>`;
-  h+=`<button class="pgbtn" onclick="goPage(${S.page+1})" ${S.page>=total-1?'disabled':''}>›</button>`;
-  el.innerHTML=h;
-}
-function goPage(p) {
-  const total=Math.ceil(S.totalRows/S.pageSize);
-  if(p<0||p>=total)return; S.page=p; loadData();
-}
-
-// ── SQL ───────────────────────────────────────────────────────────────────
-async function runSql() {
-  const sql=document.getElementById('sql-editor').value.trim();
-  if(!sql){toast('Entrez une requête','info');return;}
-  if(!S.connected){toast('Non connecté','error');return;}
-  document.getElementById('lbar-sql').classList.add('on');
-  const t0=Date.now();
-  try {
-    const r=await fetch(`${S.url}/rest/v1/rpc/exec_sql`,{method:'POST',headers:H(),body:JSON.stringify({query:sql})});
-    if(!r.ok){toast('La fonction exec_sql n\'existe pas. Créez-la dans le SQL Editor Supabase.','error');return;}
-    const data=await r.json();
-    const rows=Array.isArray(data)?data:[data];
-    renderTable('sql-table',rows);
-    document.getElementById('row-count').textContent=`${rows.length} résultat(s)`;
-    document.getElementById('qtime').textContent=`${Date.now()-t0}ms`;
-  } catch(e){toast('Erreur : '+e.message,'error');}
-  finally{document.getElementById('lbar-sql').classList.remove('on');}
-}
-function clearSql(){document.getElementById('sql-editor').value='';}
-document.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&S.activeTab==='sql'){e.preventDefault();runSql();}
-});
-
-// ── TABS ──────────────────────────────────────────────────────────────────
-function showPanel(tab) {
-  document.getElementById('data-panel').style.display   = tab==='data'   ? '' : 'none';
-  document.getElementById('sql-panel').className        = tab==='sql'    ? 'on' : '';
-  document.getElementById('schema-panel').className     = tab==='schema' ? 'on' : '';
-  document.getElementById('placeholder').style.display  = 'none';
-}
-
-function switchTab(tab) {
-  S.activeTab=tab;
-  ['data','sql','schema'].forEach(t=>document.getElementById(`tab-${t}`).classList.toggle('active',t===tab));
-  document.getElementById('toolbar').style.display = (tab!=='sql'&&S.activeTable)?'flex':'none';
-
-  if(!S.activeTable&&tab!=='sql'){
-    document.getElementById('data-panel').style.display='none';
-    document.getElementById('sql-panel').className='';
-    document.getElementById('schema-panel').className='';
-    document.getElementById('placeholder').style.display='';
-    return;
-  }
-  showPanel(tab);
-  if(tab==='data'&&S.activeTable) loadData();
-  if(tab==='schema'&&S.activeTable){ loadSchema(S.activeTable).then(showSchemaPanel); }
-}
-
-// ── DISCONNECT ────────────────────────────────────────────────────────────
-function disconnect() {
-  S={url:'',key:'',connected:false,tables:[],activeTable:null,activeTab:'data',page:0,pageSize:100,totalRows:0,schema:[]};
-  setStatus('off');
-  document.getElementById('tables-list').innerHTML='<div class="sidebar-empty">Connectez-vous pour voir les tables</div>';
-  document.getElementById('placeholder').style.display='';
-  document.getElementById('data-panel').style.display='none';
-  document.getElementById('schema-panel').className='';
-  document.getElementById('sql-panel').className='';
-  document.getElementById('toolbar').style.display='none';
-  document.getElementById('btn-disc').style.display='none';
-  document.getElementById('btn-help').style.display='none';
-}
-
-// ── STATUS ────────────────────────────────────────────────────────────────
-function setStatus(s) {
-  const dot=document.getElementById('sdot'), txt=document.getElementById('stxt');
-  dot.className='status-dot';
-  if(s==='connected'){dot.classList.add('connected');txt.textContent='Connecté';}
-  else if(s==='error'){dot.classList.add('error');txt.textContent='Erreur';}
-  else if(s==='loading'){txt.textContent='Connexion…';}
-  else{txt.textContent='Non connecté';}
-}
-
-// ── MODAL ─────────────────────────────────────────────────────────────────
-function showHelp(){document.getElementById('modal-overlay').classList.add('on');}
-function closeHelp(){document.getElementById('modal-overlay').classList.remove('on');}
-document.getElementById('modal-overlay').addEventListener('click',e=>{
-  if(e.target===document.getElementById('modal-overlay'))closeHelp();
-});
-const SQL_FUNC=`create or replace function get_tables()
-returns table(table_name text)
-language sql security definer
-set search_path = public
-as $$
-  select table_name::text
-  from information_schema.tables
-  where table_schema = 'public'
-    and table_type = 'BASE TABLE'
-  order by table_name;
-$$;
-
-grant execute on function get_tables() to anon, authenticated;`;
-function copySQL(){navigator.clipboard.writeText(SQL_FUNC).then(()=>toast('SQL copié !','success'));}
-
-// ── TOAST ─────────────────────────────────────────────────────────────────
-let _tt;
-function toast(msg,type='info'){
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.className=type; el.style.display='';
-  clearTimeout(_tt); _tt=setTimeout(()=>el.style.display='none',4500);
-}
-</script>
+    loadMessages();
+  </script>
 </body>
 </html>
