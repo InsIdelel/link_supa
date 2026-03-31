@@ -3,287 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Prévention Routière - Supabase</title>
+  <title>Admin Prévention Routière</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg: #f6f7fb;
+      --bg: #f5f7fb;
       --panel: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
       --line: #e5e7eb;
-      --brand: #111827;
-      --brand-2: #374151;
-      --ok: #0f766e;
-      --warn: #b45309;
-      --danger: #b91c1c;
-      --chip: #f3f4f6;
+      --text: #111827;
+      --muted: #6b7280;
+      --dark: #111827;
+      --dark-2: #1f2937;
+      --ok: #065f46;
+      --ok-bg: #ecfdf5;
+      --warn: #92400e;
+      --warn-bg: #fffbeb;
+      --err: #991b1b;
+      --err-bg: #fef2f2;
     }
-
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:var(--text); }
     header {
-      background: var(--brand);
+      background: var(--dark);
       color: white;
-      padding: 18px 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      padding: 16px 22px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
-
-    header p {
-      margin: 4px 0 0 0;
-      font-size: 13px;
-      opacity: 0.85;
-    }
-
-    .top-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: calc(100vh - 78px);
-    }
-
-    aside {
-      background: #fff;
-      border-right: 1px solid var(--line);
-      padding: 18px;
-    }
-
+    header h1 { margin:0; font-size:22px; }
+    header p { margin:4px 0 0; font-size:13px; opacity:.8; }
+    .badge-status { padding:8px 12px; border-radius:999px; font-size:12px; background:#e5e7eb; color:#111827; }
+    .app { display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 76px); }
+    aside { background:white; border-right:1px solid var(--line); padding:18px; }
     .nav-btn {
-      width: 100%;
-      border: 0;
-      background: #f3f4f6;
-      color: var(--text);
-      padding: 12px 14px;
-      border-radius: 12px;
-      text-align: left;
-      margin-bottom: 10px;
-      cursor: pointer;
-      font-size: 14px;
+      width:100%; border:0; background:#f3f4f6; color:#111827; padding:12px 14px; border-radius:12px;
+      text-align:left; cursor:pointer; margin-bottom:10px; font-size:14px;
     }
-
-    .nav-btn.active {
-      background: var(--brand);
-      color: white;
-    }
-
-    main {
-      padding: 22px;
-    }
-
-    .page { display: none; }
-    .page.active { display: block; }
-
-    .grid {
-      display: grid;
-      gap: 16px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
+    .nav-btn.active { background:var(--dark); color:white; }
+    main { padding:20px; }
+    .page { display:none; }
+    .page.active { display:block; }
+    .grid { display:grid; gap:16px; }
+    .grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
     .card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04);
     }
-
-    .card h2, .card h3, .card h4 {
-      margin-top: 0;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      font-weight: bold;
-    }
-
+    .card h2,.card h3,.card h4 { margin-top:0; }
+    .muted { color:var(--muted); }
+    .small { font-size:12px; }
+    label { display:block; margin:0 0 6px; font-size:13px; font-weight:bold; }
     input, textarea, select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      background: white;
-      font-size: 14px;
-      margin-bottom: 12px;
+      width:100%; border:1px solid #d1d5db; border-radius:10px; padding:10px 12px; font-size:14px;
+      margin-bottom:12px; background:white;
     }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-      font-family: Consolas, Monaco, monospace;
-    }
-
+    textarea { min-height:110px; resize:vertical; font-family:Consolas, Monaco, monospace; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
     button {
-      border: 0;
-      background: var(--brand);
-      color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
+      border:0; background:var(--dark); color:white; padding:10px 14px; border-radius:10px; cursor:pointer;
+      font-size:14px;
     }
-
-    button.secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
-
-    button.success {
-      background: var(--ok);
-    }
-
-    button.warn {
-      background: var(--warn);
-    }
-
-    button.danger {
-      background: var(--danger);
-    }
-
-    .row-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-
-    .chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .chip {
-      background: var(--chip);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 12px;
-    }
-
-    .list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .item {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      background: #fff;
-    }
-
-    .item-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-    }
-
-    .mono {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: #f9fafb;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
-    }
-
-    .status {
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      background: #eef2ff;
-      color: #3730a3;
-      border: 1px solid #c7d2fe;
-    }
-
-    .stat {
-      font-size: 28px;
-      font-weight: bold;
-      margin: 8px 0;
-    }
-
-    .inline {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .subtle-box {
-      background: #f9fafb;
-      border: 1px dashed #d1d5db;
-      border-radius: 12px;
-      padding: 12px;
-    }
-
-    .step-rule {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 10px;
-      background: #fafafa;
-    }
-
-    .preview {
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.45;
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
-    }
-
-    .small { font-size: 12px; }
-
+    button.secondary { background:#e5e7eb; color:#111827; }
+    button.success { background:#065f46; }
+    button.warning { background:#92400e; }
+    button.danger { background:#b91c1c; }
+    .list { display:grid; gap:12px; }
+    .item { border:1px solid var(--line); border-radius:14px; padding:14px; background:#fff; }
+    .item-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .chip { background:#f3f4f6; border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:12px; }
+    .mono { font-family:Consolas, Monaco, monospace; font-size:12px; white-space:pre-wrap; background:#f9fafb; border:1px solid var(--line); border-radius:10px; padding:10px; }
+    .kpi { font-size:30px; font-weight:bold; margin:8px 0; }
+    .notice { border-radius:12px; padding:12px; margin-bottom:12px; font-size:13px; }
+    .ok { background:var(--ok-bg); color:var(--ok); border:1px solid #a7f3d0; }
+    .warn { background:var(--warn-bg); color:var(--warn); border:1px solid #fde68a; }
+    .err { background:var(--err-bg); color:var(--err); border:1px solid #fecaca; }
+    .rule-row { border:1px dashed #d1d5db; padding:12px; border-radius:12px; margin-bottom:10px; background:#fafafa; }
+    .preview-box { white-space:pre-wrap; line-height:1.45; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; min-height:250px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { border-bottom:1px solid var(--line); text-align:left; padding:8px; vertical-align:top; }
     @media (max-width: 980px) {
-      .layout { grid-template-columns: 1fr; }
-      aside { border-right: 0; border-bottom: 1px solid var(--line); }
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .app { grid-template-columns:1fr; }
+      aside { border-right:0; border-bottom:1px solid var(--line); }
+      .grid-2, .grid-3 { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -291,142 +97,133 @@
   <header>
     <div>
       <h1>Admin Prévention Routière</h1>
-      <p>Gestion des briques de contenu, versions, scénarios, steps et aperçu métier.</p>
+      <p>Contenus, versions, triggers, scénarios, steps, aperçu de rendu, événements.</p>
     </div>
-    <div class="top-actions">
-      <div id="connStatus" class="status">Supabase non connecté</div>
-      <button class="secondary" onclick="loadAllData()">Rafraîchir</button>
-    </div>
+    <div class="badge-status" id="connectionBadge">Connexion en cours…</div>
   </header>
 
-  <div class="layout">
+  <div class="app">
     <aside>
-      <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard', this)">Vue d’ensemble</button>
-      <button class="nav-btn" data-page="settings" onclick="showPage('settings', this)">Connexion Supabase</button>
-      <button class="nav-btn" data-page="contents" onclick="showPage('contents', this)">Briques de contenu</button>
-      <button class="nav-btn" data-page="versions" onclick="showPage('versions', this)">Versions</button>
-      <button class="nav-btn" data-page="scenarios" onclick="showPage('scenarios', this)">Scénarios</button>
-      <button class="nav-btn" data-page="steps" onclick="showPage('steps', this)">Steps</button>
-      <button class="nav-btn" data-page="preview" onclick="showPage('preview', this)">Aperçu métier</button>
+      <button class="nav-btn active" onclick="showPage('dashboard', this)">Vue d’ensemble</button>
+      <button class="nav-btn" onclick="showPage('content-items', this)">Briques de contenu</button>
+      <button class="nav-btn" onclick="showPage('content-versions', this)">Versions</button>
+      <button class="nav-btn" onclick="showPage('trigger-types', this)">Trigger types</button>
+      <button class="nav-btn" onclick="showPage('scenarios', this)">Scénarios</button>
+      <button class="nav-btn" onclick="showPage('scenario-steps', this)">Steps</button>
+      <button class="nav-btn" onclick="showPage('events', this)">Events</button>
+      <button class="nav-btn" onclick="showPage('preview', this)">Aperçu métier</button>
+      <button class="nav-btn" onclick="refreshAll()">Rafraîchir toutes les données</button>
     </aside>
 
     <main>
       <section id="dashboard" class="page active">
+        <div id="globalNotice"></div>
         <div class="grid-3">
-          <div class="card">
-            <div class="muted">Briques</div>
-            <div class="stat" id="statContent">0</div>
-            <div class="small muted">content_items</div>
-          </div>
-          <div class="card">
-            <div class="muted">Versions</div>
-            <div class="stat" id="statVersions">0</div>
-            <div class="small muted">content_versions</div>
-          </div>
-          <div class="card">
-            <div class="muted">Scénarios</div>
-            <div class="stat" id="statScenarios">0</div>
-            <div class="small muted">scenarios + scenario_steps</div>
-          </div>
+          <div class="card"><div class="muted">Briques</div><div class="kpi" id="kpiContents">0</div><div class="small muted">content_items</div></div>
+          <div class="card"><div class="muted">Versions</div><div class="kpi" id="kpiVersions">0</div><div class="small muted">content_versions</div></div>
+          <div class="card"><div class="muted">Scénarios / Steps</div><div class="kpi" id="kpiScenarios">0 / 0</div><div class="small muted">scenarios / scenario_steps</div></div>
         </div>
-
+        <div class="grid-3" style="margin-top:16px;">
+          <div class="card"><div class="muted">Trigger types</div><div class="kpi" id="kpiTriggers">0</div></div>
+          <div class="card"><div class="muted">Events</div><div class="kpi" id="kpiEvents">0</div></div>
+          <div class="card"><div class="muted">Pages</div><div class="kpi">8</div></div>
+        </div>
         <div class="card" style="margin-top:16px;">
-          <h3>Lecture simple</h3>
+          <h3>Chaîne métier</h3>
           <div class="grid-3">
-            <div class="subtle-box"><strong>1. Sources</strong><br><span class="muted">connecteurs → data_points</span></div>
-            <div class="subtle-box"><strong>2. Événements</strong><br><span class="muted">trigger_types → events → client_event_matches</span></div>
-            <div class="subtle-box"><strong>3. Production</strong><br><span class="muted">content_items → content_versions → scenarios → steps → client_message_items → outbound_emails</span></div>
+            <div class="mono">connecteurs → data_points</div>
+            <div class="mono">trigger_types → events → client_event_matches</div>
+            <div class="mono">content_items → content_versions → scenarios → scenario_steps → client_message_items → outbound_emails</div>
           </div>
         </div>
       </section>
 
-      <section id="settings" class="page">
-        <div class="card">
-          <h2>Connexion Supabase</h2>
-          <p class="muted">Renseignez l’URL du projet et la clé anon. Elles seront stockées dans le navigateur.</p>
-          <label>Supabase URL</label>
-          <input id="supabaseUrl" placeholder="https://xxxx.supabase.co" />
-          <label>Supabase anon key</label>
-          <textarea id="supabaseKey" placeholder="eyJ..." style="min-height:120px;"></textarea>
-          <div class="row-actions">
-            <button onclick="saveSupabaseConfig()">Enregistrer</button>
-            <button class="secondary" onclick="testSupabaseConnection()">Tester la connexion</button>
-            <button class="danger" onclick="clearSupabaseConfig()">Effacer</button>
-          </div>
-          <div class="muted" style="margin-top:10px;">Pensez à avoir des policies RLS qui autorisent au minimum la lecture et l’écriture sur les tables concernées.</div>
-        </div>
-      </section>
-
-      <section id="contents" class="page">
+      <section id="content-items" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Nouvelle brique</h2>
+            <h2>Créer une brique de contenu</h2>
             <label>Code</label>
-            <input id="ci_code" placeholder="AQUAPLANING_WARNING" />
+            <input id="ci_code" placeholder="AQUAPLANING_WARNING">
             <label>Catégorie</label>
-            <select id="ci_categorie">
-              <option>alert</option>
-              <option>advice</option>
-              <option>legal</option>
-              <option>cta</option>
-            </select>
-            <label>Sujet métier</label>
-            <input id="ci_sujet" placeholder="Conseil aquaplaning" />
+            <select id="ci_categorie"><option>alert</option><option>advice</option><option>legal</option><option>cta</option></select>
+            <label>Sujet</label>
+            <input id="ci_sujet" placeholder="Conseil aquaplaning">
             <label>Type</label>
-            <input id="ci_type" placeholder="advice_block" />
+            <input id="ci_type" placeholder="advice_block">
+            <label>Source</label>
+            <input id="ci_source" value="interne">
             <label>Topic code</label>
-            <input id="ci_topic" placeholder="aquaplaning" />
+            <input id="ci_topic_code" placeholder="aquaplaning">
             <label>Canal</label>
-            <select id="ci_channel">
-              <option>email</option>
-              <option>sms</option>
-              <option>whatsapp</option>
-              <option>push</option>
-            </select>
+            <select id="ci_channel"><option>email</option><option>sms</option><option>whatsapp</option><option>push</option></select>
             <label>Policy JSON</label>
             <textarea id="ci_policy">{
   "once_per_event": true,
   "cooldown_days": 7,
   "cooldown_scope": "client"
 }</textarea>
-            <button onclick="createContentItem()">Créer la brique</button>
+            <div class="row">
+              <button onclick="createContentItem()">Créer</button>
+              <button class="secondary" onclick="clearContentItemForm()">Vider</button>
+            </div>
           </div>
-
           <div class="card">
             <h2>Liste des briques</h2>
-            <div id="contentList" class="list"></div>
+            <div id="contentItemsList" class="list"></div>
           </div>
         </div>
       </section>
 
-      <section id="versions" class="page">
+      <section id="content-versions" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Nouvelle version</h2>
+            <h2>Créer une version</h2>
             <label>Brique</label>
-            <select id="cv_content_item"></select>
+            <select id="cv_content_item_id"></select>
             <label>Numéro de version</label>
-            <input id="cv_version_no" type="number" value="1" />
+            <input id="cv_version_no" type="number" value="1">
             <label>Sujet template</label>
-            <input id="cv_subject" placeholder="Conseil aquaplaning" />
+            <input id="cv_sujet_template" placeholder="Conseil aquaplaning">
             <label>Corps template</label>
-            <textarea id="cv_body" placeholder="Texte avec variables {lieu}, {source_url}, etc."></textarea>
+            <textarea id="cv_corps_template" placeholder="Texte avec variables {lieu}"></textarea>
             <label>Statut</label>
-            <select id="cv_status">
-              <option>draft</option>
-              <option selected>published</option>
-              <option>archived</option>
-            </select>
+            <select id="cv_status"><option>draft</option><option selected>published</option><option>archived</option></select>
             <label>Source ref</label>
-            <input id="cv_source_ref" placeholder="interne" />
+            <input id="cv_source_ref" value="interne">
             <label>Note de changement</label>
-            <input id="cv_change_note" placeholder="Création initiale" />
-            <button onclick="createContentVersion()">Créer la version</button>
+            <input id="cv_change_note" value="création initiale">
+            <div class="row">
+              <button onclick="createContentVersion()">Créer</button>
+              <button class="secondary" onclick="clearContentVersionForm()">Vider</button>
+            </div>
           </div>
-
           <div class="card">
-            <h2>Versions par brique</h2>
-            <div id="versionList" class="list"></div>
+            <h2>Liste des versions</h2>
+            <div id="contentVersionsList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="trigger-types" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Créer un trigger type</h2>
+            <label>Code</label>
+            <input id="tt_code" placeholder="STORM_ALERT">
+            <label>Label</label>
+            <input id="tt_label" placeholder="Alerte orage">
+            <label>Source kind</label>
+            <input id="tt_source_kind" placeholder="weather_api">
+            <label>Priorité par défaut</label>
+            <input id="tt_default_priority" type="number" value="80">
+            <div class="row">
+              <button onclick="createTriggerType()">Créer</button>
+              <button class="secondary" onclick="clearTriggerTypeForm()">Vider</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Liste des trigger types</h2>
+            <div id="triggerTypesList" class="list"></div>
           </div>
         </div>
       </section>
@@ -434,70 +231,104 @@
       <section id="scenarios" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Nouveau scénario</h2>
+            <h2>Créer un scénario</h2>
             <label>Code</label>
-            <input id="sc_code" placeholder="SCN_STORM_SEQUENCE" />
+            <input id="sc_code" placeholder="SCN_STORM_SEQUENCE">
             <label>Libellé</label>
-            <input id="sc_label" placeholder="Scénario séquence orage" />
+            <input id="sc_label" placeholder="Scénario séquence orage">
             <label>Trigger type</label>
-            <select id="sc_trigger"></select>
-            <label>Mode d’agrégation</label>
-            <select id="sc_aggregation">
-              <option>single</option>
-              <option>sequence</option>
-              <option>digest</option>
-            </select>
-            <label>Priorité</label>
-            <input id="sc_priority" type="number" value="50" />
-            <button onclick="createScenario()">Créer le scénario</button>
+            <select id="sc_trigger_type_id"></select>
+            <label>Aggregation mode</label>
+            <select id="sc_aggregation_mode"><option>single</option><option>sequence</option><option>digest</option></select>
+            <label>Priority</label>
+            <input id="sc_priority" type="number" value="80">
+            <div class="row">
+              <button onclick="createScenario()">Créer</button>
+              <button class="secondary" onclick="clearScenarioForm()">Vider</button>
+            </div>
           </div>
-
           <div class="card">
             <h2>Liste des scénarios</h2>
-            <div id="scenarioList" class="list"></div>
+            <div id="scenariosList" class="list"></div>
           </div>
         </div>
       </section>
 
-      <section id="steps" class="page">
+      <section id="scenario-steps" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Nouveau step</h2>
+            <h2>Créer un step</h2>
             <label>Scénario</label>
-            <select id="ss_scenario"></select>
+            <select id="ss_scenario_id"></select>
             <label>Code step</label>
-            <input id="ss_code" placeholder="D2" />
+            <input id="ss_code" placeholder="D2">
             <label>Ordre</label>
-            <input id="ss_order" type="number" value="1" />
-            <label>Référence temporelle</label>
-            <select id="ss_window_ref">
-              <option>occurs_at</option>
-              <option>predicted_start_at</option>
-              <option>predicted_end_at</option>
-              <option>date_evenement</option>
-            </select>
+            <input id="ss_step_order" type="number" value="1">
+            <label>window_ref</label>
+            <select id="ss_window_ref"><option>occurs_at</option><option>predicted_start_at</option><option>predicted_end_at</option><option>date_evenement</option></select>
             <div class="grid-2">
               <div>
                 <label>window_min_hours</label>
-                <input id="ss_min" type="number" value="0" />
+                <input id="ss_window_min_hours" type="number" value="0">
               </div>
               <div>
                 <label>window_max_hours</label>
-                <input id="ss_max" type="number" value="24" />
+                <input id="ss_window_max_hours" type="number" value="24">
               </div>
             </div>
-
-            <h3>Règles de contenu du step</h3>
-            <div id="stepRulesContainer"></div>
-            <button class="secondary" onclick="addRuleRow()">Ajouter une règle de contenu</button>
-            <div class="row-actions">
+            <h3>Règles de contenu</h3>
+            <div id="stepRules"></div>
+            <div class="row">
+              <button class="secondary" onclick="addStepRule()">Ajouter une règle</button>
               <button onclick="createScenarioStep()">Créer le step</button>
             </div>
           </div>
-
           <div class="card">
-            <h2>Steps existants</h2>
-            <div id="stepList" class="list"></div>
+            <h2>Liste des steps</h2>
+            <div id="scenarioStepsList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="events" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Créer un event</h2>
+            <label>Trigger type</label>
+            <select id="ev_trigger_type_id"></select>
+            <label>Connecteur ID (optionnel)</label>
+            <input id="ev_connecteur_id" type="number" placeholder="1">
+            <label>Source external id</label>
+            <input id="ev_source_external_id" placeholder="storm-56-2026-001">
+            <label>Dedupe key</label>
+            <input id="ev_dedupe_key" placeholder="STORM_ALERT|56|Vannes|2026-03-27T18:00:00+01:00">
+            <label>Zone cible</label>
+            <input id="ev_zone_cible" placeholder="56">
+            <label>occurs_at</label>
+            <input id="ev_occurs_at" placeholder="2026-03-25T08:00:00+01:00">
+            <label>predicted_start_at</label>
+            <input id="ev_predicted_start_at" placeholder="2026-03-27T18:00:00+01:00">
+            <label>predicted_end_at</label>
+            <input id="ev_predicted_end_at" placeholder="2026-03-27T23:00:00+01:00">
+            <label>date_evenement</label>
+            <input id="ev_date_evenement" placeholder="2026-03-27">
+            <label>Severity</label>
+            <select id="ev_severity"><option value="">(vide)</option><option>info</option><option>low</option><option>medium</option><option>high</option><option>critical</option></select>
+            <label>Payload JSON</label>
+            <textarea id="ev_payload">{
+  "city": "Vannes",
+  "department": "56",
+  "event_type": "violent_storm",
+  "confidence": 0.87
+}</textarea>
+            <div class="row">
+              <button onclick="createEvent()">Créer l’event</button>
+              <button class="secondary" onclick="clearEventForm()">Vider</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Liste des events</h2>
+            <div id="eventsList" class="list"></div>
           </div>
         </div>
       </section>
@@ -505,13 +336,13 @@
       <section id="preview" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Aperçu métier</h2>
-            <label>Brique à prévisualiser</label>
-            <select id="preview_content"></select>
+            <h2>Aperçu de rendu</h2>
+            <label>Brique</label>
+            <select id="pv_content_item_id"></select>
             <label>Version</label>
-            <select id="preview_version"></select>
+            <select id="pv_content_version_id"></select>
             <label>Contexte JSON</label>
-            <textarea id="preview_context">{
+            <textarea id="pv_context">{
   "lieu": "entre Montbard et Semur-en-Auxois",
   "territory": "Morbihan",
   "old_speed_limit_kmh": 80,
@@ -521,13 +352,13 @@
   "affected_percent": 8.5,
   "source_url": "https://www.morbihan.fr/carte-interactive"
 }</textarea>
-            <div class="row-actions">
+            <div class="row">
               <button onclick="renderPreview()">Prévisualiser</button>
             </div>
           </div>
           <div class="card">
             <h2>Résultat</h2>
-            <div id="previewResult" class="preview">Le rendu apparaîtra ici.</div>
+            <div id="previewResult" class="preview-box">Le rendu apparaîtra ici.</div>
           </div>
         </div>
       </section>
@@ -535,98 +366,62 @@
   </div>
 
   <script>
-    let supabase = null;
-    let contentItemsCache = [];
-    let contentVersionsCache = [];
-    let triggerTypesCache = [];
-    let scenariosCache = [];
-    let scenarioStepsCache = [];
+    // =====================================================
+    // CONFIG SUPABASE : mettez vos vraies valeurs ici
+    // =====================================================
+    const SUPABASE_URL = "VOTRE_URL_SUPABASE";
+    const SUPABASE_ANON_KEY = "VOTRE_ANON_KEY_SUPABASE";
 
-    function showPage(pageId, btn) {
+    let supabase = null;
+    let state = {
+      contentItems: [],
+      contentVersions: [],
+      triggerTypes: [],
+      scenarios: [],
+      scenarioSteps: [],
+      events: []
+    };
+
+    function bootSupabase() {
+      try {
+        if (!SUPABASE_URL || SUPABASE_URL.includes('VOTRE_URL')) throw new Error('SUPABASE_URL non renseignée');
+        if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('VOTRE_ANON')) throw new Error('SUPABASE_ANON_KEY non renseignée');
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        setConnectionBadge('Supabase connecté', 'ok');
+        setGlobalNotice('Connexion Supabase initialisée.', 'ok');
+      } catch (e) {
+        setConnectionBadge('Supabase non configuré', 'err');
+        setGlobalNotice('Renseignez SUPABASE_URL et SUPABASE_ANON_KEY dans le JS.', 'err');
+        console.error(e);
+      }
+    }
+
+    function setConnectionBadge(text, type) {
+      const el = document.getElementById('connectionBadge');
+      el.textContent = text;
+      if (type === 'ok') {
+        el.style.background = '#ecfdf5'; el.style.color = '#065f46';
+      } else if (type === 'err') {
+        el.style.background = '#fef2f2'; el.style.color = '#991b1b';
+      } else {
+        el.style.background = '#e5e7eb'; el.style.color = '#111827';
+      }
+    }
+
+    function setGlobalNotice(text, type) {
+      const box = document.getElementById('globalNotice');
+      box.innerHTML = `<div class="notice ${type}">${escapeHtml(text)}</div>`;
+    }
+
+    function showPage(id, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
+      document.getElementById(id).classList.add('active');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
     }
 
-    function setStatus(text, ok = true) {
-      const el = document.getElementById('connStatus');
-      el.textContent = text;
-      el.style.background = ok ? '#ecfdf5' : '#fef2f2';
-      el.style.color = ok ? '#065f46' : '#991b1b';
-      el.style.border = ok ? '1px solid #a7f3d0' : '1px solid #fecaca';
-    }
-
-    function getSavedConfig() {
-      return {
-        url: localStorage.getItem('supabase_url') || '',
-        key: localStorage.getItem('supabase_key') || ''
-      };
-    }
-
-    function fillConfigForm() {
-      const { url, key } = getSavedConfig();
-      document.getElementById('supabaseUrl').value = url;
-      document.getElementById('supabaseKey').value = key;
-    }
-
-    function saveSupabaseConfig() {
-      const url = document.getElementById('supabaseUrl').value.trim();
-      const key = document.getElementById('supabaseKey').value.trim();
-      localStorage.setItem('supabase_url', url);
-      localStorage.setItem('supabase_key', key);
-      initSupabase();
-    }
-
-    function clearSupabaseConfig() {
-      localStorage.removeItem('supabase_url');
-      localStorage.removeItem('supabase_key');
-      supabase = null;
-      fillConfigForm();
-      setStatus('Supabase non connecté', false);
-    }
-
-    function initSupabase() {
-      const { url, key } = getSavedConfig();
-      if (!url || !key) {
-        setStatus('Supabase non connecté', false);
-        return false;
-      }
-      try {
-        supabase = window.supabase.createClient(url, key);
-        setStatus('Supabase configuré');
-        return true;
-      } catch (e) {
-        console.error(e);
-        setStatus('Erreur de configuration Supabase', false);
-        return false;
-      }
-    }
-
-    async function testSupabaseConnection() {
-      if (!initSupabase()) return;
-      const { error } = await supabase.from('trigger_types').select('id').limit(1);
-      if (error) {
-        console.error(error);
-        setStatus('Connexion échouée : ' + error.message, false);
-        alert('Connexion échouée : ' + error.message);
-        return;
-      }
-      setStatus('Connexion Supabase OK');
-      alert('Connexion Supabase OK');
-      await loadAllData();
-    }
-
-    function parseJsonOrThrow(text, label) {
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        throw new Error(label + ' invalide : ' + e.message);
-      }
-    }
-
-    function htmlEscape(str) {
-      return String(str ?? '')
+    function escapeHtml(value) {
+      return String(value ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -634,133 +429,160 @@
         .replace(/'/g, '&#039;');
     }
 
-    async function loadAllData() {
-      if (!supabase && !initSupabase()) return;
+    function parseJson(text, label) {
+      try { return JSON.parse(text); }
+      catch (e) { throw new Error(label + ' invalide : ' + e.message); }
+    }
 
-      const [contentItemsRes, contentVersionsRes, triggerTypesRes, scenariosRes, stepsRes] = await Promise.all([
+    function renderTemplate(template, context) {
+      return String(template || '').replace(/\{([^}]+)\}/g, (_, k) => {
+        const key = k.trim();
+        return context[key] !== undefined && context[key] !== null ? context[key] : '{' + key + '}';
+      });
+    }
+
+    async function refreshAll() {
+      if (!supabase) return;
+      const requests = await Promise.all([
         supabase.from('content_items').select('*').order('id', { ascending: false }),
-        supabase.from('content_versions').select('*').order('content_item_id').order('version_no', { ascending: false }),
-        supabase.from('trigger_types').select('*').order('code'),
+        supabase.from('content_versions').select('*').order('id', { ascending: false }),
+        supabase.from('trigger_types').select('*').order('id', { ascending: false }),
         supabase.from('scenarios').select('*').order('id', { ascending: false }),
-        supabase.from('scenario_steps').select('*').order('scenario_id').order('step_order')
+        supabase.from('scenario_steps').select('*').order('scenario_id').order('step_order'),
+        supabase.from('events').select('*').order('id', { ascending: false }).limit(50)
       ]);
 
-      const results = [contentItemsRes, contentVersionsRes, triggerTypesRes, scenariosRes, stepsRes];
-      const firstError = results.find(r => r.error);
+      const firstError = requests.find(r => r.error);
       if (firstError) {
         console.error(firstError.error);
-        alert('Erreur de chargement : ' + firstError.error.message);
+        setGlobalNotice('Erreur de lecture Supabase : ' + firstError.error.message, 'err');
         return;
       }
 
-      contentItemsCache = contentItemsRes.data || [];
-      contentVersionsCache = contentVersionsRes.data || [];
-      triggerTypesCache = triggerTypesRes.data || [];
-      scenariosCache = scenariosRes.data || [];
-      scenarioStepsCache = stepsRes.data || [];
+      state.contentItems = requests[0].data || [];
+      state.contentVersions = requests[1].data || [];
+      state.triggerTypes = requests[2].data || [];
+      state.scenarios = requests[3].data || [];
+      state.scenarioSteps = requests[4].data || [];
+      state.events = requests[5].data || [];
 
       renderDashboard();
       renderContentItems();
-      renderVersions();
+      renderContentVersions();
+      renderTriggerTypes();
       renderScenarios();
       renderScenarioSteps();
-      fillSelects();
+      renderEvents();
+      populateSelects();
+      setGlobalNotice('Données rechargées.', 'ok');
     }
 
     function renderDashboard() {
-      document.getElementById('statContent').textContent = contentItemsCache.length;
-      document.getElementById('statVersions').textContent = contentVersionsCache.length;
-      document.getElementById('statScenarios').textContent = scenariosCache.length + ' / ' + scenarioStepsCache.length;
+      document.getElementById('kpiContents').textContent = state.contentItems.length;
+      document.getElementById('kpiVersions').textContent = state.contentVersions.length;
+      document.getElementById('kpiScenarios').textContent = `${state.scenarios.length} / ${state.scenarioSteps.length}`;
+      document.getElementById('kpiTriggers').textContent = state.triggerTypes.length;
+      document.getElementById('kpiEvents').textContent = state.events.length;
     }
 
-    function fillSelect(selectId, items, valueKey, labelKey) {
+    function setOptions(selectId, items, valueKey, labelBuilder) {
       const el = document.getElementById(selectId);
       if (!el) return;
       el.innerHTML = '';
       items.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item[valueKey];
-        opt.textContent = item[labelKey];
+        opt.textContent = typeof labelBuilder === 'function' ? labelBuilder(item) : item[labelBuilder];
         el.appendChild(opt);
       });
     }
 
-    function fillSelects() {
-      fillSelect('cv_content_item', contentItemsCache, 'id', 'code');
-      fillSelect('ss_scenario', scenariosCache, 'id', 'code');
-      fillSelect('sc_trigger', triggerTypesCache, 'id', 'code');
-      fillSelect('preview_content', contentItemsCache, 'id', 'code');
-      refreshPreviewVersionSelect();
-      refreshStepRuleSelects();
+    function populateSelects() {
+      setOptions('cv_content_item_id', state.contentItems, 'id', i => i.code);
+      setOptions('sc_trigger_type_id', state.triggerTypes, 'id', i => i.code);
+      setOptions('ss_scenario_id', state.scenarios, 'id', i => i.code);
+      setOptions('ev_trigger_type_id', state.triggerTypes, 'id', i => i.code);
+      setOptions('pv_content_item_id', state.contentItems, 'id', i => i.code);
+      syncPreviewVersions();
+      syncStepRuleDropdowns();
     }
 
     function renderContentItems() {
-      const box = document.getElementById('contentList');
+      const box = document.getElementById('contentItemsList');
       box.innerHTML = '';
-      contentItemsCache.forEach(item => {
+      state.contentItems.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
           <div class="item-head">
             <div>
-              <strong>${htmlEscape(item.code)}</strong><br>
-              <span class="muted">${htmlEscape(item.sujet || '')}</span>
+              <strong>${escapeHtml(item.code)}</strong><br>
+              <span class="muted">${escapeHtml(item.sujet || '')}</span>
               <div class="chips">
-                <span class="chip">${htmlEscape(item.categorie)}</span>
-                <span class="chip">${htmlEscape(item.topic_code || 'sans topic')}</span>
-                <span class="chip">${htmlEscape(item.channel)}</span>
+                <span class="chip">${escapeHtml(item.categorie)}</span>
+                <span class="chip">${escapeHtml(item.type || '')}</span>
+                <span class="chip">${escapeHtml(item.topic_code || 'sans topic')}</span>
+                <span class="chip">${escapeHtml(item.channel || '')}</span>
               </div>
             </div>
           </div>
-          <div class="mono" style="margin-top:10px;">${htmlEscape(JSON.stringify(item.policy || {}, null, 2))}</div>
+          <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(item.policy || {}, null, 2))}</div>
         `;
         box.appendChild(div);
       });
     }
 
-    function renderVersions() {
-      const box = document.getElementById('versionList');
+    function renderContentVersions() {
+      const box = document.getElementById('contentVersionsList');
       box.innerHTML = '';
-      contentItemsCache.forEach(item => {
-        const versions = contentVersionsCache.filter(v => v.content_item_id === item.id);
+      state.contentVersions.forEach(v => {
+        const item = state.contentItems.find(i => i.id === v.content_item_id);
         const div = document.createElement('div');
         div.className = 'item';
-        div.innerHTML = `<strong>${htmlEscape(item.code)}</strong><div class="muted">${versions.length} version(s)</div>`;
-        versions.forEach(v => {
-          const vDiv = document.createElement('div');
-          vDiv.className = 'subtle-box';
-          vDiv.style.marginTop = '10px';
-          vDiv.innerHTML = `
-            <strong>v${htmlEscape(v.version_no)}</strong> <span class="chip">${htmlEscape(v.status)}</span>
-            <div class="muted" style="margin-top:6px;">${htmlEscape(v.sujet_template || '')}</div>
-            <div class="mono" style="margin-top:8px;">${htmlEscape(v.corps_template || '')}</div>
-          `;
-          div.appendChild(vDiv);
-        });
+        div.innerHTML = `
+          <strong>${escapeHtml(item?.code || 'inconnu')} — v${escapeHtml(v.version_no)}</strong>
+          <div class="chips"><span class="chip">${escapeHtml(v.status)}</span></div>
+          <div class="muted" style="margin-top:8px;">${escapeHtml(v.sujet_template || '')}</div>
+          <div class="mono" style="margin-top:10px;">${escapeHtml(v.corps_template || '')}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function renderTriggerTypes() {
+      const box = document.getElementById('triggerTypesList');
+      box.innerHTML = '';
+      state.triggerTypes.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <strong>${escapeHtml(t.code)}</strong><br>
+          <span class="muted">${escapeHtml(t.label)}</span>
+          <div class="chips">
+            <span class="chip">${escapeHtml(t.source_kind)}</span>
+            <span class="chip">prio ${escapeHtml(t.default_priority)}</span>
+          </div>
+        `;
         box.appendChild(div);
       });
     }
 
     function renderScenarios() {
-      const box = document.getElementById('scenarioList');
+      const box = document.getElementById('scenariosList');
       box.innerHTML = '';
-      scenariosCache.forEach(s => {
-        const trigger = triggerTypesCache.find(t => t.id === s.trigger_type_id);
-        const stepCount = scenarioStepsCache.filter(st => st.scenario_id === s.id).length;
+      state.scenarios.forEach(s => {
+        const trig = state.triggerTypes.find(t => t.id === s.trigger_type_id);
+        const steps = state.scenarioSteps.filter(st => st.scenario_id === s.id).length;
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
-          <div class="item-head">
-            <div>
-              <strong>${htmlEscape(s.code)}</strong><br>
-              <span class="muted">${htmlEscape(s.label)}</span>
-              <div class="chips">
-                <span class="chip">${htmlEscape(trigger?.code || '')}</span>
-                <span class="chip">${htmlEscape(s.aggregation_mode)}</span>
-                <span class="chip">prio ${htmlEscape(s.priority)}</span>
-                <span class="chip">${stepCount} step(s)</span>
-              </div>
-            </div>
+          <strong>${escapeHtml(s.code)}</strong><br>
+          <span class="muted">${escapeHtml(s.label)}</span>
+          <div class="chips">
+            <span class="chip">${escapeHtml(trig?.code || '')}</span>
+            <span class="chip">${escapeHtml(s.aggregation_mode)}</span>
+            <span class="chip">prio ${escapeHtml(s.priority)}</span>
+            <span class="chip">${steps} step(s)</span>
           </div>
         `;
         box.appendChild(div);
@@ -768,20 +590,41 @@
     }
 
     function renderScenarioSteps() {
-      const box = document.getElementById('stepList');
+      const box = document.getElementById('scenarioStepsList');
       box.innerHTML = '';
-      scenarioStepsCache.forEach(step => {
-        const sc = scenariosCache.find(s => s.id === step.scenario_id);
+      state.scenarioSteps.forEach(st => {
+        const sc = state.scenarios.find(s => s.id === st.scenario_id);
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
-          <strong>${htmlEscape(sc?.code || '')} / ${htmlEscape(step.code)}</strong>
+          <strong>${escapeHtml(sc?.code || '')} / ${escapeHtml(st.code)}</strong>
           <div class="chips">
-            <span class="chip">ordre ${htmlEscape(step.step_order)}</span>
-            <span class="chip">${htmlEscape(step.window_ref || '')}</span>
-            <span class="chip">${htmlEscape(step.window_min_hours)}h → ${htmlEscape(step.window_max_hours)}h</span>
+            <span class="chip">ordre ${escapeHtml(st.step_order)}</span>
+            <span class="chip">${escapeHtml(st.window_ref || '')}</span>
+            <span class="chip">${escapeHtml(st.window_min_hours)}h → ${escapeHtml(st.window_max_hours)}h</span>
           </div>
-          <div class="mono" style="margin-top:10px;">${htmlEscape(JSON.stringify(step.logic_json || {}, null, 2))}</div>
+          <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(st.logic_json || {}, null, 2))}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function renderEvents() {
+      const box = document.getElementById('eventsList');
+      box.innerHTML = '';
+      state.events.forEach(ev => {
+        const tt = state.triggerTypes.find(t => t.id === ev.trigger_type_id);
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <strong>${escapeHtml(tt?.code || '')}</strong>
+          <div class="chips">
+            <span class="chip">zone ${escapeHtml(ev.zone_cible)}</span>
+            <span class="chip">${escapeHtml(ev.severity || 'sans severity')}</span>
+            <span class="chip">${escapeHtml(ev.statut)}</span>
+          </div>
+          <div class="muted" style="margin-top:8px;">dedupe_key: ${escapeHtml(ev.dedupe_key)}</div>
+          <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(ev.payload || {}, null, 2))}</div>
         `;
         box.appendChild(div);
       });
@@ -789,73 +632,92 @@
 
     async function createContentItem() {
       try {
-        if (!supabase && !initSupabase()) return;
         const payload = {
-          code: document.getElementById('ci_code').value.trim(),
-          categorie: document.getElementById('ci_categorie').value,
-          sujet: document.getElementById('ci_sujet').value.trim(),
-          type: document.getElementById('ci_type').value.trim(),
-          source: 'interne',
-          topic_code: document.getElementById('ci_topic').value.trim(),
-          channel: document.getElementById('ci_channel').value,
-          policy: parseJsonOrThrow(document.getElementById('ci_policy').value, 'Policy JSON'),
+          code: val('ci_code'),
+          categorie: val('ci_categorie'),
+          sujet: val('ci_sujet'),
+          type: val('ci_type'),
+          source: val('ci_source'),
+          topic_code: val('ci_topic_code'),
+          channel: val('ci_channel'),
+          policy: parseJson(val('ci_policy'), 'Policy JSON'),
           active: true
         };
         const { error } = await supabase.from('content_items').insert(payload);
         if (error) throw error;
-        alert('Brique créée.');
-        await loadAllData();
+        setGlobalNotice('Brique créée.', 'ok');
+        clearContentItemForm();
+        await refreshAll();
       } catch (e) {
-        alert(e.message || 'Erreur lors de la création de la brique.');
+        setGlobalNotice(e.message || 'Erreur de création de brique.', 'err');
       }
     }
 
     async function createContentVersion() {
       try {
-        if (!supabase && !initSupabase()) return;
         const payload = {
-          content_item_id: Number(document.getElementById('cv_content_item').value),
-          version_no: Number(document.getElementById('cv_version_no').value),
-          sujet_template: document.getElementById('cv_subject').value.trim(),
-          corps_template: document.getElementById('cv_body').value,
-          status: document.getElementById('cv_status').value,
-          source_ref: document.getElementById('cv_source_ref').value.trim(),
-          change_note: document.getElementById('cv_change_note').value.trim()
+          content_item_id: Number(val('cv_content_item_id')),
+          version_no: Number(val('cv_version_no')),
+          sujet_template: val('cv_sujet_template'),
+          corps_template: val('cv_corps_template'),
+          status: val('cv_status'),
+          source_ref: val('cv_source_ref'),
+          change_note: val('cv_change_note')
         };
         const { error } = await supabase.from('content_versions').insert(payload);
         if (error) throw error;
-        alert('Version créée.');
-        await loadAllData();
+        setGlobalNotice('Version créée.', 'ok');
+        clearContentVersionForm();
+        await refreshAll();
       } catch (e) {
-        alert(e.message || 'Erreur lors de la création de la version.');
+        setGlobalNotice(e.message || 'Erreur de création de version.', 'err');
+      }
+    }
+
+    async function createTriggerType() {
+      try {
+        const payload = {
+          code: val('tt_code'),
+          label: val('tt_label'),
+          source_kind: val('tt_source_kind'),
+          default_priority: Number(val('tt_default_priority')),
+          is_active: true
+        };
+        const { error } = await supabase.from('trigger_types').insert(payload);
+        if (error) throw error;
+        setGlobalNotice('Trigger type créé.', 'ok');
+        clearTriggerTypeForm();
+        await refreshAll();
+      } catch (e) {
+        setGlobalNotice(e.message || 'Erreur de création de trigger type.', 'err');
       }
     }
 
     async function createScenario() {
       try {
-        if (!supabase && !initSupabase()) return;
         const payload = {
-          code: document.getElementById('sc_code').value.trim(),
-          label: document.getElementById('sc_label').value.trim(),
-          trigger_type_id: Number(document.getElementById('sc_trigger').value),
-          aggregation_mode: document.getElementById('sc_aggregation').value,
-          priority: Number(document.getElementById('sc_priority').value),
+          code: val('sc_code'),
+          label: val('sc_label'),
+          trigger_type_id: Number(val('sc_trigger_type_id')),
+          aggregation_mode: val('sc_aggregation_mode'),
+          priority: Number(val('sc_priority')),
           active: true
         };
         const { error } = await supabase.from('scenarios').insert(payload);
         if (error) throw error;
-        alert('Scénario créé.');
-        await loadAllData();
+        setGlobalNotice('Scénario créé.', 'ok');
+        clearScenarioForm();
+        await refreshAll();
       } catch (e) {
-        alert(e.message || 'Erreur lors de la création du scénario.');
+        setGlobalNotice(e.message || 'Erreur de création de scénario.', 'err');
       }
     }
 
-    function buildStepLogicJsonFromUI() {
+    function buildStepLogicJson() {
       const rows = document.querySelectorAll('.rule-row');
       const contents = [];
       rows.forEach(row => {
-        const contentCode = row.querySelector('.rule-content-code').value;
+        const contentCode = row.querySelector('.rule-content').value;
         const when = row.querySelector('.rule-when').value;
         if (contentCode) contents.push({ content_code: contentCode, when });
       });
@@ -864,44 +726,77 @@
 
     async function createScenarioStep() {
       try {
-        if (!supabase && !initSupabase()) return;
         const payload = {
-          scenario_id: Number(document.getElementById('ss_scenario').value),
-          code: document.getElementById('ss_code').value.trim(),
-          step_order: Number(document.getElementById('ss_order').value),
-          window_ref: document.getElementById('ss_window_ref').value,
-          window_min_hours: Number(document.getElementById('ss_min').value),
-          window_max_hours: Number(document.getElementById('ss_max').value),
-          logic_json: buildStepLogicJsonFromUI(),
+          scenario_id: Number(val('ss_scenario_id')),
+          code: val('ss_code'),
+          step_order: Number(val('ss_step_order')),
+          window_ref: val('ss_window_ref'),
+          window_min_hours: Number(val('ss_window_min_hours')),
+          window_max_hours: Number(val('ss_window_max_hours')),
+          logic_json: buildStepLogicJson(),
           active: true
         };
         const { error } = await supabase.from('scenario_steps').insert(payload);
         if (error) throw error;
-        alert('Step créé.');
-        await loadAllData();
+        setGlobalNotice('Step créé.', 'ok');
+        document.getElementById('stepRules').innerHTML = '';
+        addStepRule();
+        await refreshAll();
       } catch (e) {
-        alert(e.message || 'Erreur lors de la création du step.');
+        setGlobalNotice(e.message || 'Erreur de création du step.', 'err');
       }
     }
 
-    function addRuleRow(contentCode = '', when = 'always') {
-      const wrap = document.getElementById('stepRulesContainer');
-      const row = document.createElement('div');
-      row.className = 'step-rule rule-row';
+    async function createEvent() {
+      try {
+        const payload = {
+          trigger_type_id: Number(val('ev_trigger_type_id')),
+          connecteur_id: val('ev_connecteur_id') ? Number(val('ev_connecteur_id')) : null,
+          source_external_id: val('ev_source_external_id') || null,
+          dedupe_key: val('ev_dedupe_key'),
+          zone_cible: val('ev_zone_cible'),
+          occurs_at: val('ev_occurs_at') || null,
+          predicted_start_at: val('ev_predicted_start_at') || null,
+          predicted_end_at: val('ev_predicted_end_at') || null,
+          date_evenement: val('ev_date_evenement') || null,
+          severity: val('ev_severity') || null,
+          payload: parseJson(val('ev_payload'), 'Payload JSON'),
+          statut: 'open',
+          validated_by: 'admin-ui'
+        };
+        const { error } = await supabase.from('events').insert(payload);
+        if (error) throw error;
+        setGlobalNotice('Event créé.', 'ok');
+        clearEventForm();
+        await refreshAll();
+      } catch (e) {
+        setGlobalNotice(e.message || 'Erreur de création d’event.', 'err');
+      }
+    }
 
-      const select = document.createElement('select');
-      select.className = 'rule-content-code';
-      contentItemsCache.forEach(item => {
+    function addStepRule(contentCode = '', when = 'always') {
+      const wrap = document.getElementById('stepRules');
+      const row = document.createElement('div');
+      row.className = 'rule-row';
+
+      const contentSelect = document.createElement('select');
+      contentSelect.className = 'rule-content';
+      state.contentItems.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item.code;
         opt.textContent = item.code;
         if (item.code === contentCode) opt.selected = true;
-        select.appendChild(opt);
+        contentSelect.appendChild(opt);
       });
 
       const whenSelect = document.createElement('select');
       whenSelect.className = 'rule-when';
-      ['always', 'cooldown_ok', 'not_sent_in_event && cooldown_ok', 'first_detection_for_event && cooldown_ok'].forEach(v => {
+      [
+        'always',
+        'cooldown_ok',
+        'not_sent_in_event && cooldown_ok',
+        'first_detection_for_event && cooldown_ok'
+      ].forEach(v => {
         const opt = document.createElement('option');
         opt.value = v;
         opt.textContent = v;
@@ -909,72 +804,93 @@
         whenSelect.appendChild(opt);
       });
 
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'danger';
-      removeBtn.textContent = 'Supprimer';
-      removeBtn.onclick = () => row.remove();
+      const remove = document.createElement('button');
+      remove.textContent = 'Supprimer';
+      remove.className = 'danger';
+      remove.type = 'button';
+      remove.onclick = () => row.remove();
 
-      row.innerHTML = '<label>Contenu</label>';
-      row.appendChild(select);
-      const l2 = document.createElement('label');
-      l2.textContent = 'Condition';
-      row.appendChild(l2);
+      row.appendChild(labelEl('Contenu'));
+      row.appendChild(contentSelect);
+      row.appendChild(labelEl('Condition'));
       row.appendChild(whenSelect);
-      row.appendChild(removeBtn);
+      row.appendChild(remove);
       wrap.appendChild(row);
     }
 
-    function refreshStepRuleSelects() {
-      const wrap = document.getElementById('stepRulesContainer');
-      if (!wrap) return;
-      if (!wrap.children.length) addRuleRow();
+    function syncStepRuleDropdowns() {
+      const wrap = document.getElementById('stepRules');
+      if (wrap.children.length === 0) addStepRule();
     }
 
-    function refreshPreviewVersionSelect() {
-      const contentId = Number(document.getElementById('preview_content')?.value || 0);
-      const select = document.getElementById('preview_version');
-      if (!select) return;
-      select.innerHTML = '';
-      contentVersionsCache
-        .filter(v => v.content_item_id === contentId)
-        .forEach(v => {
-          const opt = document.createElement('option');
-          opt.value = v.id;
-          opt.textContent = 'v' + v.version_no + ' - ' + v.status;
-          select.appendChild(opt);
-        });
-    }
-
-    function renderTemplate(str, ctx) {
-      return String(str || '').replace(/\{([^}]+)\}/g, (_, key) => {
-        const cleanKey = key.trim();
-        return ctx[cleanKey] !== undefined && ctx[cleanKey] !== null ? ctx[cleanKey] : '{' + cleanKey + '}';
-      });
+    function syncPreviewVersions() {
+      const itemId = Number(val('pv_content_item_id'));
+      const versions = state.contentVersions.filter(v => v.content_item_id === itemId);
+      setOptions('pv_content_version_id', versions, 'id', v => `v${v.version_no} - ${v.status}`);
     }
 
     function renderPreview() {
       try {
-        const versionId = Number(document.getElementById('preview_version').value);
-        const version = contentVersionsCache.find(v => v.id === versionId);
-        const ctx = parseJsonOrThrow(document.getElementById('preview_context').value, 'Contexte JSON');
-        const subject = renderTemplate(version?.sujet_template || '', ctx);
-        const body = renderTemplate(version?.corps_template || '', ctx);
+        const versionId = Number(val('pv_content_version_id'));
+        const version = state.contentVersions.find(v => v.id === versionId);
+        if (!version) throw new Error('Aucune version sélectionnée');
+        const context = parseJson(val('pv_context'), 'Contexte JSON');
+        const subject = renderTemplate(version.sujet_template || '', context);
+        const body = renderTemplate(version.corps_template || '', context);
         document.getElementById('previewResult').textContent = (subject ? subject + '\n\n' : '') + body;
       } catch (e) {
-        alert(e.message || 'Erreur de rendu.');
+        setGlobalNotice(e.message || 'Erreur de rendu.', 'err');
       }
     }
 
-    document.addEventListener('change', (e) => {
-      if (e.target && e.target.id === 'preview_content') refreshPreviewVersionSelect();
+    function labelEl(text) {
+      const l = document.createElement('label');
+      l.textContent = text;
+      return l;
+    }
+
+    function val(id) { return document.getElementById(id).value.trim(); }
+
+    function clearContentItemForm() {
+      document.getElementById('ci_code').value = '';
+      document.getElementById('ci_sujet').value = '';
+      document.getElementById('ci_type').value = '';
+      document.getElementById('ci_topic_code').value = '';
+      document.getElementById('ci_policy').value = '{\n  "once_per_event": true\n}';
+    }
+
+    function clearContentVersionForm() {
+      document.getElementById('cv_version_no').value = '1';
+      document.getElementById('cv_sujet_template').value = '';
+      document.getElementById('cv_corps_template').value = '';
+    }
+
+    function clearTriggerTypeForm() {
+      document.getElementById('tt_code').value = '';
+      document.getElementById('tt_label').value = '';
+      document.getElementById('tt_source_kind').value = '';
+      document.getElementById('tt_default_priority').value = '80';
+    }
+
+    function clearScenarioForm() {
+      document.getElementById('sc_code').value = '';
+      document.getElementById('sc_label').value = '';
+      document.getElementById('sc_priority').value = '80';
+    }
+
+    function clearEventForm() {
+      ['ev_connecteur_id','ev_source_external_id','ev_dedupe_key','ev_zone_cible','ev_occurs_at','ev_predicted_start_at','ev_predicted_end_at','ev_date_evenement'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('ev_payload').value = '{\n  "city": "Vannes",\n  "department": "56",\n  "event_type": "violent_storm",\n  "confidence": 0.87\n}';
+    }
+
+    document.addEventListener('change', e => {
+      if (e.target && e.target.id === 'pv_content_item_id') syncPreviewVersions();
     });
 
     window.addEventListener('load', async () => {
-      fillConfigForm();
-      initSupabase();
+      bootSupabase();
       if (supabase) {
-        await loadAllData();
+        await refreshAll();
       }
     });
   </script>
