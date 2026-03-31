@@ -3,309 +3,979 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ajouter un message · Supabase</title>
+  <title>Admin Prévention Routière - Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg: #0b0f14;
-      --panel: #111821;
-      --panel-2: #17212b;
-      --border: #263241;
-      --text: #e8edf2;
-      --muted: #9fb0c3;
-      --accent: #4ea1ff;
-      --success: #1f9d67;
-      --danger: #d9534f;
-      --warning: #d39e00;
-      --shadow: 0 12px 30px rgba(0,0,0,.28);
-      --radius: 14px;
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --brand: #111827;
+      --brand-2: #374151;
+      --ok: #0f766e;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --chip: #f3f4f6;
     }
 
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #091017 0%, #0b0f14 100%);
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
     }
 
-    .container {
-      width: min(760px, calc(100% - 32px));
-      margin: 32px auto 56px;
-    }
-
-    .header {
+    header {
+      background: var(--brand);
+      color: white;
+      padding: 18px 22px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 16px;
-      margin-bottom: 24px;
       flex-wrap: wrap;
     }
 
-    .title-wrap h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.8rem, 3vw, 2.5rem);
-      line-height: 1.1;
-    }
-
-    .title-wrap p {
+    header h1 {
       margin: 0;
-      color: var(--muted);
-      max-width: 680px;
+      font-size: 22px;
     }
 
-    .nav-actions {
+    header p {
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    .top-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
-    .card {
-      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.015));
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 78px);
     }
 
-    .card-header {
-      padding: 18px 18px 8px;
-      border-bottom: 1px solid rgba(255,255,255,.04);
-    }
-
-    .card-header h2 {
-      margin: 0 0 6px;
-      font-size: 1.1rem;
-    }
-
-    .card-header p {
-      margin: 0 0 10px;
-      color: var(--muted);
-      font-size: .95rem;
-    }
-
-    .card-body {
+    aside {
+      background: #fff;
+      border-right: 1px solid var(--line);
       padding: 18px;
     }
 
-    form {
+    .nav-btn {
+      width: 100%;
+      border: 0;
+      background: #f3f4f6;
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 12px;
+      text-align: left;
+      margin-bottom: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-btn.active {
+      background: var(--brand);
+      color: white;
+    }
+
+    main {
+      padding: 22px;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .grid {
       display: grid;
-      gap: 14px;
+      gap: 16px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .card h2, .card h3, .card h4 {
+      margin-top: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
     }
 
     label {
-      display: grid;
-      gap: 8px;
-      font-size: .95rem;
-      color: var(--text);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
     }
 
-    input, select, textarea {
+    input, textarea, select {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 12px 14px;
-      font: inherit;
-      outline: none;
-      transition: border-color .15s ease, box-shadow .15s ease;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(78,161,255,.15);
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      background: white;
+      font-size: 14px;
+      margin-bottom: 12px;
     }
 
     textarea {
-      min-height: 220px;
       resize: vertical;
+      min-height: 100px;
+      font-family: Consolas, Monaco, monospace;
     }
 
-    .actions, .nav-actions {
+    button {
+      border: 0;
+      background: var(--brand);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.success {
+      background: var(--ok);
+    }
+
+    button.warn {
+      background: var(--warn);
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    .row-actions {
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .chip {
+      background: var(--chip);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
       flex-wrap: wrap;
     }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font: inherit;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: transform .15s ease, opacity .15s ease, background .15s ease;
-    }
-
-    .btn:hover { transform: translateY(-1px); }
-    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-
-    .primary {
-      background: var(--accent);
-      color: #07111c;
-    }
-
-    .secondary {
-      background: #243140;
-      color: var(--text);
-      border: 1px solid var(--border);
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
     }
 
     .status {
-      margin-top: 8px;
-      min-height: 22px;
-      color: var(--muted);
-      font-size: .92rem;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
     }
 
-    .status.success { color: #64d6a0; }
-    .status.error { color: #ff8b87; }
-    .status.warning { color: #f3c965; }
+    .stat {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
 
-    code.inline {
-      padding: 2px 6px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.05);
-      border-radius: 8px;
-      color: #b8d9ff;
-      font-size: .9em;
+    .inline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .subtle-box {
+      background: #f9fafb;
+      border: 1px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .step-rule {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+
+    .preview {
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.45;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .small { font-size: 12px; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { border-right: 0; border-bottom: 1px solid var(--line); }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <div class="title-wrap">
-        <h1>Ajouter un message</h1>
-        <p>Création d’un nouveau message dans la table <code class="inline">Messages</code> avec catégorie, type, sujet et corps.</p>
-      </div>
-      <div class="nav-actions">
-        <a class="btn secondary" href="messages-liste.html">Voir les messages</a>
-      </div>
-    </header>
+  <header>
+    <div>
+      <h1>Admin Prévention Routière</h1>
+      <p>Gestion des briques de contenu, versions, scénarios, steps et aperçu métier.</p>
+    </div>
+    <div class="top-actions">
+      <div id="connStatus" class="status">Supabase non connecté</div>
+      <button class="secondary" onclick="loadAllData()">Rafraîchir</button>
+    </div>
+  </header>
 
-    <section class="card">
-      <div class="card-header">
-        <h2>Nouveau message</h2>
-        <p>Les champs <strong>catégorie</strong>, <strong>type</strong>, <strong>sujet</strong> et <strong>corps</strong> sont obligatoires.</p>
-      </div>
-      <div class="card-body">
-        <form id="message-form">
-          <label>
-            Catégorie
-            <select id="categorie" name="categorie" required>
-              <option value="meteo">meteo</option>
-              <option value="trafic">trafic</option>
-              <option value="autre">autre</option>
+  <div class="layout">
+    <aside>
+      <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard', this)">Vue d’ensemble</button>
+      <button class="nav-btn" data-page="settings" onclick="showPage('settings', this)">Connexion Supabase</button>
+      <button class="nav-btn" data-page="contents" onclick="showPage('contents', this)">Briques de contenu</button>
+      <button class="nav-btn" data-page="versions" onclick="showPage('versions', this)">Versions</button>
+      <button class="nav-btn" data-page="scenarios" onclick="showPage('scenarios', this)">Scénarios</button>
+      <button class="nav-btn" data-page="steps" onclick="showPage('steps', this)">Steps</button>
+      <button class="nav-btn" data-page="preview" onclick="showPage('preview', this)">Aperçu métier</button>
+    </aside>
+
+    <main>
+      <section id="dashboard" class="page active">
+        <div class="grid-3">
+          <div class="card">
+            <div class="muted">Briques</div>
+            <div class="stat" id="statContent">0</div>
+            <div class="small muted">content_items</div>
+          </div>
+          <div class="card">
+            <div class="muted">Versions</div>
+            <div class="stat" id="statVersions">0</div>
+            <div class="small muted">content_versions</div>
+          </div>
+          <div class="card">
+            <div class="muted">Scénarios</div>
+            <div class="stat" id="statScenarios">0</div>
+            <div class="small muted">scenarios + scenario_steps</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3>Lecture simple</h3>
+          <div class="grid-3">
+            <div class="subtle-box"><strong>1. Sources</strong><br><span class="muted">connecteurs → data_points</span></div>
+            <div class="subtle-box"><strong>2. Événements</strong><br><span class="muted">trigger_types → events → client_event_matches</span></div>
+            <div class="subtle-box"><strong>3. Production</strong><br><span class="muted">content_items → content_versions → scenarios → steps → client_message_items → outbound_emails</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="page">
+        <div class="card">
+          <h2>Connexion Supabase</h2>
+          <p class="muted">Renseignez l’URL du projet et la clé anon. Elles seront stockées dans le navigateur.</p>
+          <label>Supabase URL</label>
+          <input id="supabaseUrl" placeholder="https://xxxx.supabase.co" />
+          <label>Supabase anon key</label>
+          <textarea id="supabaseKey" placeholder="eyJ..." style="min-height:120px;"></textarea>
+          <div class="row-actions">
+            <button onclick="saveSupabaseConfig()">Enregistrer</button>
+            <button class="secondary" onclick="testSupabaseConnection()">Tester la connexion</button>
+            <button class="danger" onclick="clearSupabaseConfig()">Effacer</button>
+          </div>
+          <div class="muted" style="margin-top:10px;">Pensez à avoir des policies RLS qui autorisent au minimum la lecture et l’écriture sur les tables concernées.</div>
+        </div>
+      </section>
+
+      <section id="contents" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Nouvelle brique</h2>
+            <label>Code</label>
+            <input id="ci_code" placeholder="AQUAPLANING_WARNING" />
+            <label>Catégorie</label>
+            <select id="ci_categorie">
+              <option>alert</option>
+              <option>advice</option>
+              <option>legal</option>
+              <option>cta</option>
             </select>
-          </label>
-
-          <label>
-            Type d’envoi
-            <select id="type" name="type" required>
-              <option value="mail">mail</option>
-              <option value="whatsapp">whatsapp</option>
+            <label>Sujet métier</label>
+            <input id="ci_sujet" placeholder="Conseil aquaplaning" />
+            <label>Type</label>
+            <input id="ci_type" placeholder="advice_block" />
+            <label>Topic code</label>
+            <input id="ci_topic" placeholder="aquaplaning" />
+            <label>Canal</label>
+            <select id="ci_channel">
+              <option>email</option>
+              <option>sms</option>
+              <option>whatsapp</option>
+              <option>push</option>
             </select>
-          </label>
-
-          <label>
-            Sujet
-            <input id="sujet" name="sujet" type="text" maxlength="250" placeholder="Ex. Alerte pluie intense" required />
-          </label>
-
-          <label>
-            Corps
-            <textarea id="corps" name="corps" placeholder="Saisissez le contenu du message…" required></textarea>
-          </label>
-
-          <div class="actions">
-            <button class="btn primary" id="submit-btn" type="submit">Enregistrer</button>
-            <button class="btn secondary" type="button" id="reset-btn">Réinitialiser</button>
+            <label>Policy JSON</label>
+            <textarea id="ci_policy">{
+  "once_per_event": true,
+  "cooldown_days": 7,
+  "cooldown_scope": "client"
+}</textarea>
+            <button onclick="createContentItem()">Créer la brique</button>
           </div>
 
-          <div id="form-status" class="status"></div>
-        </form>
-      </div>
-    </section>
+          <div class="card">
+            <h2>Liste des briques</h2>
+            <div id="contentList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="versions" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Nouvelle version</h2>
+            <label>Brique</label>
+            <select id="cv_content_item"></select>
+            <label>Numéro de version</label>
+            <input id="cv_version_no" type="number" value="1" />
+            <label>Sujet template</label>
+            <input id="cv_subject" placeholder="Conseil aquaplaning" />
+            <label>Corps template</label>
+            <textarea id="cv_body" placeholder="Texte avec variables {lieu}, {source_url}, etc."></textarea>
+            <label>Statut</label>
+            <select id="cv_status">
+              <option>draft</option>
+              <option selected>published</option>
+              <option>archived</option>
+            </select>
+            <label>Source ref</label>
+            <input id="cv_source_ref" placeholder="interne" />
+            <label>Note de changement</label>
+            <input id="cv_change_note" placeholder="Création initiale" />
+            <button onclick="createContentVersion()">Créer la version</button>
+          </div>
+
+          <div class="card">
+            <h2>Versions par brique</h2>
+            <div id="versionList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scenarios" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Nouveau scénario</h2>
+            <label>Code</label>
+            <input id="sc_code" placeholder="SCN_STORM_SEQUENCE" />
+            <label>Libellé</label>
+            <input id="sc_label" placeholder="Scénario séquence orage" />
+            <label>Trigger type</label>
+            <select id="sc_trigger"></select>
+            <label>Mode d’agrégation</label>
+            <select id="sc_aggregation">
+              <option>single</option>
+              <option>sequence</option>
+              <option>digest</option>
+            </select>
+            <label>Priorité</label>
+            <input id="sc_priority" type="number" value="50" />
+            <button onclick="createScenario()">Créer le scénario</button>
+          </div>
+
+          <div class="card">
+            <h2>Liste des scénarios</h2>
+            <div id="scenarioList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="steps" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Nouveau step</h2>
+            <label>Scénario</label>
+            <select id="ss_scenario"></select>
+            <label>Code step</label>
+            <input id="ss_code" placeholder="D2" />
+            <label>Ordre</label>
+            <input id="ss_order" type="number" value="1" />
+            <label>Référence temporelle</label>
+            <select id="ss_window_ref">
+              <option>occurs_at</option>
+              <option>predicted_start_at</option>
+              <option>predicted_end_at</option>
+              <option>date_evenement</option>
+            </select>
+            <div class="grid-2">
+              <div>
+                <label>window_min_hours</label>
+                <input id="ss_min" type="number" value="0" />
+              </div>
+              <div>
+                <label>window_max_hours</label>
+                <input id="ss_max" type="number" value="24" />
+              </div>
+            </div>
+
+            <h3>Règles de contenu du step</h3>
+            <div id="stepRulesContainer"></div>
+            <button class="secondary" onclick="addRuleRow()">Ajouter une règle de contenu</button>
+            <div class="row-actions">
+              <button onclick="createScenarioStep()">Créer le step</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Steps existants</h2>
+            <div id="stepList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="preview" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Aperçu métier</h2>
+            <label>Brique à prévisualiser</label>
+            <select id="preview_content"></select>
+            <label>Version</label>
+            <select id="preview_version"></select>
+            <label>Contexte JSON</label>
+            <textarea id="preview_context">{
+  "lieu": "entre Montbard et Semur-en-Auxois",
+  "territory": "Morbihan",
+  "old_speed_limit_kmh": 80,
+  "new_speed_limit_kmh": 90,
+  "affected_km": 344,
+  "network_total_km": 4070,
+  "affected_percent": 8.5,
+  "source_url": "https://www.morbihan.fr/carte-interactive"
+}</textarea>
+            <div class="row-actions">
+              <button onclick="renderPreview()">Prévisualiser</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Résultat</h2>
+            <div id="previewResult" class="preview">Le rendu apparaîtra ici.</div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
+    let supabase = null;
+    let contentItemsCache = [];
+    let contentVersionsCache = [];
+    let triggerTypesCache = [];
+    let scenariosCache = [];
+    let scenarioStepsCache = [];
 
-    const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const form = document.getElementById('message-form');
-    const resetBtn = document.getElementById('reset-btn');
-    const submitBtn = document.getElementById('submit-btn');
-    const formStatus = document.getElementById('form-status');
-
-    function setStatus(element, message = '', type = '') {
-      element.textContent = message;
-      element.className = `status ${type}`.trim();
+    function showPage(pageId, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
     }
 
-    async function createMessage(payload) {
-      const { data, error } = await db
-        .from('Messages')
-        .insert(payload)
-        .select('id, categorie, type, sujet, corps, source, created_at')
-        .single();
-
-      if (error) throw error;
-      return data;
+    function setStatus(text, ok = true) {
+      const el = document.getElementById('connStatus');
+      el.textContent = text;
+      el.style.background = ok ? '#ecfdf5' : '#fef2f2';
+      el.style.color = ok ? '#065f46' : '#991b1b';
+      el.style.border = ok ? '1px solid #a7f3d0' : '1px solid #fecaca';
     }
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      setStatus(formStatus, 'Enregistrement en cours…');
-      submitBtn.disabled = true;
-
-      const payload = {
-        categorie: document.getElementById('categorie').value,
-        type: document.getElementById('type').value,
-        sujet: document.getElementById('sujet').value.trim(),
-        corps: document.getElementById('corps').value.trim(),
-        source: 'interface_web'
+    function getSavedConfig() {
+      return {
+        url: localStorage.getItem('supabase_url') || '',
+        key: localStorage.getItem('supabase_key') || ''
       };
+    }
 
-      if (!payload.sujet || !payload.corps) {
-        setStatus(formStatus, 'Le sujet et le corps sont obligatoires.', 'warning');
-        submitBtn.disabled = false;
+    function fillConfigForm() {
+      const { url, key } = getSavedConfig();
+      document.getElementById('supabaseUrl').value = url;
+      document.getElementById('supabaseKey').value = key;
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('supabaseUrl').value.trim();
+      const key = document.getElementById('supabaseKey').value.trim();
+      localStorage.setItem('supabase_url', url);
+      localStorage.setItem('supabase_key', key);
+      initSupabase();
+    }
+
+    function clearSupabaseConfig() {
+      localStorage.removeItem('supabase_url');
+      localStorage.removeItem('supabase_key');
+      supabase = null;
+      fillConfigForm();
+      setStatus('Supabase non connecté', false);
+    }
+
+    function initSupabase() {
+      const { url, key } = getSavedConfig();
+      if (!url || !key) {
+        setStatus('Supabase non connecté', false);
+        return false;
+      }
+      try {
+        supabase = window.supabase.createClient(url, key);
+        setStatus('Supabase configuré');
+        return true;
+      } catch (e) {
+        console.error(e);
+        setStatus('Erreur de configuration Supabase', false);
+        return false;
+      }
+    }
+
+    async function testSupabaseConnection() {
+      if (!initSupabase()) return;
+      const { error } = await supabase.from('trigger_types').select('id').limit(1);
+      if (error) {
+        console.error(error);
+        setStatus('Connexion échouée : ' + error.message, false);
+        alert('Connexion échouée : ' + error.message);
+        return;
+      }
+      setStatus('Connexion Supabase OK');
+      alert('Connexion Supabase OK');
+      await loadAllData();
+    }
+
+    function parseJsonOrThrow(text, label) {
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error(label + ' invalide : ' + e.message);
+      }
+    }
+
+    function htmlEscape(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function loadAllData() {
+      if (!supabase && !initSupabase()) return;
+
+      const [contentItemsRes, contentVersionsRes, triggerTypesRes, scenariosRes, stepsRes] = await Promise.all([
+        supabase.from('content_items').select('*').order('id', { ascending: false }),
+        supabase.from('content_versions').select('*').order('content_item_id').order('version_no', { ascending: false }),
+        supabase.from('trigger_types').select('*').order('code'),
+        supabase.from('scenarios').select('*').order('id', { ascending: false }),
+        supabase.from('scenario_steps').select('*').order('scenario_id').order('step_order')
+      ]);
+
+      const results = [contentItemsRes, contentVersionsRes, triggerTypesRes, scenariosRes, stepsRes];
+      const firstError = results.find(r => r.error);
+      if (firstError) {
+        console.error(firstError.error);
+        alert('Erreur de chargement : ' + firstError.error.message);
         return;
       }
 
+      contentItemsCache = contentItemsRes.data || [];
+      contentVersionsCache = contentVersionsRes.data || [];
+      triggerTypesCache = triggerTypesRes.data || [];
+      scenariosCache = scenariosRes.data || [];
+      scenarioStepsCache = stepsRes.data || [];
+
+      renderDashboard();
+      renderContentItems();
+      renderVersions();
+      renderScenarios();
+      renderScenarioSteps();
+      fillSelects();
+    }
+
+    function renderDashboard() {
+      document.getElementById('statContent').textContent = contentItemsCache.length;
+      document.getElementById('statVersions').textContent = contentVersionsCache.length;
+      document.getElementById('statScenarios').textContent = scenariosCache.length + ' / ' + scenarioStepsCache.length;
+    }
+
+    function fillSelect(selectId, items, valueKey, labelKey) {
+      const el = document.getElementById(selectId);
+      if (!el) return;
+      el.innerHTML = '';
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item[valueKey];
+        opt.textContent = item[labelKey];
+        el.appendChild(opt);
+      });
+    }
+
+    function fillSelects() {
+      fillSelect('cv_content_item', contentItemsCache, 'id', 'code');
+      fillSelect('ss_scenario', scenariosCache, 'id', 'code');
+      fillSelect('sc_trigger', triggerTypesCache, 'id', 'code');
+      fillSelect('preview_content', contentItemsCache, 'id', 'code');
+      refreshPreviewVersionSelect();
+      refreshStepRuleSelects();
+    }
+
+    function renderContentItems() {
+      const box = document.getElementById('contentList');
+      box.innerHTML = '';
+      contentItemsCache.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="item-head">
+            <div>
+              <strong>${htmlEscape(item.code)}</strong><br>
+              <span class="muted">${htmlEscape(item.sujet || '')}</span>
+              <div class="chips">
+                <span class="chip">${htmlEscape(item.categorie)}</span>
+                <span class="chip">${htmlEscape(item.topic_code || 'sans topic')}</span>
+                <span class="chip">${htmlEscape(item.channel)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="mono" style="margin-top:10px;">${htmlEscape(JSON.stringify(item.policy || {}, null, 2))}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function renderVersions() {
+      const box = document.getElementById('versionList');
+      box.innerHTML = '';
+      contentItemsCache.forEach(item => {
+        const versions = contentVersionsCache.filter(v => v.content_item_id === item.id);
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<strong>${htmlEscape(item.code)}</strong><div class="muted">${versions.length} version(s)</div>`;
+        versions.forEach(v => {
+          const vDiv = document.createElement('div');
+          vDiv.className = 'subtle-box';
+          vDiv.style.marginTop = '10px';
+          vDiv.innerHTML = `
+            <strong>v${htmlEscape(v.version_no)}</strong> <span class="chip">${htmlEscape(v.status)}</span>
+            <div class="muted" style="margin-top:6px;">${htmlEscape(v.sujet_template || '')}</div>
+            <div class="mono" style="margin-top:8px;">${htmlEscape(v.corps_template || '')}</div>
+          `;
+          div.appendChild(vDiv);
+        });
+        box.appendChild(div);
+      });
+    }
+
+    function renderScenarios() {
+      const box = document.getElementById('scenarioList');
+      box.innerHTML = '';
+      scenariosCache.forEach(s => {
+        const trigger = triggerTypesCache.find(t => t.id === s.trigger_type_id);
+        const stepCount = scenarioStepsCache.filter(st => st.scenario_id === s.id).length;
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="item-head">
+            <div>
+              <strong>${htmlEscape(s.code)}</strong><br>
+              <span class="muted">${htmlEscape(s.label)}</span>
+              <div class="chips">
+                <span class="chip">${htmlEscape(trigger?.code || '')}</span>
+                <span class="chip">${htmlEscape(s.aggregation_mode)}</span>
+                <span class="chip">prio ${htmlEscape(s.priority)}</span>
+                <span class="chip">${stepCount} step(s)</span>
+              </div>
+            </div>
+          </div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function renderScenarioSteps() {
+      const box = document.getElementById('stepList');
+      box.innerHTML = '';
+      scenarioStepsCache.forEach(step => {
+        const sc = scenariosCache.find(s => s.id === step.scenario_id);
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <strong>${htmlEscape(sc?.code || '')} / ${htmlEscape(step.code)}</strong>
+          <div class="chips">
+            <span class="chip">ordre ${htmlEscape(step.step_order)}</span>
+            <span class="chip">${htmlEscape(step.window_ref || '')}</span>
+            <span class="chip">${htmlEscape(step.window_min_hours)}h → ${htmlEscape(step.window_max_hours)}h</span>
+          </div>
+          <div class="mono" style="margin-top:10px;">${htmlEscape(JSON.stringify(step.logic_json || {}, null, 2))}</div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    async function createContentItem() {
       try {
-        const created = await createMessage(payload);
-        setStatus(formStatus, `Message #${created.id} enregistré avec succès.`, 'success');
-        form.reset();
-        document.getElementById('categorie').value = 'meteo';
-        document.getElementById('type').value = 'mail';
-      } catch (error) {
-        console.error(error);
-        setStatus(
-          formStatus,
-          `Impossible d’enregistrer le message : ${error.message || 'erreur inconnue'}`,
-          'error'
-        );
-      } finally {
-        submitBtn.disabled = false;
+        if (!supabase && !initSupabase()) return;
+        const payload = {
+          code: document.getElementById('ci_code').value.trim(),
+          categorie: document.getElementById('ci_categorie').value,
+          sujet: document.getElementById('ci_sujet').value.trim(),
+          type: document.getElementById('ci_type').value.trim(),
+          source: 'interne',
+          topic_code: document.getElementById('ci_topic').value.trim(),
+          channel: document.getElementById('ci_channel').value,
+          policy: parseJsonOrThrow(document.getElementById('ci_policy').value, 'Policy JSON'),
+          active: true
+        };
+        const { error } = await supabase.from('content_items').insert(payload);
+        if (error) throw error;
+        alert('Brique créée.');
+        await loadAllData();
+      } catch (e) {
+        alert(e.message || 'Erreur lors de la création de la brique.');
       }
+    }
+
+    async function createContentVersion() {
+      try {
+        if (!supabase && !initSupabase()) return;
+        const payload = {
+          content_item_id: Number(document.getElementById('cv_content_item').value),
+          version_no: Number(document.getElementById('cv_version_no').value),
+          sujet_template: document.getElementById('cv_subject').value.trim(),
+          corps_template: document.getElementById('cv_body').value,
+          status: document.getElementById('cv_status').value,
+          source_ref: document.getElementById('cv_source_ref').value.trim(),
+          change_note: document.getElementById('cv_change_note').value.trim()
+        };
+        const { error } = await supabase.from('content_versions').insert(payload);
+        if (error) throw error;
+        alert('Version créée.');
+        await loadAllData();
+      } catch (e) {
+        alert(e.message || 'Erreur lors de la création de la version.');
+      }
+    }
+
+    async function createScenario() {
+      try {
+        if (!supabase && !initSupabase()) return;
+        const payload = {
+          code: document.getElementById('sc_code').value.trim(),
+          label: document.getElementById('sc_label').value.trim(),
+          trigger_type_id: Number(document.getElementById('sc_trigger').value),
+          aggregation_mode: document.getElementById('sc_aggregation').value,
+          priority: Number(document.getElementById('sc_priority').value),
+          active: true
+        };
+        const { error } = await supabase.from('scenarios').insert(payload);
+        if (error) throw error;
+        alert('Scénario créé.');
+        await loadAllData();
+      } catch (e) {
+        alert(e.message || 'Erreur lors de la création du scénario.');
+      }
+    }
+
+    function buildStepLogicJsonFromUI() {
+      const rows = document.querySelectorAll('.rule-row');
+      const contents = [];
+      rows.forEach(row => {
+        const contentCode = row.querySelector('.rule-content-code').value;
+        const when = row.querySelector('.rule-when').value;
+        if (contentCode) contents.push({ content_code: contentCode, when });
+      });
+      return { contents, priority: null };
+    }
+
+    async function createScenarioStep() {
+      try {
+        if (!supabase && !initSupabase()) return;
+        const payload = {
+          scenario_id: Number(document.getElementById('ss_scenario').value),
+          code: document.getElementById('ss_code').value.trim(),
+          step_order: Number(document.getElementById('ss_order').value),
+          window_ref: document.getElementById('ss_window_ref').value,
+          window_min_hours: Number(document.getElementById('ss_min').value),
+          window_max_hours: Number(document.getElementById('ss_max').value),
+          logic_json: buildStepLogicJsonFromUI(),
+          active: true
+        };
+        const { error } = await supabase.from('scenario_steps').insert(payload);
+        if (error) throw error;
+        alert('Step créé.');
+        await loadAllData();
+      } catch (e) {
+        alert(e.message || 'Erreur lors de la création du step.');
+      }
+    }
+
+    function addRuleRow(contentCode = '', when = 'always') {
+      const wrap = document.getElementById('stepRulesContainer');
+      const row = document.createElement('div');
+      row.className = 'step-rule rule-row';
+
+      const select = document.createElement('select');
+      select.className = 'rule-content-code';
+      contentItemsCache.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.code;
+        opt.textContent = item.code;
+        if (item.code === contentCode) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      const whenSelect = document.createElement('select');
+      whenSelect.className = 'rule-when';
+      ['always', 'cooldown_ok', 'not_sent_in_event && cooldown_ok', 'first_detection_for_event && cooldown_ok'].forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        if (v === when) opt.selected = true;
+        whenSelect.appendChild(opt);
+      });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'danger';
+      removeBtn.textContent = 'Supprimer';
+      removeBtn.onclick = () => row.remove();
+
+      row.innerHTML = '<label>Contenu</label>';
+      row.appendChild(select);
+      const l2 = document.createElement('label');
+      l2.textContent = 'Condition';
+      row.appendChild(l2);
+      row.appendChild(whenSelect);
+      row.appendChild(removeBtn);
+      wrap.appendChild(row);
+    }
+
+    function refreshStepRuleSelects() {
+      const wrap = document.getElementById('stepRulesContainer');
+      if (!wrap) return;
+      if (!wrap.children.length) addRuleRow();
+    }
+
+    function refreshPreviewVersionSelect() {
+      const contentId = Number(document.getElementById('preview_content')?.value || 0);
+      const select = document.getElementById('preview_version');
+      if (!select) return;
+      select.innerHTML = '';
+      contentVersionsCache
+        .filter(v => v.content_item_id === contentId)
+        .forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.id;
+          opt.textContent = 'v' + v.version_no + ' - ' + v.status;
+          select.appendChild(opt);
+        });
+    }
+
+    function renderTemplate(str, ctx) {
+      return String(str || '').replace(/\{([^}]+)\}/g, (_, key) => {
+        const cleanKey = key.trim();
+        return ctx[cleanKey] !== undefined && ctx[cleanKey] !== null ? ctx[cleanKey] : '{' + cleanKey + '}';
+      });
+    }
+
+    function renderPreview() {
+      try {
+        const versionId = Number(document.getElementById('preview_version').value);
+        const version = contentVersionsCache.find(v => v.id === versionId);
+        const ctx = parseJsonOrThrow(document.getElementById('preview_context').value, 'Contexte JSON');
+        const subject = renderTemplate(version?.sujet_template || '', ctx);
+        const body = renderTemplate(version?.corps_template || '', ctx);
+        document.getElementById('previewResult').textContent = (subject ? subject + '\n\n' : '') + body;
+      } catch (e) {
+        alert(e.message || 'Erreur de rendu.');
+      }
+    }
+
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.id === 'preview_content') refreshPreviewVersionSelect();
     });
 
-    resetBtn.addEventListener('click', () => {
-      form.reset();
-      document.getElementById('categorie').value = 'meteo';
-      document.getElementById('type').value = 'mail';
-      setStatus(formStatus, '');
+    window.addEventListener('load', async () => {
+      fillConfigForm();
+      initSupabase();
+      if (supabase) {
+        await loadAllData();
+      }
     });
   </script>
 </body>
