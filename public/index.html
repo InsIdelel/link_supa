@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Prévention Routière</title>
+  <title>Administration – Prévention routière</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -13,13 +13,14 @@
       --text: #111827;
       --muted: #6b7280;
       --dark: #111827;
-      --dark-2: #1f2937;
       --ok: #065f46;
       --ok-bg: #ecfdf5;
       --warn: #92400e;
       --warn-bg: #fffbeb;
       --err: #991b1b;
       --err-bg: #fef2f2;
+      --info: #1d4ed8;
+      --info-bg: #eff6ff;
     }
     * { box-sizing: border-box; }
     body { margin:0; font-family: Arial, Helvetica, sans-serif; background:var(--bg); color:var(--text); }
@@ -34,9 +35,9 @@
       flex-wrap:wrap;
     }
     header h1 { margin:0; font-size:22px; }
-    header p { margin:4px 0 0; font-size:13px; opacity:.8; }
+    header p { margin:4px 0 0; font-size:13px; opacity:.85; }
     .badge-status { padding:8px 12px; border-radius:999px; font-size:12px; background:#e5e7eb; color:#111827; }
-    .app { display:grid; grid-template-columns: 260px 1fr; min-height:calc(100vh - 76px); }
+    .app { display:grid; grid-template-columns: 280px 1fr; min-height:calc(100vh - 76px); }
     aside { background:white; border-right:1px solid var(--line); padding:18px; }
     .nav-btn {
       width:100%; border:0; background:#f3f4f6; color:#111827; padding:12px 14px; border-radius:12px;
@@ -82,10 +83,10 @@
     .ok { background:var(--ok-bg); color:var(--ok); border:1px solid #a7f3d0; }
     .warn { background:var(--warn-bg); color:var(--warn); border:1px solid #fde68a; }
     .err { background:var(--err-bg); color:var(--err); border:1px solid #fecaca; }
+    .info { background:var(--info-bg); color:var(--info); border:1px solid #bfdbfe; }
     .rule-row { border:1px dashed #d1d5db; padding:12px; border-radius:12px; margin-bottom:10px; background:#fafafa; }
     .preview-box { white-space:pre-wrap; line-height:1.45; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; min-height:250px; }
-    table { width:100%; border-collapse:collapse; font-size:13px; }
-    th, td { border-bottom:1px solid var(--line); text-align:left; padding:8px; vertical-align:top; }
+    .help { font-size:12px; color:var(--muted); margin:-6px 0 10px; }
     @media (max-width: 980px) {
       .app { grid-template-columns:1fr; }
       aside { border-right:0; border-bottom:1px solid var(--line); }
@@ -96,44 +97,52 @@
 <body>
   <header>
     <div>
-      <h1>Admin Prévention Routière</h1>
-      <p>Contenus, versions, triggers, scénarios, steps, aperçu de rendu, événements.</p>
+      <h1>Administration – Prévention routière</h1>
+      <p>Créez vos contenus, scénarios, étapes et événements sans manipuler directement la base.</p>
     </div>
     <div class="badge-status" id="connectionBadge">Connexion en cours…</div>
   </header>
 
   <div class="app">
     <aside>
-      <button class="nav-btn active" onclick="showPage('dashboard', this)">Vue d’ensemble</button>
+      <button class="nav-btn active" onclick="showPage('dashboard', this)">Tableau de bord</button>
       <button class="nav-btn" onclick="showPage('content-items', this)">Briques de contenu</button>
-      <button class="nav-btn" onclick="showPage('content-versions', this)">Versions</button>
-      <button class="nav-btn" onclick="showPage('trigger-types', this)">Trigger types</button>
+      <button class="nav-btn" onclick="showPage('content-versions', this)">Versions des contenus</button>
+      <button class="nav-btn" onclick="showPage('trigger-types', this)">Types de déclencheur</button>
       <button class="nav-btn" onclick="showPage('scenarios', this)">Scénarios</button>
-      <button class="nav-btn" onclick="showPage('scenario-steps', this)">Steps</button>
-      <button class="nav-btn" onclick="showPage('events', this)">Events</button>
-      <button class="nav-btn" onclick="showPage('preview', this)">Aperçu métier</button>
-      <button class="nav-btn" onclick="refreshAll()">Rafraîchir toutes les données</button>
+      <button class="nav-btn" onclick="showPage('scenario-steps', this)">Étapes des scénarios</button>
+      <button class="nav-btn" onclick="showPage('events', this)">Événements</button>
+      <button class="nav-btn" onclick="showPage('preview', this)">Aperçu d’un rendu</button>
+      <button class="nav-btn" onclick="refreshAll()">Rafraîchir les données</button>
     </aside>
 
     <main>
       <section id="dashboard" class="page active">
         <div id="globalNotice"></div>
+        <div class="notice info">
+          <strong>Comment utiliser l’interface</strong><br>
+          1. Créez d’abord une <strong>brique de contenu</strong>.<br>
+          2. Ajoutez ensuite une <strong>version</strong> de cette brique.<br>
+          3. Créez un <strong>type de déclencheur</strong>, puis un <strong>scénario</strong>.<br>
+          4. Ajoutez une ou plusieurs <strong>étapes</strong> au scénario.<br>
+          5. Créez enfin un <strong>événement</strong> pour tester votre logique.
+        </div>
         <div class="grid-3">
-          <div class="card"><div class="muted">Briques</div><div class="kpi" id="kpiContents">0</div><div class="small muted">content_items</div></div>
-          <div class="card"><div class="muted">Versions</div><div class="kpi" id="kpiVersions">0</div><div class="small muted">content_versions</div></div>
-          <div class="card"><div class="muted">Scénarios / Steps</div><div class="kpi" id="kpiScenarios">0 / 0</div><div class="small muted">scenarios / scenario_steps</div></div>
+          <div class="card"><div class="muted">Briques de contenu</div><div class="kpi" id="kpiContents">0</div><div class="small muted">Table content_items</div></div>
+          <div class="card"><div class="muted">Versions</div><div class="kpi" id="kpiVersions">0</div><div class="small muted">Table content_versions</div></div>
+          <div class="card"><div class="muted">Scénarios / étapes</div><div class="kpi" id="kpiScenarios">0 / 0</div><div class="small muted">Tables scenarios / scenario_steps</div></div>
         </div>
         <div class="grid-3" style="margin-top:16px;">
-          <div class="card"><div class="muted">Trigger types</div><div class="kpi" id="kpiTriggers">0</div></div>
-          <div class="card"><div class="muted">Events</div><div class="kpi" id="kpiEvents">0</div></div>
-          <div class="card"><div class="muted">Pages</div><div class="kpi">8</div></div>
+          <div class="card"><div class="muted">Types de déclencheur</div><div class="kpi" id="kpiTriggers">0</div></div>
+          <div class="card"><div class="muted">Événements</div><div class="kpi" id="kpiEvents">0</div></div>
+          <div class="card"><div class="muted">Nombre de pages</div><div class="kpi">8</div></div>
         </div>
         <div class="card" style="margin-top:16px;">
           <h3>Chaîne métier</h3>
           <div class="grid-3">
-            <div class="mono">connecteurs → data_points</div>
-            <div class="mono">trigger_types → events → client_event_matches</div>
-            <div class="mono">content_items → content_versions → scenarios → scenario_steps → client_message_items → outbound_emails</div>
+            <div class="mono">Sources de données → points de données</div>
+            <div class="mono">Types de déclencheur → événements → clients concernés</div>
+            <div class="mono">Briques → versions → scénarios → étapes → messages → emails finaux</div>
           </div>
         </div>
       </section>
@@ -142,33 +151,36 @@
         <div class="grid-2">
           <div class="card">
             <h2>Créer une brique de contenu</h2>
-            <label>Code</label>
-            <input id="ci_code" placeholder="AQUAPLANING_WARNING">
+            <div class="help">Une brique est un morceau de message réutilisable : alerte, conseil, rappel, conclusion…</div>
+            <label>Code technique</label>
+            <input id="ci_code" placeholder="Ex. AQUAPLANING_WARNING">
+            <div class="help">Nom unique utilisé par le système.</div>
             <label>Catégorie</label>
-            <select id="ci_categorie"><option>alert</option><option>advice</option><option>legal</option><option>cta</option></select>
-            <label>Sujet</label>
-            <input id="ci_sujet" placeholder="Conseil aquaplaning">
-            <label>Type</label>
-            <input id="ci_type" placeholder="advice_block">
-            <label>Source</label>
+            <select id="ci_categorie"><option>Alerte</option><option>Conseil</option><option>Juridique</option><option>Appel à l’action</option></select>
+            <label>Titre lisible</label>
+            <input id="ci_sujet" placeholder="Ex. Conseil aquaplaning">
+            <label>Type de bloc</label>
+            <input id="ci_type" placeholder="Ex. advice_block">
+            <label>Origine</label>
             <input id="ci_source" value="interne">
-            <label>Topic code</label>
-            <input id="ci_topic_code" placeholder="aquaplaning">
-            <label>Canal</label>
-            <select id="ci_channel"><option>email</option><option>sms</option><option>whatsapp</option><option>push</option></select>
-            <label>Policy JSON</label>
+            <label>Thème</label>
+            <input id="ci_topic_code" placeholder="Ex. aquaplaning">
+            <label>Canal de diffusion</label>
+            <select id="ci_channel"><option>Email</option><option>SMS</option><option>WhatsApp</option><option>Notification push</option></select>
+            <label>Règles JSON</label>
             <textarea id="ci_policy">{
   "once_per_event": true,
   "cooldown_days": 7,
   "cooldown_scope": "client"
 }</textarea>
+            <div class="help">Exemple : ne montrer ce contenu qu’une fois par événement, avec un délai de répétition de 7 jours.</div>
             <div class="row">
-              <button onclick="createContentItem()">Créer</button>
+              <button onclick="createContentItem()">Créer la brique</button>
               <button class="secondary" onclick="clearContentItemForm()">Vider</button>
             </div>
           </div>
           <div class="card">
-            <h2>Liste des briques</h2>
+            <h2>Briques existantes</h2>
             <div id="contentItemsList" class="list"></div>
           </div>
         </div>
@@ -177,28 +189,30 @@
       <section id="content-versions" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Créer une version</h2>
-            <label>Brique</label>
+            <h2>Créer une version de contenu</h2>
+            <div class="help">Une même brique peut avoir plusieurs versions : brouillon, publiée, archivée…</div>
+            <label>Brique concernée</label>
             <select id="cv_content_item_id"></select>
             <label>Numéro de version</label>
             <input id="cv_version_no" type="number" value="1">
-            <label>Sujet template</label>
-            <input id="cv_sujet_template" placeholder="Conseil aquaplaning">
-            <label>Corps template</label>
-            <textarea id="cv_corps_template" placeholder="Texte avec variables {lieu}"></textarea>
+            <label>Objet / titre du message</label>
+            <input id="cv_sujet_template" placeholder="Ex. Conseil aquaplaning">
+            <label>Texte du message</label>
+            <textarea id="cv_corps_template" placeholder="Texte avec variables comme {lieu}"></textarea>
+            <div class="help">Vous pouvez utiliser des variables comme {lieu}, {source_url}, {territory}…</div>
             <label>Statut</label>
-            <select id="cv_status"><option>draft</option><option selected>published</option><option>archived</option></select>
-            <label>Source ref</label>
+            <select id="cv_status"><option>Brouillon</option><option selected>Publié</option><option>Archivé</option></select>
+            <label>Référence source</label>
             <input id="cv_source_ref" value="interne">
-            <label>Note de changement</label>
+            <label>Note de modification</label>
             <input id="cv_change_note" value="création initiale">
             <div class="row">
-              <button onclick="createContentVersion()">Créer</button>
+              <button onclick="createContentVersion()">Créer la version</button>
               <button class="secondary" onclick="clearContentVersionForm()">Vider</button>
             </div>
           </div>
           <div class="card">
-            <h2>Liste des versions</h2>
+            <h2>Versions existantes</h2>
             <div id="contentVersionsList" class="list"></div>
           </div>
         </div>
@@ -207,22 +221,23 @@
       <section id="trigger-types" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Créer un trigger type</h2>
-            <label>Code</label>
-            <input id="tt_code" placeholder="STORM_ALERT">
-            <label>Label</label>
-            <input id="tt_label" placeholder="Alerte orage">
-            <label>Source kind</label>
-            <input id="tt_source_kind" placeholder="weather_api">
+            <h2>Créer un type de déclencheur</h2>
+            <div class="help">Un type de déclencheur correspond à une famille d’événements : radar, orage, changement de vitesse…</div>
+            <label>Code technique</label>
+            <input id="tt_code" placeholder="Ex. STORM_ALERT">
+            <label>Libellé</label>
+            <input id="tt_label" placeholder="Ex. Alerte orage">
+            <label>Type de source</label>
+            <input id="tt_source_kind" placeholder="Ex. weather_api">
             <label>Priorité par défaut</label>
             <input id="tt_default_priority" type="number" value="80">
             <div class="row">
-              <button onclick="createTriggerType()">Créer</button>
+              <button onclick="createTriggerType()">Créer le type</button>
               <button class="secondary" onclick="clearTriggerTypeForm()">Vider</button>
             </div>
           </div>
           <div class="card">
-            <h2>Liste des trigger types</h2>
+            <h2>Types existants</h2>
             <div id="triggerTypesList" class="list"></div>
           </div>
         </div>
@@ -232,23 +247,24 @@
         <div class="grid-2">
           <div class="card">
             <h2>Créer un scénario</h2>
-            <label>Code</label>
-            <input id="sc_code" placeholder="SCN_STORM_SEQUENCE">
+            <div class="help">Le scénario définit la logique générale à appliquer à un type de déclencheur.</div>
+            <label>Code technique</label>
+            <input id="sc_code" placeholder="Ex. SCN_STORM_SEQUENCE">
             <label>Libellé</label>
-            <input id="sc_label" placeholder="Scénario séquence orage">
-            <label>Trigger type</label>
+            <input id="sc_label" placeholder="Ex. Scénario séquence orage">
+            <label>Type de déclencheur associé</label>
             <select id="sc_trigger_type_id"></select>
-            <label>Aggregation mode</label>
-            <select id="sc_aggregation_mode"><option>single</option><option>sequence</option><option>digest</option></select>
-            <label>Priority</label>
+            <label>Mode d’agrégation</label>
+            <select id="sc_aggregation_mode"><option>Message simple</option><option>Séquence temporelle</option><option>Regroupement quotidien</option></select>
+            <label>Priorité</label>
             <input id="sc_priority" type="number" value="80">
             <div class="row">
-              <button onclick="createScenario()">Créer</button>
+              <button onclick="createScenario()">Créer le scénario</button>
               <button class="secondary" onclick="clearScenarioForm()">Vider</button>
             </div>
           </div>
           <div class="card">
-            <h2>Liste des scénarios</h2>
+            <h2>Scénarios existants</h2>
             <div id="scenariosList" class="list"></div>
           </div>
         </div>
@@ -257,34 +273,36 @@
       <section id="scenario-steps" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Créer un step</h2>
+            <h2>Créer une étape de scénario</h2>
+            <div class="help">Une étape correspond à un moment dans le temps : J-2, J-1, J, etc.</div>
             <label>Scénario</label>
             <select id="ss_scenario_id"></select>
-            <label>Code step</label>
-            <input id="ss_code" placeholder="D2">
-            <label>Ordre</label>
+            <label>Code de l’étape</label>
+            <input id="ss_code" placeholder="Ex. D2">
+            <label>Ordre d’exécution</label>
             <input id="ss_step_order" type="number" value="1">
-            <label>window_ref</label>
-            <select id="ss_window_ref"><option>occurs_at</option><option>predicted_start_at</option><option>predicted_end_at</option><option>date_evenement</option></select>
+            <label>Référence temporelle</label>
+            <select id="ss_window_ref"><option>Date de survenance</option><option>Début prévu</option><option>Fin prévue</option><option>Date d’événement</option></select>
             <div class="grid-2">
               <div>
-                <label>window_min_hours</label>
+                <label>Heures minimales</label>
                 <input id="ss_window_min_hours" type="number" value="0">
               </div>
               <div>
-                <label>window_max_hours</label>
+                <label>Heures maximales</label>
                 <input id="ss_window_max_hours" type="number" value="24">
               </div>
             </div>
-            <h3>Règles de contenu</h3>
+            <h3>Contenus à inclure</h3>
+            <div class="help">Ajoutez ici les briques de contenu à afficher dans cette étape.</div>
             <div id="stepRules"></div>
             <div class="row">
-              <button class="secondary" onclick="addStepRule()">Ajouter une règle</button>
-              <button onclick="createScenarioStep()">Créer le step</button>
+              <button class="secondary" onclick="addStepRule()">Ajouter un contenu</button>
+              <button onclick="createScenarioStep()">Créer l’étape</button>
             </div>
           </div>
           <div class="card">
-            <h2>Liste des steps</h2>
+            <h2>Étapes existantes</h2>
             <div id="scenarioStepsList" class="list"></div>
           </div>
         </div>
@@ -293,28 +311,29 @@
       <section id="events" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Créer un event</h2>
-            <label>Trigger type</label>
+            <h2>Créer un événement</h2>
+            <div class="help">Un événement est un cas concret : un orage annoncé, un radar installé, un changement de limitation…</div>
+            <label>Type de déclencheur</label>
             <select id="ev_trigger_type_id"></select>
-            <label>Connecteur ID (optionnel)</label>
-            <input id="ev_connecteur_id" type="number" placeholder="1">
-            <label>Source external id</label>
-            <input id="ev_source_external_id" placeholder="storm-56-2026-001">
-            <label>Dedupe key</label>
-            <input id="ev_dedupe_key" placeholder="STORM_ALERT|56|Vannes|2026-03-27T18:00:00+01:00">
+            <label>ID du connecteur (facultatif)</label>
+            <input id="ev_connecteur_id" type="number" placeholder="Ex. 1">
+            <label>Identifiant externe</label>
+            <input id="ev_source_external_id" placeholder="Ex. storm-56-2026-001">
+            <label>Clé anti-doublon</label>
+            <input id="ev_dedupe_key" placeholder="Ex. STORM_ALERT|56|Vannes|2026-03-27T18:00:00+01:00">
             <label>Zone cible</label>
-            <input id="ev_zone_cible" placeholder="56">
-            <label>occurs_at</label>
+            <input id="ev_zone_cible" placeholder="Ex. 56">
+            <label>Date/heure de survenance</label>
             <input id="ev_occurs_at" placeholder="2026-03-25T08:00:00+01:00">
-            <label>predicted_start_at</label>
+            <label>Date/heure de début prévue</label>
             <input id="ev_predicted_start_at" placeholder="2026-03-27T18:00:00+01:00">
-            <label>predicted_end_at</label>
+            <label>Date/heure de fin prévue</label>
             <input id="ev_predicted_end_at" placeholder="2026-03-27T23:00:00+01:00">
-            <label>date_evenement</label>
+            <label>Date d’événement</label>
             <input id="ev_date_evenement" placeholder="2026-03-27">
-            <label>Severity</label>
-            <select id="ev_severity"><option value="">(vide)</option><option>info</option><option>low</option><option>medium</option><option>high</option><option>critical</option></select>
-            <label>Payload JSON</label>
+            <label>Niveau de gravité</label>
+            <select id="ev_severity"><option value="">Non renseigné</option><option>Information</option><option>Faible</option><option>Moyen</option><option>Élevé</option><option>Critique</option></select>
+            <label>Données de contexte (JSON)</label>
             <textarea id="ev_payload">{
   "city": "Vannes",
   "department": "56",
@@ -322,12 +341,12 @@
   "confidence": 0.87
 }</textarea>
             <div class="row">
-              <button onclick="createEvent()">Créer l’event</button>
+              <button onclick="createEvent()">Créer l’événement</button>
               <button class="secondary" onclick="clearEventForm()">Vider</button>
             </div>
           </div>
           <div class="card">
-            <h2>Liste des events</h2>
+            <h2>Événements existants</h2>
             <div id="eventsList" class="list"></div>
           </div>
         </div>
@@ -336,8 +355,9 @@
       <section id="preview" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Aperçu de rendu</h2>
-            <label>Brique</label>
+            <h2>Aperçu d’un message</h2>
+            <div class="help">Choisissez une version de contenu et testez son rendu avec des données de contexte.</div>
+            <label>Brique de contenu</label>
             <select id="pv_content_item_id"></select>
             <label>Version</label>
             <select id="pv_content_version_id"></select>
@@ -366,16 +386,57 @@
   </div>
 
   <script>
-    // =====================================================
-    // CONFIG SUPABASE : mettez vos vraies valeurs ici
-    // =====================================================
     const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
 
-    // supabase client singleton
-if (!window._supabaseClient) {
-  window._supabaseClient = null;
-}
+    if (!window._appSupabaseClient) {
+      window._appSupabaseClient = null;
+    }
+
+    const dictionnaires = {
+      categories: {
+        'Alerte': 'alert',
+        'Conseil': 'advice',
+        'Juridique': 'legal',
+        'Appel à l’action': 'cta'
+      },
+      canaux: {
+        'Email': 'email',
+        'SMS': 'sms',
+        'WhatsApp': 'whatsapp',
+        'Notification push': 'push'
+      },
+      statutVersion: {
+        'Brouillon': 'draft',
+        'Publié': 'published',
+        'Archivé': 'archived'
+      },
+      modeScenario: {
+        'Message simple': 'single',
+        'Séquence temporelle': 'sequence',
+        'Regroupement quotidien': 'digest'
+      },
+      fenetreTemps: {
+        'Date de survenance': 'occurs_at',
+        'Début prévu': 'predicted_start_at',
+        'Fin prévue': 'predicted_end_at',
+        'Date d’événement': 'date_evenement'
+      },
+      gravite: {
+        'Information': 'info',
+        'Faible': 'low',
+        'Moyen': 'medium',
+        'Élevé': 'high',
+        'Critique': 'critical'
+      },
+      conditionContenu: {
+        'Toujours afficher': 'always',
+        'Afficher si le délai de répétition est respecté': 'cooldown_ok',
+        'Afficher si non envoyé dans cet événement et délai respecté': 'not_sent_in_event && cooldown_ok',
+        'Afficher uniquement à la première détection si délai respecté': 'first_detection_for_event && cooldown_ok'
+      }
+    };
+
     let state = {
       contentItems: [],
       contentVersions: [],
@@ -385,16 +446,20 @@ if (!window._supabaseClient) {
       events: []
     };
 
+    function db() {
+      return window._appSupabaseClient;
+    }
+
     function bootSupabase() {
       try {
         if (!SUPABASE_URL || SUPABASE_URL.includes('VOTRE_URL')) throw new Error('SUPABASE_URL non renseignée');
         if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('VOTRE_ANON')) throw new Error('SUPABASE_ANON_KEY non renseignée');
-        window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        setConnectionBadge('Supabase connecté', 'ok');
+        window._appSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        setConnectionBadge('Connexion à la base réussie', 'ok');
         setGlobalNotice('Connexion Supabase initialisée.', 'ok');
       } catch (e) {
-        setConnectionBadge('Supabase non configuré', 'err');
-        setGlobalNotice('Renseignez SUPABASE_URL et SUPABASE_ANON_KEY dans le JS.', 'err');
+        setConnectionBadge('Connexion non configurée', 'err');
+        setGlobalNotice('Renseignez correctement SUPABASE_URL et SUPABASE_ANON_KEY.', 'err');
         console.error(e);
       }
     }
@@ -413,6 +478,7 @@ if (!window._supabaseClient) {
 
     function setGlobalNotice(text, type) {
       const box = document.getElementById('globalNotice');
+      if (!box) return;
       box.innerHTML = `<div class="notice ${type}">${escapeHtml(text)}</div>`;
     }
 
@@ -444,21 +510,23 @@ if (!window._supabaseClient) {
       });
     }
 
+    function val(id) { return document.getElementById(id).value.trim(); }
+
     async function refreshAll() {
-      if (!supabase) return;
+      if (!db()) return;
       const requests = await Promise.all([
-        supabase.from('content_items').select('*').order('id', { ascending: false }),
-        supabase.from('content_versions').select('*').order('id', { ascending: false }),
-        supabase.from('trigger_types').select('*').order('id', { ascending: false }),
-        supabase.from('scenarios').select('*').order('id', { ascending: false }),
-        supabase.from('scenario_steps').select('*').order('scenario_id').order('step_order'),
-        supabase.from('events').select('*').order('id', { ascending: false }).limit(50)
+        db().from('content_items').select('*').order('id', { ascending: false }),
+        db().from('content_versions').select('*').order('id', { ascending: false }),
+        db().from('trigger_types').select('*').order('id', { ascending: false }),
+        db().from('scenarios').select('*').order('id', { ascending: false }),
+        db().from('scenario_steps').select('*').order('scenario_id').order('step_order'),
+        db().from('events').select('*').order('id', { ascending: false }).limit(50)
       ]);
 
       const firstError = requests.find(r => r.error);
       if (firstError) {
         console.error(firstError.error);
-        setGlobalNotice('Erreur de lecture Supabase : ' + firstError.error.message, 'err');
+        setGlobalNotice('Erreur de lecture de la base : ' + firstError.error.message, 'err');
         return;
       }
 
@@ -477,7 +545,7 @@ if (!window._supabaseClient) {
       renderScenarioSteps();
       renderEvents();
       populateSelects();
-      setGlobalNotice('Données rechargées.', 'ok');
+      setGlobalNotice('Les données ont été rechargées.', 'ok');
     }
 
     function renderDashboard() {
@@ -524,7 +592,7 @@ if (!window._supabaseClient) {
               <div class="chips">
                 <span class="chip">${escapeHtml(item.categorie)}</span>
                 <span class="chip">${escapeHtml(item.type || '')}</span>
-                <span class="chip">${escapeHtml(item.topic_code || 'sans topic')}</span>
+                <span class="chip">${escapeHtml(item.topic_code || 'sans thème')}</span>
                 <span class="chip">${escapeHtml(item.channel || '')}</span>
               </div>
             </div>
@@ -543,7 +611,7 @@ if (!window._supabaseClient) {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
-          <strong>${escapeHtml(item?.code || 'inconnu')} — v${escapeHtml(v.version_no)}</strong>
+          <strong>${escapeHtml(item?.code || 'Brique inconnue')} — version ${escapeHtml(v.version_no)}</strong>
           <div class="chips"><span class="chip">${escapeHtml(v.status)}</span></div>
           <div class="muted" style="margin-top:8px;">${escapeHtml(v.sujet_template || '')}</div>
           <div class="mono" style="margin-top:10px;">${escapeHtml(v.corps_template || '')}</div>
@@ -563,7 +631,7 @@ if (!window._supabaseClient) {
           <span class="muted">${escapeHtml(t.label)}</span>
           <div class="chips">
             <span class="chip">${escapeHtml(t.source_kind)}</span>
-            <span class="chip">prio ${escapeHtml(t.default_priority)}</span>
+            <span class="chip">priorité ${escapeHtml(t.default_priority)}</span>
           </div>
         `;
         box.appendChild(div);
@@ -584,8 +652,8 @@ if (!window._supabaseClient) {
           <div class="chips">
             <span class="chip">${escapeHtml(trig?.code || '')}</span>
             <span class="chip">${escapeHtml(s.aggregation_mode)}</span>
-            <span class="chip">prio ${escapeHtml(s.priority)}</span>
-            <span class="chip">${steps} step(s)</span>
+            <span class="chip">priorité ${escapeHtml(s.priority)}</span>
+            <span class="chip">${steps} étape(s)</span>
           </div>
         `;
         box.appendChild(div);
@@ -623,10 +691,10 @@ if (!window._supabaseClient) {
           <strong>${escapeHtml(tt?.code || '')}</strong>
           <div class="chips">
             <span class="chip">zone ${escapeHtml(ev.zone_cible)}</span>
-            <span class="chip">${escapeHtml(ev.severity || 'sans severity')}</span>
+            <span class="chip">${escapeHtml(ev.severity || 'non renseigné')}</span>
             <span class="chip">${escapeHtml(ev.statut)}</span>
           </div>
-          <div class="muted" style="margin-top:8px;">dedupe_key: ${escapeHtml(ev.dedupe_key)}</div>
+          <div class="muted" style="margin-top:8px;">clé anti-doublon : ${escapeHtml(ev.dedupe_key)}</div>
           <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(ev.payload || {}, null, 2))}</div>
         `;
         box.appendChild(div);
@@ -637,22 +705,22 @@ if (!window._supabaseClient) {
       try {
         const payload = {
           code: val('ci_code'),
-          categorie: val('ci_categorie'),
+          categorie: dictionnaires.categories[val('ci_categorie')],
           sujet: val('ci_sujet'),
           type: val('ci_type'),
           source: val('ci_source'),
           topic_code: val('ci_topic_code'),
-          channel: val('ci_channel'),
-          policy: parseJson(val('ci_policy'), 'Policy JSON'),
+          channel: dictionnaires.canaux[val('ci_channel')],
+          policy: parseJson(val('ci_policy'), 'Règles JSON'),
           active: true
         };
-        const { error } = await supabase.from('content_items').insert(payload);
+        const { error } = await db().from('content_items').insert(payload);
         if (error) throw error;
-        setGlobalNotice('Brique créée.', 'ok');
+        setGlobalNotice('La brique de contenu a été créée.', 'ok');
         clearContentItemForm();
         await refreshAll();
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur de création de brique.', 'err');
+        setGlobalNotice(e.message || 'Erreur lors de la création de la brique.', 'err');
       }
     }
 
@@ -663,17 +731,17 @@ if (!window._supabaseClient) {
           version_no: Number(val('cv_version_no')),
           sujet_template: val('cv_sujet_template'),
           corps_template: val('cv_corps_template'),
-          status: val('cv_status'),
+          status: dictionnaires.statutVersion[val('cv_status')],
           source_ref: val('cv_source_ref'),
           change_note: val('cv_change_note')
         };
-        const { error } = await supabase.from('content_versions').insert(payload);
+        const { error } = await db().from('content_versions').insert(payload);
         if (error) throw error;
-        setGlobalNotice('Version créée.', 'ok');
+        setGlobalNotice('La version a été créée.', 'ok');
         clearContentVersionForm();
         await refreshAll();
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur de création de version.', 'err');
+        setGlobalNotice(e.message || 'Erreur lors de la création de la version.', 'err');
       }
     }
 
@@ -686,13 +754,13 @@ if (!window._supabaseClient) {
           default_priority: Number(val('tt_default_priority')),
           is_active: true
         };
-        const { error } = await supabase.from('trigger_types').insert(payload);
+        const { error } = await db().from('trigger_types').insert(payload);
         if (error) throw error;
-        setGlobalNotice('Trigger type créé.', 'ok');
+        setGlobalNotice('Le type de déclencheur a été créé.', 'ok');
         clearTriggerTypeForm();
         await refreshAll();
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur de création de trigger type.', 'err');
+        setGlobalNotice(e.message || 'Erreur lors de la création du type de déclencheur.', 'err');
       }
     }
 
@@ -702,17 +770,17 @@ if (!window._supabaseClient) {
           code: val('sc_code'),
           label: val('sc_label'),
           trigger_type_id: Number(val('sc_trigger_type_id')),
-          aggregation_mode: val('sc_aggregation_mode'),
+          aggregation_mode: dictionnaires.modeScenario[val('sc_aggregation_mode')],
           priority: Number(val('sc_priority')),
           active: true
         };
-        const { error } = await supabase.from('scenarios').insert(payload);
+        const { error } = await db().from('scenarios').insert(payload);
         if (error) throw error;
-        setGlobalNotice('Scénario créé.', 'ok');
+        setGlobalNotice('Le scénario a été créé.', 'ok');
         clearScenarioForm();
         await refreshAll();
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur de création de scénario.', 'err');
+        setGlobalNotice(e.message || 'Erreur lors de la création du scénario.', 'err');
       }
     }
 
@@ -721,8 +789,8 @@ if (!window._supabaseClient) {
       const contents = [];
       rows.forEach(row => {
         const contentCode = row.querySelector('.rule-content').value;
-        const when = row.querySelector('.rule-when').value;
-        if (contentCode) contents.push({ content_code: contentCode, when });
+        const whenLabel = row.querySelector('.rule-when').value;
+        if (contentCode) contents.push({ content_code: contentCode, when: dictionnaires.conditionContenu[whenLabel] });
       });
       return { contents, priority: null };
     }
@@ -733,20 +801,20 @@ if (!window._supabaseClient) {
           scenario_id: Number(val('ss_scenario_id')),
           code: val('ss_code'),
           step_order: Number(val('ss_step_order')),
-          window_ref: val('ss_window_ref'),
+          window_ref: dictionnaires.fenetreTemps[val('ss_window_ref')],
           window_min_hours: Number(val('ss_window_min_hours')),
           window_max_hours: Number(val('ss_window_max_hours')),
           logic_json: buildStepLogicJson(),
           active: true
         };
-        const { error } = await supabase.from('scenario_steps').insert(payload);
+        const { error } = await db().from('scenario_steps').insert(payload);
         if (error) throw error;
-        setGlobalNotice('Step créé.', 'ok');
+        setGlobalNotice('L’étape a été créée.', 'ok');
         document.getElementById('stepRules').innerHTML = '';
         addStepRule();
         await refreshAll();
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur de création du step.', 'err');
+        setGlobalNotice(e.message || 'Erreur lors de la création de l’étape.', 'err');
       }
     }
 
@@ -762,22 +830,22 @@ if (!window._supabaseClient) {
           predicted_start_at: val('ev_predicted_start_at') || null,
           predicted_end_at: val('ev_predicted_end_at') || null,
           date_evenement: val('ev_date_evenement') || null,
-          severity: val('ev_severity') || null,
-          payload: parseJson(val('ev_payload'), 'Payload JSON'),
+          severity: dictionnaires.gravite[val('ev_severity')] || null,
+          payload: parseJson(val('ev_payload'), 'Données de contexte'),
           statut: 'open',
           validated_by: 'admin-ui'
         };
-        const { error } = await supabase.from('events').insert(payload);
+        const { error } = await db().from('events').insert(payload);
         if (error) throw error;
-        setGlobalNotice('Event créé.', 'ok');
+        setGlobalNotice('L’événement a été créé.', 'ok');
         clearEventForm();
         await refreshAll();
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur de création d’event.', 'err');
+        setGlobalNotice(e.message || 'Erreur lors de la création de l’événement.', 'err');
       }
     }
 
-    function addStepRule(contentCode = '', when = 'always') {
+    function addStepRule(contentCode = '', when = 'Toujours afficher') {
       const wrap = document.getElementById('stepRules');
       const row = document.createElement('div');
       row.className = 'rule-row';
@@ -787,23 +855,18 @@ if (!window._supabaseClient) {
       state.contentItems.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item.code;
-        opt.textContent = item.code;
+        opt.textContent = item.code + ' — ' + (item.sujet || 'sans titre');
         if (item.code === contentCode) opt.selected = true;
         contentSelect.appendChild(opt);
       });
 
       const whenSelect = document.createElement('select');
       whenSelect.className = 'rule-when';
-      [
-        'always',
-        'cooldown_ok',
-        'not_sent_in_event && cooldown_ok',
-        'first_detection_for_event && cooldown_ok'
-      ].forEach(v => {
+      Object.keys(dictionnaires.conditionContenu).forEach(libelle => {
         const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v;
-        if (v === when) opt.selected = true;
+        opt.value = libelle;
+        opt.textContent = libelle;
+        if (libelle === when) opt.selected = true;
         whenSelect.appendChild(opt);
       });
 
@@ -813,9 +876,9 @@ if (!window._supabaseClient) {
       remove.type = 'button';
       remove.onclick = () => row.remove();
 
-      row.appendChild(labelEl('Contenu'));
+      row.appendChild(labelEl('Brique à afficher'));
       row.appendChild(contentSelect);
-      row.appendChild(labelEl('Condition'));
+      row.appendChild(labelEl('Condition d’affichage'));
       row.appendChild(whenSelect);
       row.appendChild(remove);
       wrap.appendChild(row);
@@ -829,7 +892,7 @@ if (!window._supabaseClient) {
     function syncPreviewVersions() {
       const itemId = Number(val('pv_content_item_id'));
       const versions = state.contentVersions.filter(v => v.content_item_id === itemId);
-      setOptions('pv_content_version_id', versions, 'id', v => `v${v.version_no} - ${v.status}`);
+      setOptions('pv_content_version_id', versions, 'id', v => `Version ${v.version_no} — ${v.status}`);
     }
 
     function renderPreview() {
@@ -851,8 +914,6 @@ if (!window._supabaseClient) {
       l.textContent = text;
       return l;
     }
-
-    function val(id) { return document.getElementById(id).value.trim(); }
 
     function clearContentItemForm() {
       document.getElementById('ci_code').value = '';
@@ -892,7 +953,7 @@ if (!window._supabaseClient) {
 
     window.addEventListener('load', async () => {
       bootSupabase();
-      if (supabase) {
+      if (db()) {
         await refreshAll();
       }
     });
