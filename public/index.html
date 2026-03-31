@@ -108,11 +108,10 @@
       <button class="nav-btn active" onclick="showPage('dashboard', this)">Tableau de bord</button>
       <button class="nav-btn" onclick="showPage('content-items', this)">Briques de contenu</button>
       <button class="nav-btn" onclick="showPage('content-versions', this)">Versions des contenus</button>
-      <button class="nav-btn" onclick="showPage('trigger-types', this)">Types de déclencheur</button>
       <button class="nav-btn" onclick="showPage('scenarios', this)">Scénarios</button>
       <button class="nav-btn" onclick="showPage('scenario-steps', this)">Étapes des scénarios</button>
-      <button class="nav-btn" onclick="showPage('events', this)">Événements</button>
       <button class="nav-btn" onclick="showPage('preview', this)">Aperçu d’un rendu</button>
+      <button class="nav-btn" onclick="showPage('referentials', this)">Référentiels en lecture seule</button>
       <button class="nav-btn" onclick="refreshAll()">Rafraîchir les données</button>
     </aside>
 
@@ -123,9 +122,9 @@
           <strong>Comment utiliser l’interface</strong><br>
           1. Créez d’abord une <strong>brique de contenu</strong>.<br>
           2. Ajoutez ensuite une <strong>version</strong> de cette brique.<br>
-          3. Créez un <strong>type de déclencheur</strong>, puis un <strong>scénario</strong>.<br>
-          4. Ajoutez une ou plusieurs <strong>étapes</strong> au scénario.<br>
-          5. Créez enfin un <strong>événement</strong> pour tester votre logique.
+          3. Créez un <strong>scénario</strong>.<br>
+          4. Ajoutez une ou plusieurs <strong>étapes</strong> à ce scénario.<br>
+          5. Les <strong>types de déclencheur</strong> et les <strong>événements</strong> sont gérés automatiquement par le système et sont visibles ici uniquement pour consultation.
         </div>
         <div class="grid-3">
           <div class="card"><div class="muted">Briques de contenu</div><div class="kpi" id="kpiContents">0</div><div class="small muted">Table content_items</div></div>
@@ -218,31 +217,6 @@
         </div>
       </section>
 
-      <section id="trigger-types" class="page">
-        <div class="grid-2">
-          <div class="card">
-            <h2>Créer un type de déclencheur</h2>
-            <div class="help">Un type de déclencheur correspond à une famille d’événements : radar, orage, changement de vitesse…</div>
-            <label>Code technique</label>
-            <input id="tt_code" placeholder="Ex. STORM_ALERT">
-            <label>Libellé</label>
-            <input id="tt_label" placeholder="Ex. Alerte orage">
-            <label>Type de source</label>
-            <input id="tt_source_kind" placeholder="Ex. weather_api">
-            <label>Priorité par défaut</label>
-            <input id="tt_default_priority" type="number" value="80">
-            <div class="row">
-              <button onclick="createTriggerType()">Créer le type</button>
-              <button class="secondary" onclick="clearTriggerTypeForm()">Vider</button>
-            </div>
-          </div>
-          <div class="card">
-            <h2>Types existants</h2>
-            <div id="triggerTypesList" class="list"></div>
-          </div>
-        </div>
-      </section>
-
       <section id="scenarios" class="page">
         <div class="grid-2">
           <div class="card">
@@ -308,45 +282,24 @@
         </div>
       </section>
 
-      <section id="events" class="page">
+      <section id="referentials" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Créer un événement</h2>
-            <div class="help">Un événement est un cas concret : un orage annoncé, un radar installé, un changement de limitation…</div>
-            <label>Type de déclencheur</label>
-            <select id="ev_trigger_type_id"></select>
-            <label>ID du connecteur (facultatif)</label>
-            <input id="ev_connecteur_id" type="number" placeholder="Ex. 1">
-            <label>Identifiant externe</label>
-            <input id="ev_source_external_id" placeholder="Ex. storm-56-2026-001">
-            <label>Clé anti-doublon</label>
-            <input id="ev_dedupe_key" placeholder="Ex. STORM_ALERT|56|Vannes|2026-03-27T18:00:00+01:00">
-            <label>Zone cible</label>
-            <input id="ev_zone_cible" placeholder="Ex. 56">
-            <label>Date/heure de survenance</label>
-            <input id="ev_occurs_at" placeholder="2026-03-25T08:00:00+01:00">
-            <label>Date/heure de début prévue</label>
-            <input id="ev_predicted_start_at" placeholder="2026-03-27T18:00:00+01:00">
-            <label>Date/heure de fin prévue</label>
-            <input id="ev_predicted_end_at" placeholder="2026-03-27T23:00:00+01:00">
-            <label>Date d’événement</label>
-            <input id="ev_date_evenement" placeholder="2026-03-27">
-            <label>Niveau de gravité</label>
-            <select id="ev_severity"><option value="">Non renseigné</option><option>Information</option><option>Faible</option><option>Moyen</option><option>Élevé</option><option>Critique</option></select>
-            <label>Données de contexte (JSON)</label>
-            <textarea id="ev_payload">{
-  "city": "Vannes",
-  "department": "56",
-  "event_type": "violent_storm",
-  "confidence": 0.87
-}</textarea>
-            <div class="row">
-              <button onclick="createEvent()">Créer l’événement</button>
-              <button class="secondary" onclick="clearEventForm()">Vider</button>
+            <h2>Types de déclencheur</h2>
+            <div class="help">
+              Ces données sont fournies automatiquement par le système.
+              Elles ne sont pas à créer manuellement dans cette interface.
             </div>
+            <div id="triggerTypesList" class="list"></div>
           </div>
+      
           <div class="card">
-            <h2>Événements existants</h2>
+            <h2>Événements détectés</h2>
+            <div class="help">
+              Les événements sont générés automatiquement à partir des connecteurs
+              et des données reçues. Cette zone sert uniquement à vérifier ce qui
+              remonte dans le système.
+            </div>
             <div id="eventsList" class="list"></div>
           </div>
         </div>
@@ -387,7 +340,7 @@
 
   <script>
     const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
+    const SUPABASE_ANON_KEY = "VOTRE_ANON_KEY";
 
     if (!window._appSupabaseClient) {
       window._appSupabaseClient = null;
