@@ -376,7 +376,6 @@
 if (!window._supabaseClient) {
   window._supabaseClient = null;
 }
-let supabase = window._supabaseClient;
     let state = {
       contentItems: [],
       contentVersions: [],
@@ -391,7 +390,6 @@ let supabase = window._supabaseClient;
         if (!SUPABASE_URL || SUPABASE_URL.includes('VOTRE_URL')) throw new Error('SUPABASE_URL non renseignée');
         if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('VOTRE_ANON')) throw new Error('SUPABASE_ANON_KEY non renseignée');
         window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        supabase = window._supabaseClient;
         setConnectionBadge('Supabase connecté', 'ok');
         setGlobalNotice('Connexion Supabase initialisée.', 'ok');
       } catch (e) {
