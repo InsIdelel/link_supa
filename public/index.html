@@ -108,10 +108,11 @@
       <button class="nav-btn active" onclick="showPage('dashboard', this)">Tableau de bord</button>
       <button class="nav-btn" onclick="showPage('content-items', this)">Briques de contenu</button>
       <button class="nav-btn" onclick="showPage('content-versions', this)">Versions des contenus</button>
+      <button class="nav-btn" onclick="showPage('trigger-types', this)">Types de déclencheur</button>
       <button class="nav-btn" onclick="showPage('scenarios', this)">Scénarios</button>
       <button class="nav-btn" onclick="showPage('scenario-steps', this)">Étapes des scénarios</button>
+      <button class="nav-btn" onclick="showPage('events', this)">Événements</button>
       <button class="nav-btn" onclick="showPage('preview', this)">Aperçu d’un rendu</button>
-      <button class="nav-btn" onclick="showPage('referentials', this)">Référentiels en lecture seule</button>
       <button class="nav-btn" onclick="refreshAll()">Rafraîchir les données</button>
     </aside>
 
@@ -122,9 +123,9 @@
           <strong>Comment utiliser l’interface</strong><br>
           1. Créez d’abord une <strong>brique de contenu</strong>.<br>
           2. Ajoutez ensuite une <strong>version</strong> de cette brique.<br>
-          3. Créez un <strong>scénario</strong>.<br>
-          4. Ajoutez une ou plusieurs <strong>étapes</strong> à ce scénario.<br>
-          5. Les <strong>types de déclencheur</strong> et les <strong>événements</strong> sont gérés automatiquement par le système et sont visibles ici uniquement pour consultation.
+          3. Créez un <strong>type de déclencheur</strong>, puis un <strong>scénario</strong>.<br>
+          4. Ajoutez une ou plusieurs <strong>étapes</strong> au scénario.<br>
+          5. Créez enfin un <strong>événement</strong> pour tester votre logique.
         </div>
         <div class="grid-3">
           <div class="card"><div class="muted">Briques de contenu</div><div class="kpi" id="kpiContents">0</div><div class="small muted">Table content_items</div></div>
@@ -155,7 +156,7 @@
             <input id="ci_code" placeholder="Ex. AQUAPLANING_WARNING">
             <div class="help">Nom unique utilisé par le système.</div>
             <label>Catégorie</label>
-            <select id="ci_categorie"><option>Alerte</option><option>Conseil</option><option>Juridique</option><option>Appel à l’action</option><option>Quiz</option></select>
+            <select id="ci_categorie"><option>Alerte</option><option>Conseil</option><option>Juridique</option><option>Appel à l’action</option></select>
             <label>Titre lisible</label>
             <input id="ci_sujet" placeholder="Ex. Conseil aquaplaning">
             <label>Type de bloc</label>
@@ -217,6 +218,31 @@
         </div>
       </section>
 
+      <section id="trigger-types" class="page">
+        <div class="grid-2">
+          <div class="card">
+            <h2>Créer un type de déclencheur</h2>
+            <div class="help">Un type de déclencheur correspond à une famille d’événements : radar, orage, changement de vitesse…</div>
+            <label>Code technique</label>
+            <input id="tt_code" placeholder="Ex. STORM_ALERT">
+            <label>Libellé</label>
+            <input id="tt_label" placeholder="Ex. Alerte orage">
+            <label>Type de source</label>
+            <input id="tt_source_kind" placeholder="Ex. weather_api">
+            <label>Priorité par défaut</label>
+            <input id="tt_default_priority" type="number" value="80">
+            <div class="row">
+              <button onclick="createTriggerType()">Créer le type</button>
+              <button class="secondary" onclick="clearTriggerTypeForm()">Vider</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Types existants</h2>
+            <div id="triggerTypesList" class="list"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="scenarios" class="page">
         <div class="grid-2">
           <div class="card">
@@ -229,7 +255,12 @@
             <label>Type de déclencheur associé</label>
             <select id="sc_trigger_type_id"></select>
             <label>Mode d’agrégation</label>
-            <select id="sc_aggregation_mode"><option>Message simple</option><option>Séquence temporelle</option><option>Regroupement quotidien</option></select>
+            <select id="sc_aggregation_mode">
+              <option>Message simple</option>
+              <option>Séquence temporelle</option>
+              <option>Regroupement quotidien</option>
+            </select>
+            <div id="scenarioAggregationHelp" class="notice info small"></div>
             <label>Priorité</label>
             <input id="sc_priority" type="number" value="80">
             <div class="row">
@@ -254,17 +285,26 @@
             <label>Code de l’étape</label>
             <input id="ss_code" placeholder="Ex. D2">
             <label>Ordre d’exécution</label>
-            <input id="ss_step_order" type="number" value="1">
+            <input id="ss_step_order" type="number" value="1" readonly>
+            <div class="help">L’ordre est proposé automatiquement. Si une étape 1 existe déjà pour ce scénario, l’interface proposera automatiquement 2, puis 3, etc.</div>
             <label>Référence temporelle</label>
-            <select id="ss_window_ref"><option>Date de survenance</option><option>Début prévu</option><option>Fin prévue</option><option>Date d’événement</option></select>
+            <select id="ss_window_ref">
+              <option>Date de survenance</option>
+              <option>Début prévu</option>
+              <option>Fin prévue</option>
+              <option>Date d’événement</option>
+            </select>
+            <div id="stepWindowHelp" class="notice info small"></div>
             <div class="grid-2">
               <div>
                 <label>Heures minimales</label>
                 <input id="ss_window_min_hours" type="number" value="0">
+                <div class="help">Début de la fenêtre. Exemple : 12 signifie « à partir de 12 heures avant l’événement ».</div>
               </div>
               <div>
                 <label>Heures maximales</label>
                 <input id="ss_window_max_hours" type="number" value="24">
+                <div class="help">Fin de la fenêtre. Exemple : 36 signifie « jusqu’à 36 heures avant l’événement ».</div>
               </div>
             </div>
             <h3>Contenus à inclure</h3>
@@ -282,24 +322,45 @@
         </div>
       </section>
 
-      <section id="referentials" class="page">
+      <section id="events" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Types de déclencheur</h2>
-            <div class="help">
-              Ces données sont fournies automatiquement par le système.
-              Elles ne sont pas à créer manuellement dans cette interface.
+            <h2>Créer un événement</h2>
+            <div class="help">Un événement est un cas concret : un orage annoncé, un radar installé, un changement de limitation…</div>
+            <label>Type de déclencheur</label>
+            <select id="ev_trigger_type_id"></select>
+            <label>ID du connecteur (facultatif)</label>
+            <input id="ev_connecteur_id" type="number" placeholder="Ex. 1">
+            <label>Identifiant externe</label>
+            <input id="ev_source_external_id" placeholder="Ex. storm-56-2026-001">
+            <label>Clé anti-doublon</label>
+            <input id="ev_dedupe_key" placeholder="Ex. STORM_ALERT|56|Vannes|2026-03-27T18:00:00+01:00">
+            <label>Zone cible</label>
+            <input id="ev_zone_cible" placeholder="Ex. 56">
+            <label>Date/heure de survenance</label>
+            <input id="ev_occurs_at" placeholder="2026-03-25T08:00:00+01:00">
+            <label>Date/heure de début prévue</label>
+            <input id="ev_predicted_start_at" placeholder="2026-03-27T18:00:00+01:00">
+            <label>Date/heure de fin prévue</label>
+            <input id="ev_predicted_end_at" placeholder="2026-03-27T23:00:00+01:00">
+            <label>Date d’événement</label>
+            <input id="ev_date_evenement" placeholder="2026-03-27">
+            <label>Niveau de gravité</label>
+            <select id="ev_severity"><option value="">Non renseigné</option><option>Information</option><option>Faible</option><option>Moyen</option><option>Élevé</option><option>Critique</option></select>
+            <label>Données de contexte (JSON)</label>
+            <textarea id="ev_payload">{
+  "city": "Vannes",
+  "department": "56",
+  "event_type": "violent_storm",
+  "confidence": 0.87
+}</textarea>
+            <div class="row">
+              <button onclick="createEvent()">Créer l’événement</button>
+              <button class="secondary" onclick="clearEventForm()">Vider</button>
             </div>
-            <div id="triggerTypesList" class="list"></div>
           </div>
-      
           <div class="card">
-            <h2>Événements détectés</h2>
-            <div class="help">
-              Les événements sont générés automatiquement à partir des connecteurs
-              et des données reçues. Cette zone sert uniquement à vérifier ce qui
-              remonte dans le système.
-            </div>
+            <h2>Événements existants</h2>
             <div id="eventsList" class="list"></div>
           </div>
         </div>
@@ -308,7 +369,7 @@
       <section id="preview" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Aperçu d’une Brique de contenu</h2>
+            <h2>Aperçu d’un message</h2>
             <div class="help">Choisissez une version de contenu et testez son rendu avec des données de contexte.</div>
             <label>Brique de contenu</label>
             <select id="pv_content_item_id"></select>
@@ -347,6 +408,17 @@
     }
 
     const dictionnaires = {
+      aideModeScenario: {
+        'Message simple': 'Un seul message est prévu pour ce scénario. À utiliser quand il n’y a pas plusieurs étapes dans le temps.',
+        'Séquence temporelle': 'Plusieurs messages peuvent être envoyés à différents moments : par exemple J-2, J-1 et J.',
+        'Regroupement quotidien': 'Les contenus issus de ce scénario sont pensés pour être regroupés dans un même envoi quotidien.'
+      },
+      aideFenetreTemps: {
+        'Date de survenance': 'La fenêtre est calculée par rapport au moment où l’événement a lieu réellement.',
+        'Début prévu': 'La fenêtre est calculée par rapport au début prévu de l’événement. C’est le cas le plus utile pour la météo.',
+        'Fin prévue': 'La fenêtre est calculée par rapport à la fin prévue de l’événement.',
+        'Date d’événement': 'La fenêtre est calculée par rapport à la date simple de l’événement, sans heure précise.'
+      },
       categories: {
         'Alerte': 'alert',
         'Conseil': 'advice',
@@ -529,6 +601,9 @@
       setOptions('pv_content_item_id', state.contentItems, 'id', i => i.code);
       syncPreviewVersions();
       syncStepRuleDropdowns();
+      updateScenarioAggregationHelp();
+      updateStepWindowHelp();
+      updateNextStepOrder();
     }
 
     function renderContentItems() {
@@ -842,6 +917,32 @@
       if (wrap.children.length === 0) addStepRule();
     }
 
+    function updateScenarioAggregationHelp() {
+      const value = val('sc_aggregation_mode');
+      const box = document.getElementById('scenarioAggregationHelp');
+      if (!box) return;
+      box.textContent = dictionnaires.aideModeScenario[value] || '';
+    }
+
+    function updateStepWindowHelp() {
+      const value = val('ss_window_ref');
+      const min = val('ss_window_min_hours') || '0';
+      const max = val('ss_window_max_hours') || '24';
+      const box = document.getElementById('stepWindowHelp');
+      if (!box) return;
+      const intro = dictionnaires.aideFenetreTemps[value] || '';
+      box.textContent = `${intro} La règle s’appliquera si l’on se situe entre ${min}h et ${max}h de cette référence temporelle.`;
+    }
+
+    function updateNextStepOrder() {
+      const scenarioId = Number(val('ss_scenario_id'));
+      const input = document.getElementById('ss_step_order');
+      if (!input || !scenarioId) return;
+      const existing = state.scenarioSteps.filter(st => st.scenario_id === scenarioId);
+      const maxOrder = existing.length ? Math.max(...existing.map(st => Number(st.step_order) || 0)) : 0;
+      input.value = String(maxOrder + 1);
+    }
+
     function syncPreviewVersions() {
       const itemId = Number(val('pv_content_item_id'));
       const versions = state.contentVersions.filter(v => v.content_item_id === itemId);
@@ -893,6 +994,8 @@
       document.getElementById('sc_code').value = '';
       document.getElementById('sc_label').value = '';
       document.getElementById('sc_priority').value = '80';
+      document.getElementById('sc_aggregation_mode').value = 'Message simple';
+      updateScenarioAggregationHelp();
     }
 
     function clearEventForm() {
@@ -902,10 +1005,21 @@
 
     document.addEventListener('change', e => {
       if (e.target && e.target.id === 'pv_content_item_id') syncPreviewVersions();
+      if (e.target && e.target.id === 'sc_aggregation_mode') updateScenarioAggregationHelp();
+      if (e.target && e.target.id === 'ss_window_ref') updateStepWindowHelp();
+      if (e.target && e.target.id === 'ss_scenario_id') updateNextStepOrder();
+    });
+
+    document.addEventListener('input', e => {
+      if (e.target && (e.target.id === 'ss_window_min_hours' || e.target.id === 'ss_window_max_hours')) {
+        updateStepWindowHelp();
+      }
     });
 
     window.addEventListener('load', async () => {
       bootSupabase();
+      updateScenarioAggregationHelp();
+      updateStepWindowHelp();
       if (db()) {
         await refreshAll();
       }
