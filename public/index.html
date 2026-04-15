@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administration – Prévention routière</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -87,6 +88,7 @@
     .rule-row { border:1px dashed #d1d5db; padding:12px; border-radius:12px; margin-bottom:10px; background:#fafafa; }
     .preview-box { white-space:pre-wrap; line-height:1.45; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; min-height:250px; }
     .help { font-size:12px; color:var(--muted); margin:-6px 0 10px; }
+    .hidden { display:none; }
     @media (max-width: 980px) {
       .app { grid-template-columns:1fr; }
       aside { border-right:0; border-bottom:1px solid var(--line); }
@@ -197,8 +199,17 @@
             <input id="cv_version_no" type="number" value="1">
             <label>Objet / titre du message</label>
             <input id="cv_sujet_template" placeholder="Ex. Conseil aquaplaning">
-            <label>Texte du message</label>
-            <textarea id="cv_corps_template" placeholder="Texte avec variables comme {lieu}"></textarea>
+
+            <div id="cv_plain_editor_wrap">
+              <label>Texte du message</label>
+              <textarea id="cv_corps_template" placeholder="Texte avec variables comme {lieu}"></textarea>
+            </div>
+
+            <div id="cv_html_editor_wrap" class="hidden">
+              <label>Texte du message</label>
+              <textarea id="cv_corps_template_html" placeholder="Texte avec variables comme {lieu}"></textarea>
+            </div>
+
             <div class="help">Vous pouvez utiliser des variables comme {lieu}, {source_url}, {territory}…</div>
             <label>Statut</label>
             <select id="cv_status"><option>Brouillon</option><option selected>Publié</option><option>Archivé</option></select>
@@ -471,14 +482,16 @@
       events: []
     };
 
+    let tinyReady = false;
+
     function db() {
       return window._appSupabaseClient;
     }
 
     function bootSupabase() {
       try {
-        if (!SUPABASE_URL || SUPABASE_URL.includes('VOTRE_URL')) throw new Error('SUPABASE_URL non renseignée');
-        if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('VOTRE_ANON')) throw new Error('SUPABASE_ANON_KEY non renseignée');
+        if (!SUPABASE_URL || SUPABASE_URL.includes('https://vnjdnshvixzqawkewwfk.supabase.co')) throw new Error('SUPABASE_URL non renseignée');
+        if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E')) throw new Error('SUPABASE_ANON_KEY non renseignée');
         window._appSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         setConnectionBadge('Connexion à la base réussie', 'ok');
         setGlobalNotice('Connexion Supabase initialisée.', 'ok');
@@ -537,6 +550,54 @@
 
     function val(id) { return document.getElementById(id).value.trim(); }
 
+    function getContentItemById(id) {
+      return state.contentItems.find(item => Number(item.id) === Number(id));
+    }
+
+    function isEmailContentVersionSelected() {
+      const item = getContentItemById(Number(val('cv_content_item_id')));
+      return item && item.channel === 'email';
+    }
+
+    function initTinyMCE() {
+      if (tinyReady) return;
+      tinymce.init({
+        selector: '#cv_corps_template_html',
+        height: 300,
+        menubar: false,
+        branding: false,
+        plugins: 'lists link table code',
+        toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link table | code',
+        convert_urls: false
+      }).then(() => {
+        tinyReady = true;
+      }).catch(err => {
+        console.error('Erreur TinyMCE :', err);
+      });
+    }
+
+    function updateContentVersionEditorMode() {
+      const plainWrap = document.getElementById('cv_plain_editor_wrap');
+      const htmlWrap = document.getElementById('cv_html_editor_wrap');
+      if (!plainWrap || !htmlWrap) return;
+
+      if (isEmailContentVersionSelected()) {
+        plainWrap.classList.add('hidden');
+        htmlWrap.classList.remove('hidden');
+      } else {
+        plainWrap.classList.remove('hidden');
+        htmlWrap.classList.add('hidden');
+      }
+    }
+
+    function getContentVersionBodyValue() {
+      if (isEmailContentVersionSelected()) {
+        const editor = tinymce.get('cv_corps_template_html');
+        return editor ? editor.getContent() : document.getElementById('cv_corps_template_html').value;
+      }
+      return val('cv_corps_template');
+    }
+
     async function refreshAll() {
       if (!db()) return;
       const requests = await Promise.all([
@@ -570,6 +631,7 @@
       renderScenarioSteps();
       renderEvents();
       populateSelects();
+      updateContentVersionEditorMode();
       setGlobalNotice('Les données ont été rechargées.', 'ok');
     }
 
@@ -584,6 +646,7 @@
     function setOptions(selectId, items, valueKey, labelBuilder) {
       const el = document.getElementById(selectId);
       if (!el) return;
+      const previousValue = el.value;
       el.innerHTML = '';
       items.forEach(item => {
         const opt = document.createElement('option');
@@ -591,6 +654,9 @@
         opt.textContent = typeof labelBuilder === 'function' ? labelBuilder(item) : item[labelBuilder];
         el.appendChild(opt);
       });
+      if (previousValue && items.some(item => String(item[valueKey]) === String(previousValue))) {
+        el.value = previousValue;
+      }
     }
 
     function populateSelects() {
@@ -604,6 +670,7 @@
       updateScenarioAggregationHelp();
       updateStepWindowHelp();
       updateNextStepOrder();
+      updateContentVersionEditorMode();
     }
 
     function renderContentItems() {
@@ -758,7 +825,7 @@
           content_item_id: Number(val('cv_content_item_id')),
           version_no: Number(val('cv_version_no')),
           sujet_template: val('cv_sujet_template'),
-          corps_template: val('cv_corps_template'),
+          corps_template: getContentVersionBodyValue(),
           status: dictionnaires.statutVersion[val('cv_status')],
           source_ref: val('cv_source_ref'),
           change_note: val('cv_change_note')
@@ -981,6 +1048,12 @@
       document.getElementById('cv_version_no').value = '1';
       document.getElementById('cv_sujet_template').value = '';
       document.getElementById('cv_corps_template').value = '';
+      const editor = tinymce.get('cv_corps_template_html');
+      if (editor) {
+        editor.setContent('');
+      } else {
+        document.getElementById('cv_corps_template_html').value = '';
+      }
     }
 
     function clearTriggerTypeForm() {
@@ -1008,6 +1081,7 @@
       if (e.target && e.target.id === 'sc_aggregation_mode') updateScenarioAggregationHelp();
       if (e.target && e.target.id === 'ss_window_ref') updateStepWindowHelp();
       if (e.target && e.target.id === 'ss_scenario_id') updateNextStepOrder();
+      if (e.target && e.target.id === 'cv_content_item_id') updateContentVersionEditorMode();
     });
 
     document.addEventListener('input', e => {
@@ -1018,8 +1092,10 @@
 
     window.addEventListener('load', async () => {
       bootSupabase();
+      initTinyMCE();
       updateScenarioAggregationHelp();
       updateStepWindowHelp();
+      updateContentVersionEditorMode();
       if (db()) {
         await refreshAll();
       }
