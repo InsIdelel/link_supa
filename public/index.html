@@ -568,7 +568,11 @@
         branding: false,
         plugins: 'lists link table code',
         toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link table | code',
-        convert_urls: false
+        convert_urls: false,
+        language: 'fr_FR',
+        entity_encoding: 'raw',
+        encoding: 'xml',
+        browser_spellcheck: true
       }).then(() => {
         tinyReady = true;
       }).catch(err => {
