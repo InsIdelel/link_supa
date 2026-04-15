@@ -598,6 +598,19 @@
       return val('cv_corps_template');
     }
 
+    function updateNextContentVersionNumber() {
+      const contentItemId = Number(val('cv_content_item_id'));
+      const input = document.getElementById('cv_version_no');
+      if (!input || !contentItemId) return;
+  
+      const existing = state.contentVersions.filter(v => Number(v.content_item_id) === contentItemId);
+      const maxVersion = existing.length
+        ? Math.max(...existing.map(v => Number(v.version_no) || 0))
+        : 0;
+  
+      input.value = String(maxVersion + 1);
+    }
+
     async function refreshAll() {
       if (!db()) return;
       const requests = await Promise.all([
@@ -671,6 +684,7 @@
       updateStepWindowHelp();
       updateNextStepOrder();
       updateContentVersionEditorMode();
+      updateNextContentVersionNumber();
     }
 
     function renderContentItems() {
@@ -1045,7 +1059,6 @@
     }
 
     function clearContentVersionForm() {
-      document.getElementById('cv_version_no').value = '1';
       document.getElementById('cv_sujet_template').value = '';
       document.getElementById('cv_corps_template').value = '';
       const editor = tinymce.get('cv_corps_template_html');
@@ -1054,6 +1067,7 @@
       } else {
         document.getElementById('cv_corps_template_html').value = '';
       }
+      updateNextContentVersionNumber();
     }
 
     function clearTriggerTypeForm() {
@@ -1081,7 +1095,10 @@
       if (e.target && e.target.id === 'sc_aggregation_mode') updateScenarioAggregationHelp();
       if (e.target && e.target.id === 'ss_window_ref') updateStepWindowHelp();
       if (e.target && e.target.id === 'ss_scenario_id') updateNextStepOrder();
-      if (e.target && e.target.id === 'cv_content_item_id') updateContentVersionEditorMode();
+      if (e.target && e.target.id === 'cv_content_item_id') {
+        updateContentVersionEditorMode();
+        updateNextContentVersionNumber();
+      }
     });
 
     document.addEventListener('input', e => {
