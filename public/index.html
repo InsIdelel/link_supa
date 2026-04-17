@@ -484,6 +484,240 @@
 
     let tinyReady = false;
 
+    let editingScenarioId = null;
+    let editingScenarioStepId = null;
+
+    function startEditScenario(id) {
+  const scenario = state.scenarios.find(s => Number(s.id) === Number(id));
+  if (!scenario) return;
+
+  editingScenarioId = scenario.id;
+
+  document.getElementById('sc_code').value = scenario.code || '';
+  document.getElementById('sc_label').value = scenario.label || '';
+  document.getElementById('sc_trigger_type_id').value = String(scenario.trigger_type_id || '');
+  document.getElementById('sc_priority').value = String(scenario.priority ?? 80);
+
+  const modeLabel = Object.keys(dictionnaires.modeScenario).find(
+    key => dictionnaires.modeScenario[key] === scenario.aggregation_mode
+  );
+  if (modeLabel) {
+    document.getElementById('sc_aggregation_mode').value = modeLabel;
+  }
+
+  updateScenarioAggregationHelp();
+  updateScenarioButtons();
+}
+
+function cancelEditScenario() {
+  editingScenarioId = null;
+  clearScenarioForm();
+  updateScenarioButtons();
+}
+
+function updateScenarioButtons() {
+  const createBtn = document.getElementById('sc_submit_btn');
+  const cancelBtn = document.getElementById('sc_cancel_edit_btn');
+  if (!createBtn || !cancelBtn) return;
+
+  if (editingScenarioId) {
+    createBtn.textContent = 'Mettre à jour le scénario';
+    cancelBtn.classList.remove('hidden');
+  } else {
+    createBtn.textContent = 'Créer le scénario';
+    cancelBtn.classList.add('hidden');
+  }
+}
+
+async function submitScenario() {
+  if (editingScenarioId) {
+    await updateScenario();
+  } else {
+    await createScenario();
+  }
+}
+
+async function updateScenario() {
+  try {
+    const payload = {
+      code: val('sc_code'),
+      label: val('sc_label'),
+      trigger_type_id: Number(val('sc_trigger_type_id')),
+      aggregation_mode: dictionnaires.modeScenario[val('sc_aggregation_mode')],
+      priority: Number(val('sc_priority'))
+    };
+
+    const { error } = await db()
+      .from('scenarios')
+      .update(payload)
+      .eq('id', editingScenarioId);
+
+    if (error) throw error;
+
+    setGlobalNotice('Le scénario a été mis à jour.', 'ok');
+    editingScenarioId = null;
+    clearScenarioForm();
+    updateScenarioButtons();
+    await refreshAll();
+  } catch (e) {
+    setGlobalNotice(e.message || 'Erreur lors de la mise à jour du scénario.', 'err');
+  }
+}
+
+async function deleteScenario(id) {
+  const stepsCount = state.scenarioSteps.filter(st => Number(st.scenario_id) === Number(id)).length;
+
+  const confirmed = window.confirm(
+    stepsCount > 0
+      ? `Ce scénario contient ${stepsCount} étape(s). Supprimer d’abord ses étapes avant de supprimer le scénario.`
+      : 'Voulez-vous vraiment supprimer ce scénario ?'
+  );
+
+  if (!confirmed) return;
+  if (stepsCount > 0) return;
+
+  try {
+    const { error } = await db().from('scenarios').delete().eq('id', id);
+    if (error) throw error;
+
+    if (editingScenarioId === id) {
+      cancelEditScenario();
+    }
+
+    setGlobalNotice('Le scénario a été supprimé.', 'ok');
+    await refreshAll();
+  } catch (e) {
+    setGlobalNotice(e.message || 'Erreur lors de la suppression du scénario.', 'err');
+  }
+}
+
+
+    function startEditScenarioStep(id) {
+  const step = state.scenarioSteps.find(st => Number(st.id) === Number(id));
+  if (!step) return;
+
+  editingScenarioStepId = step.id;
+
+  document.getElementById('ss_scenario_id').value = String(step.scenario_id || '');
+  document.getElementById('ss_code').value = step.code || '';
+  document.getElementById('ss_step_order').value = String(step.step_order ?? 1);
+  document.getElementById('ss_window_min_hours').value = String(step.window_min_hours ?? 0);
+  document.getElementById('ss_window_max_hours').value = String(step.window_max_hours ?? 24);
+
+  const windowLabel = Object.keys(dictionnaires.fenetreTemps).find(
+    key => dictionnaires.fenetreTemps[key] === step.window_ref
+  );
+  if (windowLabel) {
+    document.getElementById('ss_window_ref').value = windowLabel;
+  }
+
+  document.getElementById('stepRules').innerHTML = '';
+
+  const contents = Array.isArray(step.logic_json?.contents) ? step.logic_json.contents : [];
+  if (contents.length) {
+    contents.forEach(rule => {
+      const whenLabel = Object.keys(dictionnaires.conditionContenu).find(
+        key => dictionnaires.conditionContenu[key] === rule.when
+      ) || 'Toujours afficher';
+
+      addStepRule(rule.content_code || '', whenLabel);
+    });
+  } else {
+    addStepRule();
+  }
+
+  updateStepWindowHelp();
+  updateScenarioStepButtons();
+}
+
+function cancelEditScenarioStep() {
+  editingScenarioStepId = null;
+  clearScenarioStepForm();
+  updateScenarioStepButtons();
+}
+
+function updateScenarioStepButtons() {
+  const submitBtn = document.getElementById('ss_submit_btn');
+  const cancelBtn = document.getElementById('ss_cancel_edit_btn');
+  if (!submitBtn || !cancelBtn) return;
+
+  if (editingScenarioStepId) {
+    submitBtn.textContent = 'Mettre à jour l’étape';
+    cancelBtn.classList.remove('hidden');
+  } else {
+    submitBtn.textContent = 'Créer l’étape';
+    cancelBtn.classList.add('hidden');
+  }
+}
+
+async function submitScenarioStep() {
+  if (editingScenarioStepId) {
+    await updateScenarioStep();
+  } else {
+    await createScenarioStep();
+  }
+}
+
+async function updateScenarioStep() {
+  try {
+    const payload = {
+      scenario_id: Number(val('ss_scenario_id')),
+      code: val('ss_code'),
+      step_order: Number(val('ss_step_order')),
+      window_ref: dictionnaires.fenetreTemps[val('ss_window_ref')],
+      window_min_hours: Number(val('ss_window_min_hours')),
+      window_max_hours: Number(val('ss_window_max_hours')),
+      logic_json: buildStepLogicJson()
+    };
+
+    const { error } = await db()
+      .from('scenario_steps')
+      .update(payload)
+      .eq('id', editingScenarioStepId);
+
+    if (error) throw error;
+
+    setGlobalNotice('L’étape a été mise à jour.', 'ok');
+    editingScenarioStepId = null;
+    clearScenarioStepForm();
+    updateScenarioStepButtons();
+    await refreshAll();
+  } catch (e) {
+    setGlobalNotice(e.message || 'Erreur lors de la mise à jour de l’étape.', 'err');
+  }
+}
+
+async function deleteScenarioStep(id) {
+  const confirmed = window.confirm('Voulez-vous vraiment supprimer cette étape ?');
+  if (!confirmed) return;
+
+  try {
+    const { error } = await db().from('scenario_steps').delete().eq('id', id);
+    if (error) throw error;
+
+    if (editingScenarioStepId === id) {
+      cancelEditScenarioStep();
+    }
+
+    setGlobalNotice('L’étape a été supprimée.', 'ok');
+    await refreshAll();
+  } catch (e) {
+    setGlobalNotice(e.message || 'Erreur lors de la suppression de l’étape.', 'err');
+  }
+}
+
+    function clearScenarioStepForm() {
+  document.getElementById('ss_code').value = '';
+  document.getElementById('ss_window_ref').value = 'Date de survenance';
+  document.getElementById('ss_window_min_hours').value = '0';
+  document.getElementById('ss_window_max_hours').value = '24';
+  document.getElementById('stepRules').innerHTML = '';
+  addStepRule();
+  updateStepWindowHelp();
+  updateNextStepOrder();
+}
+    
+    
     function db() {
       return window._appSupabaseClient;
     }
