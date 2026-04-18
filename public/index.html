@@ -275,9 +275,11 @@
             <label>Priorité</label>
             <input id="sc_priority" type="number" value="80">
             <div class="row">
-              <button onclick="createScenario()">Créer le scénario</button>
-              <button class="secondary" onclick="clearScenarioForm()">Vider</button>
-            </div>
+             <div class="row">
+                <button id="sc_submit_btn" onclick="submitScenario()">Créer le scénario</button>
+                <button class="secondary" onclick="clearScenarioForm()">Vider</button>
+                <button id="sc_cancel_edit_btn" class="secondary hidden" onclick="cancelEditScenario()">Annuler l’édition</button>
+              </div>
           </div>
           <div class="card">
             <h2>Scénarios existants</h2>
@@ -323,7 +325,8 @@
             <div id="stepRules"></div>
             <div class="row">
               <button class="secondary" onclick="addStepRule()">Ajouter un contenu</button>
-              <button onclick="createScenarioStep()">Créer l’étape</button>
+              <button id="ss_submit_btn" onclick="submitScenarioStep()">Créer l’étape</button>
+              <button id="ss_cancel_edit_btn" class="secondary hidden" onclick="cancelEditScenarioStep()">Annuler l’édition</button>
             </div>
           </div>
           <div class="card">
@@ -716,6 +719,8 @@ async function deleteScenarioStep(id) {
   updateStepWindowHelp();
   updateNextStepOrder();
 }
+
+    
     
     
     function db() {
@@ -994,15 +999,19 @@ async function deleteScenarioStep(id) {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
-          <strong>${escapeHtml(s.code)}</strong><br>
-          <span class="muted">${escapeHtml(s.label)}</span>
-          <div class="chips">
-            <span class="chip">${escapeHtml(trig?.code || '')}</span>
-            <span class="chip">${escapeHtml(s.aggregation_mode)}</span>
-            <span class="chip">priorité ${escapeHtml(s.priority)}</span>
-            <span class="chip">${steps} étape(s)</span>
-          </div>
-        `;
+            <strong>${escapeHtml(s.code)}</strong><br>
+            <span class="muted">${escapeHtml(s.label)}</span>
+            <div class="chips">
+              <span class="chip">${escapeHtml(trig?.code || '')}</span>
+              <span class="chip">${escapeHtml(s.aggregation_mode)}</span>
+              <span class="chip">priorité ${escapeHtml(s.priority)}</span>
+              <span class="chip">${steps} étape(s)</span>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="secondary" onclick="startEditScenario(${s.id})">Modifier</button>
+              <button class="danger" onclick="deleteScenario(${s.id})">Supprimer</button>
+            </div>
+          `;
         box.appendChild(div);
       });
     }
@@ -1015,14 +1024,18 @@ async function deleteScenarioStep(id) {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
-          <strong>${escapeHtml(sc?.code || '')} / ${escapeHtml(st.code)}</strong>
-          <div class="chips">
-            <span class="chip">ordre ${escapeHtml(st.step_order)}</span>
-            <span class="chip">${escapeHtml(st.window_ref || '')}</span>
-            <span class="chip">${escapeHtml(st.window_min_hours)}h → ${escapeHtml(st.window_max_hours)}h</span>
-          </div>
-          <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(st.logic_json || {}, null, 2))}</div>
-        `;
+            <strong>${escapeHtml(sc?.code || '')} / ${escapeHtml(st.code)}</strong>
+            <div class="chips">
+              <span class="chip">ordre ${escapeHtml(st.step_order)}</span>
+              <span class="chip">${escapeHtml(st.window_ref || '')}</span>
+              <span class="chip">${escapeHtml(st.window_min_hours)}h → ${escapeHtml(st.window_max_hours)}h</span>
+            </div>
+            <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(st.logic_json || {}, null, 2))}</div>
+            <div class="row" style="margin-top:10px;">
+              <button class="secondary" onclick="startEditScenarioStep(${st.id})">Modifier</button>
+              <button class="danger" onclick="deleteScenarioStep(${st.id})">Supprimer</button>
+            </div>
+          `;
         box.appendChild(div);
       });
     }
@@ -1320,7 +1333,9 @@ async function deleteScenarioStep(id) {
       document.getElementById('sc_label').value = '';
       document.getElementById('sc_priority').value = '80';
       document.getElementById('sc_aggregation_mode').value = 'Message simple';
+      editingScenarioId = null;
       updateScenarioAggregationHelp();
+      updateScenarioButtons();
     }
 
     function clearEventForm() {
@@ -1351,6 +1366,8 @@ async function deleteScenarioStep(id) {
       updateScenarioAggregationHelp();
       updateStepWindowHelp();
       updateContentVersionEditorMode();
+      updateScenarioButtons();
+      updateScenarioStepButtons();
       if (db()) {
         await refreshAll();
       }
