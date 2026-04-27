@@ -3,294 +3,151 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulateur client connecté – Prévention routière</title>
+  <title>Votre programme de prévention – Simulation</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--bg:#f3f6fb;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--brand:#111827;--blue:#2563eb;--green:#16a34a;--wa:#22c55e;--warn:#f59e0b;--red:#dc2626;--radius:24px;--shadow:0 18px 50px rgba(15,23,42,.10)}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,#dbeafe 0,#f8fafc 34%,#f3f6fb 100%);color:var(--ink)}
-    .shell{max-width:1400px;margin:0 auto;padding:24px}.hero{background:linear-gradient(135deg,#0f172a,#1e3a8a 56%,#0f766e);color:white;border-radius:34px;padding:32px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;background:rgba(255,255,255,.12);border-radius:50%}.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:1.4fr .6fr;gap:22px;align-items:end}.eyebrow{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);border-radius:999px;padding:8px 12px;font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 6px rgba(52,211,153,.18)}h1{font-size:clamp(30px,4vw,52px);line-height:1.02;margin:16px 0 12px;letter-spacing:-.04em}.lead{font-size:18px;line-height:1.55;color:#dbeafe;max-width:820px;margin:0}.hero-card{background:rgba(255,255,255,.1);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:18px}.status{display:inline-flex;gap:8px;align-items:center;padding:7px 10px;border-radius:999px;font-size:12px;background:#e5e7eb;color:#111827}.status.ok{background:#dcfce7;color:#166534}.status.err{background:#fee2e2;color:#991b1b}.status.warn{background:#fef3c7;color:#92400e}.layout{display:grid;grid-template-columns:370px 1fr;gap:22px;margin-top:22px}.card{background:rgba(255,255,255,.9);border:1px solid rgba(226,232,240,.92);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.06);padding:20px}.sticky{position:sticky;top:18px;height:max-content}.card h2{font-size:18px;margin:0 0 14px}.field{margin-bottom:15px}.field label{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:#334155;font-weight:800;margin-bottom:8px}.hint{font-size:12px;color:var(--muted);font-weight:500}select,input,textarea{width:100%;border:1px solid var(--line);border-radius:14px;background:white;padding:12px 13px;font-size:14px;color:var(--ink)}textarea{min-height:150px;font-family:Consolas,Monaco,monospace;font-size:12px}.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seg button,.btn{border:0;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer;background:#e2e8f0;color:#0f172a}.seg button.active,.btn.primary{background:#0f172a;color:white}.btn.ghost{background:white;border:1px solid var(--line)}.btn.blue{background:#2563eb;color:white}.scenario-list{display:grid;gap:10px;max-height:360px;overflow:auto;padding-right:4px}.scenario-btn{text-align:left;border:1px solid var(--line);border-radius:18px;background:white;padding:14px;cursor:pointer;transition:.18s}.scenario-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(15,23,42,.08)}.scenario-btn.active{border-color:#2563eb;background:#eff6ff}.scenario-title{font-weight:950}.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.tag{font-size:11px;padding:5px 8px;border-radius:999px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.tag.blue{background:#dbeafe;color:#1d4ed8}.tag.green{background:#dcfce7;color:#166534}.tag.orange{background:#ffedd5;color:#9a3412}.top-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.mini{padding:16px;border-radius:20px;background:white;border:1px solid var(--line)}.mini .label{font-size:12px;color:var(--muted)}.mini .value{font-size:26px;font-weight:950;margin-top:4px}.demo-grid{display:grid;grid-template-columns:1fr 430px;gap:20px;margin-top:18px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}.section-title h2{margin:0}.timeline{position:relative;display:grid;gap:13px}.timeline:before{content:"";position:absolute;left:22px;top:24px;bottom:24px;width:2px;background:#dbeafe}.step{position:relative;display:grid;grid-template-columns:50px 1fr;gap:12px}.badge{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-weight:950;z-index:1}.step-card{background:white;border:1px solid var(--line);border-radius:20px;padding:15px}.step-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.time{font-size:12px;color:#2563eb;background:#eff6ff;padding:6px 8px;border-radius:999px;white-space:nowrap}.step p{margin:8px 0 0;color:#475569;line-height:1.45;font-size:14px}.reason{margin-top:10px;color:#64748b;font-size:12px}.device{background:#111827;border-radius:34px;padding:12px;box-shadow:var(--shadow)}.screen{background:#f8fafc;border-radius:24px;min-height:640px;overflow:hidden}.mail-top{background:white;border-bottom:1px solid var(--line);padding:18px}.mail-meta{font-size:12px;color:#64748b;margin-bottom:6px}.mail-subject{font-size:18px;font-weight:950}.mail-body{padding:18px;background:white}.mail-body p{line-height:1.55;color:#334155}.mail-block{border-left:4px solid #2563eb;background:#f8fafc;padding:12px 14px;border-radius:12px;margin:14px 0}.wa-screen{background:#e8f5e9;min-height:640px;padding:18px;background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.45) 0 1px,transparent 1px);background-size:18px 18px}.wa-head{background:#075e54;color:white;margin:-18px -18px 16px;padding:16px;border-radius:24px 24px 0 0;font-weight:900}.bubble{background:white;border-radius:16px 16px 16px 4px;padding:12px 14px;margin-bottom:10px;max-width:94%;box-shadow:0 1px 2px rgba(0,0,0,.12);font-size:14px;line-height:1.45}.bubble .btime{font-size:11px;color:#64748b;text-align:right;margin-top:8px}.explain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.explain .box{border-radius:18px;padding:15px;background:white;border:1px solid var(--line)}.box strong{display:block;margin-bottom:6px}.box span{font-size:13px;line-height:1.45;color:#64748b}.notice{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:18px;padding:14px;color:#475569;font-size:13px;line-height:1.45}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.muted{color:var(--muted)}.hidden{display:none!important}.raw{white-space:pre-wrap;background:#0f172a;color:#e2e8f0;border-radius:16px;padding:14px;font-size:12px;max-height:270px;overflow:auto}.empty{padding:18px;border:1px dashed #cbd5e1;border-radius:18px;color:#64748b;background:#f8fafc}.danger-text{color:#b91c1c;font-weight:800}@media(max-width:1120px){.hero-inner,.layout,.demo-grid{grid-template-columns:1fr}.sticky{position:static}.top-grid,.explain{grid-template-columns:1fr 1fr}}@media(max-width:680px){.shell{padding:12px}.hero{padding:22px;border-radius:22px}.top-grid,.explain{grid-template-columns:1fr}.screen,.wa-screen{min-height:auto}.step-head{display:block}.time{display:inline-block;margin-top:8px}}
+    :root{--bg:#f6f8fb;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--card:#fff;--blue:#2563eb;--green:#16a34a;--orange:#f97316;--dark:#0f172a;--wa:#16a34a;--shadow:0 22px 70px rgba(15,23,42,.12);--r:28px}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,#dbeafe,#f8fafc 38%,#eef2f7);color:var(--ink)}
+    .wrap{max-width:1240px;margin:0 auto;padding:22px}.hero{border-radius:36px;background:linear-gradient(135deg,#0f172a,#164e63 58%,#166534);color:white;padding:34px;box-shadow:var(--shadow);overflow:hidden;position:relative}.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:280px;height:280px;border-radius:999px;background:rgba(255,255,255,.12)}
+    .hero>*{position:relative;z-index:1}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#34d399}.hero h1{font-size:clamp(31px,5vw,58px);line-height:1;margin:18px 0 12px;letter-spacing:-.05em;max-width:920px}.hero p{font-size:18px;line-height:1.55;max-width:780px;color:#dbeafe;margin:0}.status{margin-top:18px;display:inline-flex;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:800;background:#fef3c7;color:#92400e}.status.ok{background:#dcfce7;color:#166534}.status.err{background:#fee2e2;color:#991b1b}
+    .journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.j{background:white;border:1px solid var(--line);border-radius:22px;padding:17px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.j b{display:block;font-size:15px;margin-bottom:5px}.j span{font-size:13px;color:var(--muted);line-height:1.4}.num{width:30px;height:30px;border-radius:12px;background:#eff6ff;color:#1d4ed8;display:grid;place-items:center;font-weight:950;margin-bottom:10px}
+    .grid{display:grid;grid-template-columns:330px 1fr;gap:20px}.panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 16px 42px rgba(15,23,42,.07)}.side{position:sticky;top:18px;height:max-content}.panel h2{margin:0 0 8px;font-size:20px}.sub{color:var(--muted);font-size:14px;line-height:1.45;margin:0 0 18px}label{display:block;font-size:13px;font-weight:900;margin:14px 0 7px;color:#334155}select,input{width:100%;border:1px solid var(--line);border-radius:15px;background:white;padding:12px 13px;font-size:14px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}button{border:0;border-radius:15px;padding:12px 14px;font-weight:950;cursor:pointer;background:#e2e8f0;color:#0f172a}.active,button.primary{background:#0f172a;color:white}.hint{font-size:12px;color:var(--muted);line-height:1.4;margin-top:10px}
+    .headline{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.headline h2{margin:0;font-size:24px}.headline p{margin:5px 0 0;color:var(--muted);font-size:14px}.badge{border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:900;padding:7px 10px;white-space:nowrap}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.kpi{background:#f8fafc;border:1px solid var(--line);border-radius:20px;padding:14px}.kpi span{font-size:12px;color:var(--muted)}.kpi b{display:block;font-size:28px;margin-top:3px}
+    .experience{display:grid;grid-template-columns:1fr 420px;gap:20px}.timeline{display:grid;gap:13px}.step{display:grid;grid-template-columns:54px 1fr;gap:12px}.ico{width:50px;height:50px;border-radius:18px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;display:grid;place-items:center;font-weight:950}.stepcard{background:white;border:1px solid var(--line);border-radius:22px;padding:16px}.stepcard h3{margin:0;font-size:17px}.when{display:inline-block;margin-top:9px;padding:6px 9px;border-radius:999px;background:#f8fafc;border:1px solid var(--line);font-size:12px;color:#475569}.msg{margin-top:12px;color:#475569;font-size:14px;line-height:1.5}.msg strong{color:#0f172a}.empty{padding:18px;border:1px dashed #cbd5e1;border-radius:20px;background:#f8fafc;color:#64748b;line-height:1.45}.phone{background:#111827;border-radius:34px;padding:12px;box-shadow:var(--shadow)}.screen{background:white;border-radius:24px;min-height:560px;overflow:hidden}.emailHead{padding:17px;border-bottom:1px solid var(--line);background:#fff}.from{font-size:12px;color:#64748b;line-height:1.45}.subject{font-size:18px;font-weight:950;margin-top:7px}.body{padding:17px;font-size:14px;line-height:1.55;color:#334155}.block{border-left:4px solid var(--blue);background:#f8fafc;border-radius:13px;padding:12px;margin:12px 0}.wa{background:#e8f5e9;min-height:560px;padding:16px;background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.55) 0 1px,transparent 1px);background-size:18px 18px}.waTop{margin:-16px -16px 16px;background:#075e54;color:#fff;padding:16px;border-radius:24px 24px 0 0;font-weight:950}.bubble{background:white;border-radius:16px 16px 16px 5px;padding:12px 13px;margin:0 0 10px;box-shadow:0 1px 2px rgba(0,0,0,.15);font-size:14px;line-height:1.45}.time{text-align:right;color:#64748b;font-size:11px;margin-top:7px}.clientNote{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.note{background:white;border:1px solid var(--line);border-radius:20px;padding:15px}.note b{display:block;margin-bottom:5px}.note span{font-size:13px;color:var(--muted);line-height:1.45}.hidden{display:none!important}.technical{margin-top:18px}.technical summary{cursor:pointer;color:#475569;font-weight:900}.raw{margin-top:10px;white-space:pre-wrap;background:#0f172a;color:#dbeafe;border-radius:16px;padding:14px;font-size:12px;max-height:260px;overflow:auto}
+    @media(max-width:1050px){.grid,.experience{grid-template-columns:1fr}.side{position:static}.journey,.clientNote{grid-template-columns:1fr 1fr}}@media(max-width:650px){.wrap{padding:12px}.hero{padding:24px;border-radius:26px}.journey,.kpis,.clientNote{grid-template-columns:1fr}.headline{display:block}.screen,.wa{min-height:auto}}
   </style>
 </head>
 <body>
-  <div class="shell">
+  <div class="wrap">
     <section class="hero">
-      <div class="hero-inner">
-        <div>
-          <div class="eyebrow"><span class="dot"></span> Simulateur connecté à Supabase</div>
-          <h1>Prévisualiser les messages réels issus de vos scénarios.</h1>
-          <p class="lead">La page lit vos tables <strong>scenarios</strong>, <strong>scenario_steps</strong>, <strong>content_items</strong>, <strong>content_versions</strong> et <strong>events</strong>, puis simule l’assemblage sans créer d’envoi.</p>
-        </div>
-        <div class="hero-card">
-          <div id="connectionStatus" class="status warn">Connexion en cours…</div>
-          <p style="color:#dbeafe;line-height:1.5;margin:14px 0 0">Mode lecture seule : aucune insertion dans la base, aucun email envoyé.</p>
-        </div>
-      </div>
+      <div class="pill"><span class="dot"></span> Démonstration client connectée à votre base</div>
+      <h1>Voyez concrètement ce que vos équipes recevront.</h1>
+      <p>Choisissez une situation réelle ou simulée. Le simulateur reconstruit la séquence de prévention : pourquoi le message part, quand il part, et à quoi il ressemble côté destinataire.</p>
+      <div id="status" class="status">Connexion à Supabase…</div>
     </section>
 
-    <div class="layout">
-      <aside class="card sticky">
-        <h2>1. Données de simulation</h2>
-        <div class="field">
-          <label>Scénario actif <span class="hint" id="scenarioCount">0 chargé</span></label>
-          <div class="scenario-list" id="scenarioList"><div class="empty">Chargement…</div></div>
-        </div>
-        <div class="field">
-          <label>Canal affiché <span class="hint">filtre sur content_items.channel</span></label>
-          <div class="seg" id="channelSeg">
-            <button data-channel="email" class="active">Email</button>
-            <button data-channel="whatsapp">WhatsApp</button>
-          </div>
-        </div>
-        <div class="field">
-          <label>Événement réel de la base <span class="hint">contexte</span></label>
-          <select id="eventSelect"></select>
-        </div>
-        <div class="field">
-          <label>Entreprise de démonstration</label>
-          <input id="clientName" value="Entreprise cliente – équipes terrain" />
-        </div>
-        <div class="field">
-          <label>Email / contact de test</label>
-          <input id="clientEmail" value="client.demo@example.com" />
-        </div>
-        <div class="field">
-          <label>Zone client</label>
-          <input id="clientZone" value="56" />
-        </div>
-        <div class="row">
-          <button class="btn blue" id="simulateBtn">Simuler</button>
-          <button class="btn ghost" id="reloadBtn">Recharger</button>
-        </div>
-        <div class="notice" style="margin-top:14px">Pour qu’un contenu apparaisse, l’étape doit référencer une brique dans <code>logic_json.contents</code>, et cette brique doit avoir une version <code>published</code>.</div>
+    <section class="journey">
+      <div class="j"><div class="num">1</div><b>Un signal est détecté</b><span>Météo, transport, sécurité routière ou déclenchement manuel.</span></div>
+      <div class="j"><div class="num">2</div><b>Le scénario choisit la bonne séquence</b><span>Une ou plusieurs étapes selon l’urgence et le moment.</span></div>
+      <div class="j"><div class="num">3</div><b>Le message est personnalisé</b><span>Zone, date, lieu, gravité et conseils adaptés au contexte.</span></div>
+      <div class="j"><div class="num">4</div><b>Vos équipes reçoivent l’alerte</b><span>Email ou WhatsApp, sans action technique côté client.</span></div>
+    </section>
+
+    <div class="grid">
+      <aside class="panel side">
+        <h2>Tester une situation</h2>
+        <p class="sub">Cette zone remplace volontairement les notions techniques par des choix simples.</p>
+        <label>Situation à montrer</label>
+        <select id="scenario"></select>
+        <label>Événement de contexte</label>
+        <select id="event"></select>
+        <label>Canal reçu</label>
+        <div class="buttons"><button id="emailBtn" class="active">Email</button><button id="waBtn">WhatsApp</button></div>
+        <label>Nom affiché de l’entreprise</label>
+        <input id="company" value="Entreprise cliente" />
+        <label>Contact destinataire</label>
+        <input id="email" value="responsable@entreprise.fr" />
+        <button id="simulate" class="primary" style="width:100%;margin-top:16px">Afficher la simulation</button>
+        <div class="hint">Lecture seule : cette page ne programme aucun envoi et ne modifie pas la base.</div>
       </aside>
 
-      <main>
-        <div class="top-grid">
-          <div class="mini"><div class="label">Scénarios</div><div class="value" id="kpiScenarios">0</div></div>
-          <div class="mini"><div class="label">Étapes du scénario</div><div class="value" id="kpiSteps">0</div></div>
-          <div class="mini"><div class="label">Messages simulés</div><div class="value" id="kpiMessages">0</div></div>
-          <div class="mini"><div class="label">Canal</div><div class="value" id="kpiChannel">Email</div></div>
+      <main class="panel">
+        <div class="headline">
+          <div><h2 id="title">Simulation</h2><p id="subtitle">Chargement des scénarios…</p></div>
+          <div class="badge" id="channelBadge">Email</div>
         </div>
-
-        <div class="demo-grid">
-          <section class="card">
-            <div class="section-title">
-              <h2>2. Séquence prévue</h2>
-              <span class="status" id="selectedScenarioLabel">Aucun scénario</span>
-            </div>
-            <div id="timeline" class="timeline"><div class="empty">Sélectionnez un scénario.</div></div>
+        <div class="kpis">
+          <div class="kpi"><span>Moments de contact</span><b id="kSteps">0</b></div>
+          <div class="kpi"><span>Messages visibles</span><b id="kMessages">0</b></div>
+          <div class="kpi"><span>Canal</span><b id="kChannel">Email</b></div>
+        </div>
+        <div class="experience">
+          <section>
+            <h2>Parcours reçu par le client</h2>
+            <div id="timeline" class="timeline"><div class="empty">Chargement…</div></div>
           </section>
-
-          <section class="card">
-            <div class="section-title"><h2>3. Aperçu destinataire</h2><span class="status ok">simulation</span></div>
-            <div class="device">
-              <div id="emailPreview" class="screen"></div>
-              <div id="waPreview" class="screen hidden"></div>
-            </div>
+          <section>
+            <h2>Aperçu du message</h2>
+            <div class="phone"><div id="preview" class="screen"></div></div>
           </section>
         </div>
-
-        <section class="explain">
-          <div class="box"><strong>Déclencheur</strong><span id="exTrigger">Le type de déclencheur vient de l’événement sélectionné ou du scénario.</span></div>
-          <div class="box"><strong>Fenêtre temporelle</strong><span id="exTiming">Chaque étape calcule sa date d’envoi à partir de window_ref et window_max_hours.</span></div>
-          <div class="box"><strong>Assemblage</strong><span id="exAssembly">Les briques référencées par logic_json sont rendues avec le payload de l’événement.</span></div>
-        </section>
-
-        <section class="card" style="margin-top:18px">
-          <div class="section-title"><h2>Contexte JSON utilisé</h2><button class="btn ghost" id="toggleRaw">Afficher / masquer</button></div>
-          <div id="rawBox" class="raw hidden"></div>
-        </section>
+        <div class="clientNote">
+          <div class="note"><b>Ce que le client comprend</b><span id="note1">Une alerte arrive au bon moment, avec une raison claire.</span></div>
+          <div class="note"><b>Ce qui est automatisé</b><span id="note2">La sélection du scénario, l’ordre des messages et la personnalisation.</span></div>
+          <div class="note"><b>Ce qui reste maîtrisé</b><span>Le contenu vient de vos briques validées dans l’administration.</span></div>
+        </div>
+        <details class="technical"><summary>Voir les détails techniques utilisés pour cette simulation</summary><pre id="raw" class="raw"></pre></details>
       </main>
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
-
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const state = { scenarios:[], steps:[], items:[], versions:[], triggers:[], events:[], selectedScenarioId:null, channel:'email', simulated:[] };
-
-    const $ = id => document.getElementById(id);
-    const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-    const stripHtml = html => String(html||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<[^>]+>/g,' ').replace(/\s+\n/g,'\n').replace(/[ \t]+/g,' ').trim();
-    const niceDate = v => { const d = new Date(v); return isNaN(d) ? (v||'') : d.toLocaleString('fr-FR',{dateStyle:'medium',timeStyle:'short'}); };
-    const status = (txt,type='warn') => { const el=$('connectionStatus'); el.textContent=txt; el.className='status '+type; };
-
-    function renderTemplate(template, context){
-      return String(template||'').replace(/\{([^}]+)\}/g, (_, key) => {
-        const k = key.trim();
-        return context[k] !== undefined && context[k] !== null ? String(context[k]) : '{'+k+'}';
-      });
-    }
-
-    function getLatestVersion(contentItemId){
-      return state.versions
-        .filter(v => Number(v.content_item_id) === Number(contentItemId) && String(v.status||'').toLowerCase() === 'published')
-        .sort((a,b)=>Number(b.version_no||0)-Number(a.version_no||0))[0] || null;
-    }
-
-    function normalizeChannel(v){ return String(v||'').toLowerCase().replace('whatsApp','whatsapp'); }
-    function getSelectedScenario(){ return state.scenarios.find(s=>Number(s.id)===Number(state.selectedScenarioId)); }
-    function getSelectedEvent(){ return state.events.find(e=>String(e.id) === String($('eventSelect').value)) || state.events[0] || null; }
-
-    function resolveReferenceDate(event, step){
-      if(step.window_ref === 'occurs_at' && event?.occurs_at) return new Date(event.occurs_at);
-      if(step.window_ref === 'predicted_start_at' && event?.predicted_start_at) return new Date(event.predicted_start_at);
-      if(step.window_ref === 'predicted_end_at' && event?.predicted_end_at) return new Date(event.predicted_end_at);
-      if(step.window_ref === 'date_evenement' && event?.date_evenement) return new Date(event.date_evenement + 'T08:00:00');
-      return new Date();
-    }
-    function computeStepPlannedAt(event, step){
-      const ref = resolveReferenceDate(event, step);
-      const maxHours = Number(step.window_max_hours || 0);
-      return new Date(ref.getTime() - maxHours * 3600 * 1000);
-    }
-    function translateRef(ref){
-      return {occurs_at:'date de survenance',predicted_start_at:'début prévu',predicted_end_at:'fin prévue',date_evenement:'date d’événement'}[ref] || ref || 'référence non renseignée';
-    }
-
-    async function loadAll(){
-      status('Connexion à Supabase…','warn');
-      const [sc, st, ci, cv, tt, ev] = await Promise.all([
-        db.from('scenarios').select('*').eq('active', true).order('priority',{ascending:false}),
-        db.from('scenario_steps').select('*').eq('active', true).order('scenario_id').order('step_order'),
-        db.from('content_items').select('*').eq('active', true),
-        db.from('content_versions').select('*').eq('status','published').order('version_no',{ascending:false}),
-        db.from('trigger_types').select('*'),
-        db.from('events').select('*').order('id',{ascending:false}).limit(100)
-      ]);
-      const error = [sc,st,ci,cv,tt,ev].find(r=>r.error)?.error;
-      if(error){ status('Erreur Supabase : '+error.message,'err'); throw error; }
-      state.scenarios=sc.data||[]; state.steps=st.data||[]; state.items=ci.data||[]; state.versions=cv.data||[]; state.triggers=tt.data||[]; state.events=ev.data||[];
-      if(!state.selectedScenarioId && state.scenarios[0]) state.selectedScenarioId = state.scenarios[0].id;
-      renderControls(); simulate(); status('Connecté à Supabase · lecture seule','ok');
-    }
-
-    function renderControls(){
-      $('scenarioCount').textContent = state.scenarios.length + ' chargé(s)';
-      $('kpiScenarios').textContent = state.scenarios.length;
-      const list = $('scenarioList'); list.innerHTML='';
-      if(!state.scenarios.length){ list.innerHTML='<div class="empty danger-text">Aucun scénario actif trouvé.</div>'; return; }
-      state.scenarios.forEach(s=>{
-        const trigger = state.triggers.find(t=>Number(t.id)===Number(s.trigger_type_id));
-        const stepsCount = state.steps.filter(st=>Number(st.scenario_id)===Number(s.id)).length;
-        const btn=document.createElement('button'); btn.className='scenario-btn'+(Number(s.id)===Number(state.selectedScenarioId)?' active':''); btn.type='button';
-        btn.innerHTML = `<div class="scenario-title">${esc(s.label || s.code)}</div><div class="tags"><span class="tag blue">${esc(s.code)}</span><span class="tag green">${esc(s.aggregation_mode||'')}</span><span class="tag orange">${stepsCount} étape(s)</span><span class="tag">${esc(trigger?.code||'trigger ?')}</span></div>`;
-        btn.onclick=()=>{state.selectedScenarioId=s.id; renderControls(); simulate();}; list.appendChild(btn);
-      });
-      const evSelect=$('eventSelect'); evSelect.innerHTML='';
-      const sc = getSelectedScenario();
-      const relevant = state.events.filter(e=>!sc || Number(e.trigger_type_id)===Number(sc.trigger_type_id));
-      const eventsToShow = relevant.length ? relevant : state.events;
-      if(!eventsToShow.length){ evSelect.innerHTML='<option value="">Aucun événement en base</option>'; }
-      eventsToShow.forEach(e=>{
-        const opt=document.createElement('option'); opt.value=e.id;
-        opt.textContent = `#${e.id} · zone ${e.zone_cible||'?'} · ${e.severity||'info'} · ${niceDate(e.predicted_start_at || e.occurs_at || e.created_at)}`;
-        evSelect.appendChild(opt);
-      });
-    }
-
-    function buildContext(event, step, scenario){
-      return {
-        ...(event?.payload || {}),
-        zone_cible: event?.zone_cible || $('clientZone').value,
-        date_evenement: event?.date_evenement || '',
-        occurs_at: event?.occurs_at || '',
-        predicted_start_at: event?.predicted_start_at || '',
-        predicted_end_at: event?.predicted_end_at || '',
-        severity: event?.severity || '',
-        client_name: $('clientName').value,
-        client_email: $('clientEmail').value,
-        client_zone_geo: $('clientZone').value,
-        scenario_code: scenario?.code || '',
-        scenario_label: scenario?.label || '',
-        step_code: step?.code || ''
-      };
-    }
-
-    function simulate(){
-      const scenario = getSelectedScenario();
-      const event = getSelectedEvent();
-      const steps = state.steps.filter(st=>Number(st.scenario_id)===Number(state.selectedScenarioId)).sort((a,b)=>Number(a.step_order)-Number(b.step_order));
-      state.simulated=[];
-      $('selectedScenarioLabel').textContent = scenario ? (scenario.label || scenario.code) : 'Aucun scénario';
-      $('kpiSteps').textContent = steps.length;
-      $('kpiChannel').textContent = state.channel === 'email' ? 'Email' : 'WhatsApp';
-      $('exTrigger').textContent = scenario ? `Scénario ${scenario.code}, déclenché par ${state.triggers.find(t=>Number(t.id)===Number(scenario.trigger_type_id))?.code || 'un événement'}.` : 'Aucun scénario sélectionné.';
-      $('exTiming').textContent = steps.length ? `La séquence contient ${steps.length} étape(s), calculée(s) sur ${steps.map(s=>s.code).join(', ')}.` : 'Aucune étape active pour ce scénario.';
-      if(!scenario){ renderEmpty(); return; }
-
-      for(const step of steps){
-        const logic = step.logic_json || {};
-        const rules = Array.isArray(logic.contents) ? logic.contents : [];
-        const context = buildContext(event, step, scenario);
-        const blocks=[]; const subjects=[]; const missing=[];
-        rules.forEach(rule=>{
-          const item = state.items.find(i=>i.code === rule.content_code && (!i.channel || normalizeChannel(i.channel)===state.channel));
-          if(!item){ missing.push(rule.content_code + ' (canal différent ou brique absente)'); return; }
-          const version = getLatestVersion(item.id);
-          if(!version){ missing.push(rule.content_code + ' (pas de version publiée)'); return; }
-          const subject = renderTemplate(version.sujet_template || '', context);
-          const body = renderTemplate(version.corps_template || '', context);
-          if(subject) subjects.push(subject);
-          if(body) blocks.push({code:item.code, title:subject || item.sujet || item.code, body, when:rule.when});
-        });
-        if(blocks.length || missing.length){
-          state.simulated.push({ step, plannedAt: computeStepPlannedAt(event, step), subject: subjects[0] || `[Prévention routière] ${scenario.label || scenario.code} - ${step.code}`, blocks, missing, context });
-        }
-      }
-      $('kpiMessages').textContent = state.simulated.reduce((sum,x)=>sum+x.blocks.length,0);
-      $('exAssembly').textContent = state.simulated.length ? `${state.simulated.reduce((s,x)=>s+x.blocks.length,0)} brique(s) rendue(s) avec le contexte JSON de l’événement sélectionné.` : 'Aucune brique compatible avec le canal sélectionné.';
-      renderTimeline(); renderPreview(); renderRaw();
-    }
-
-    function renderEmpty(){
-      $('timeline').innerHTML='<div class="empty">Aucun scénario sélectionné.</div>';
-      $('emailPreview').innerHTML=''; $('waPreview').innerHTML=''; $('kpiMessages').textContent='0';
-    }
-
-    function renderTimeline(){
-      const box=$('timeline'); box.innerHTML='';
-      if(!state.simulated.length){ box.innerHTML='<div class="empty">Aucun message simulable. Vérifiez le canal des briques, les versions publiées et logic_json.contents.</div>'; return; }
-      state.simulated.forEach((m,i)=>{
-        const div=document.createElement('div'); div.className='step';
-        const blocksTxt = m.blocks.length ? m.blocks.map(b=>`<p><strong>${esc(b.code)}</strong> — ${esc(stripHtml(b.body).slice(0,170))}${stripHtml(b.body).length>170?'…':''}</p>`).join('') : '<p class="danger-text">Aucune brique rendue pour ce canal.</p>';
-        const missingTxt = m.missing.length ? `<div class="reason">Non affiché : ${esc(m.missing.join(', '))}</div>` : '';
-        div.innerHTML = `<div class="badge">${esc(m.step.code || i+1)}</div><div class="step-card"><div class="step-head"><strong>${esc(m.subject)}</strong><span class="time">${niceDate(m.plannedAt)}</span></div>${blocksTxt}<div class="reason">Référence : ${esc(translateRef(m.step.window_ref))} · fenêtre ${esc(m.step.window_min_hours)}h → ${esc(m.step.window_max_hours)}h</div>${missingTxt}</div>`;
-        box.appendChild(div);
-      });
-    }
-
-    function renderPreview(){
-      $('emailPreview').classList.toggle('hidden', state.channel !== 'email');
-      $('waPreview').classList.toggle('hidden', state.channel !== 'whatsapp');
-      if(state.channel === 'email') renderEmail(); else renderWhatsApp();
-    }
-    function renderEmail(){
-      const subject = state.simulated.length === 1 ? state.simulated[0].subject : `Prévention routière : ${state.simulated.reduce((s,x)=>s+x.blocks.length,0)} point(s) de vigilance`;
-      const blocks = state.simulated.flatMap(m=>m.blocks.map(b=>`<div class="mail-block"><strong>${esc(b.title)}</strong><div>${b.body}</div></div>`)).join('') || '<p>Aucun contenu email à afficher.</p>';
-      $('emailPreview').innerHTML = `<div class="mail-top"><div class="mail-meta">De : Prévention routière &lt;contact@votre-domaine.fr&gt;<br>À : ${esc($('clientEmail').value)}</div><div class="mail-subject">${esc(subject)}</div></div><div class="mail-body"><p>Bonjour,</p><p>Voici les points de vigilance identifiés pour vos équipes.</p>${blocks}<p>Bonne diffusion interne.</p></div>`;
-    }
-    function renderWhatsApp(){
-      const bubbles = state.simulated.flatMap(m=>m.blocks.map(b=>`<div class="bubble"><strong>${esc(b.title)}</strong><br>${esc(stripHtml(b.body))}<div class="btime">${niceDate(m.plannedAt)}</div></div>`)).join('') || '<div class="bubble">Aucun contenu WhatsApp à afficher.</div>';
-      $('waPreview').innerHTML = `<div class="wa-screen"><div class="wa-head">Prévention routière</div>${bubbles}</div>`;
-    }
-    function renderRaw(){
-      const event=getSelectedEvent();
-      const sample=state.simulated[0]?.context || buildContext(event, {}, getSelectedScenario());
-      $('rawBox').textContent = JSON.stringify({event_selectionne:event, contexte_rendu:sample, messages_simules:state.simulated.map(x=>({step:x.step.code, planned_send_at:x.plannedAt, subject:x.subject, blocks:x.blocks.map(b=>b.code), missing:x.missing}))}, null, 2);
-    }
-
-    document.addEventListener('click', e=>{
-      if(e.target.matches('#channelSeg button')){ document.querySelectorAll('#channelSeg button').forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); state.channel=e.target.dataset.channel; simulate(); }
-    });
-    $('eventSelect').addEventListener('change', simulate);
-    ['clientName','clientEmail','clientZone'].forEach(id=>$(id).addEventListener('input', simulate));
-    $('simulateBtn').addEventListener('click', simulate);
-    $('reloadBtn').addEventListener('click', loadAll);
-    $('toggleRaw').addEventListener('click', ()=>$('rawBox').classList.toggle('hidden'));
-    window.addEventListener('load', () => loadAll().catch(e=>{ console.error(e); $('timeline').innerHTML='<div class="empty danger-text">Erreur de chargement Supabase. Vérifiez la clé anon, les droits RLS en lecture et les noms de tables.</div>'; }));
-  </script>
+<script>
+const SUPABASE_URL="https://vnjdnshvixzqawkewwfk.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const state={scenarios:[],steps:[],items:[],versions:[],triggers:[],events:[],channel:'email'};
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+const txt=h=>String(h||'').replace(/<br\s*\/?>(\s*)/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<[^>]+>/g,' ').replace(/[ \t]+/g,' ').trim();
+function nice(v){const d=new Date(v);return isNaN(d)?(v||'date à définir'):d.toLocaleString('fr-FR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function setStatus(t,c){$('status').textContent=t;$('status').className='status '+(c||'');}
+function renderTemplate(t,c){return String(t||'').replace(/\{([^}]+)\}/g,(_,k)=>{k=k.trim();return c[k]!==undefined&&c[k]!==null?String(c[k]):'{'+k+'}';});}
+function norm(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace('whatsApp','whatsapp');}
+function selectedScenario(){return state.scenarios.find(s=>String(s.id)===$('scenario').value)||state.scenarios[0];}
+function selectedEvent(){return state.events.find(e=>String(e.id)===$('event').value)||state.events[0]||null;}
+function latestVersion(itemId){return state.versions.filter(v=>Number(v.content_item_id)===Number(itemId)&&String(v.status).toLowerCase()==='published').sort((a,b)=>Number(b.version_no||0)-Number(a.version_no||0))[0];}
+function refDate(ev,st){if(st.window_ref==='occurs_at'&&ev?.occurs_at)return new Date(ev.occurs_at);if(st.window_ref==='predicted_start_at'&&ev?.predicted_start_at)return new Date(ev.predicted_start_at);if(st.window_ref==='predicted_end_at'&&ev?.predicted_end_at)return new Date(ev.predicted_end_at);if(st.window_ref==='date_evenement'&&ev?.date_evenement)return new Date(ev.date_evenement+'T08:00:00');return new Date();}
+function planned(ev,st){const d=refDate(ev,st);return new Date(d.getTime()-Number(st.window_max_hours||0)*3600*1000);}
+function refLabel(r){return {occurs_at:'moment de l’événement',predicted_start_at:'début prévu',predicted_end_at:'fin prévue',date_evenement:'date de l’événement'}[r]||'date de référence';}
+async function load(){
+  setStatus('Connexion à Supabase…','');
+  const [sc,st,ci,cv,tt,ev]=await Promise.all([
+    db.from('scenarios').select('*').eq('active',true).order('priority',{ascending:false}),
+    db.from('scenario_steps').select('*').eq('active',true).order('scenario_id').order('step_order'),
+    db.from('content_items').select('*').eq('active',true),
+    db.from('content_versions').select('*').eq('status','published').order('version_no',{ascending:false}),
+    db.from('trigger_types').select('*'),
+    db.from('events').select('*').order('id',{ascending:false}).limit(100)
+  ]);
+  const err=[sc,st,ci,cv,tt,ev].find(x=>x.error)?.error;if(err){setStatus('Erreur Supabase : '+err.message,'err');throw err;}
+  Object.assign(state,{scenarios:sc.data||[],steps:st.data||[],items:ci.data||[],versions:cv.data||[],triggers:tt.data||[],events:ev.data||[]});
+  fillControls(); simulate(); setStatus('Connecté à Supabase · lecture seule','ok');
+}
+function fillControls(){
+  $('scenario').innerHTML=state.scenarios.map(s=>`<option value="${s.id}">${esc(s.label||s.code)}</option>`).join('')||'<option>Aucun scénario actif</option>';
+  fillEvents();
+}
+function fillEvents(){
+  const sc=selectedScenario(); const relevant=state.events.filter(e=>!sc||Number(e.trigger_type_id)===Number(sc.trigger_type_id)); const arr=relevant.length?relevant:state.events;
+  $('event').innerHTML=arr.map(e=>`<option value="${e.id}">Zone ${esc(e.zone_cible||'?')} · ${esc(e.severity||'info')} · ${esc(nice(e.predicted_start_at||e.occurs_at||e.created_at))}</option>`).join('')||'<option value="">Contexte de démonstration</option>';
+}
+function context(ev,st,sc){return {...(ev?.payload||{}),zone_cible:ev?.zone_cible||'',date_evenement:ev?.date_evenement||'',occurs_at:ev?.occurs_at||'',predicted_start_at:ev?.predicted_start_at||'',predicted_end_at:ev?.predicted_end_at||'',severity:ev?.severity||'',client_name:$('company').value,client_email:$('email').value,scenario_code:sc?.code||'',scenario_label:sc?.label||'',step_code:st?.code||''};}
+function build(){
+  const sc=selectedScenario(); const ev=selectedEvent(); if(!sc)return [];
+  const steps=state.steps.filter(s=>Number(s.scenario_id)===Number(sc.id)).sort((a,b)=>Number(a.step_order)-Number(b.step_order));
+  return steps.map(st=>{const ctx=context(ev,st,sc); const blocks=[]; const missing=[]; const rules=Array.isArray(st.logic_json?.contents)?st.logic_json.contents:[]; let subject='';
+    rules.forEach(r=>{const it=state.items.find(i=>i.code===r.content_code&&(!i.channel||norm(i.channel)===state.channel)); if(!it){missing.push(r.content_code);return;} const v=latestVersion(it.id); if(!v){missing.push(r.content_code);return;} const s=renderTemplate(v.sujet_template||'',ctx); const b=renderTemplate(v.corps_template||'',ctx); if(!subject&&s)subject=s; if(b)blocks.push({title:s||it.sujet||it.code,body:b,code:it.code});});
+    return {step:st,at:planned(ev,st),subject:subject||`Prévention routière – ${(sc.label||sc.code)} ${st.code||''}`,blocks,missing,ctx};
+  }).filter(x=>x.blocks.length||x.missing.length);
+}
+function simulate(){
+  fillEvents(); const sc=selectedScenario(); const ev=selectedEvent(); const seq=build(); const count=seq.reduce((a,x)=>a+x.blocks.length,0);
+  $('title').textContent=sc?(sc.label||sc.code):'Aucun scénario actif'; $('subtitle').textContent=sc?'Voici la séquence telle qu’elle pourrait être expliquée à un client.':'Aucun scénario actif trouvé.';
+  $('channelBadge').textContent=state.channel==='email'?'Email':'WhatsApp'; $('kChannel').textContent=$('channelBadge').textContent; $('kSteps').textContent=seq.length; $('kMessages').textContent=count;
+  renderTimeline(seq); renderPreview(seq); $('raw').textContent=JSON.stringify({scenario:sc,event:ev,canal:state.channel,messages:seq.map(x=>({etape:x.step.code,envoi_prevu:x.at,objet:x.subject,briques:x.blocks.map(b=>b.code),non_affiche:x.missing}))},null,2);
+}
+function renderTimeline(seq){
+  if(!seq.length){$('timeline').innerHTML='<div class="empty">Aucun message affichable pour ce canal. Vérifiez que les briques du scénario existent bien en version publiée pour Email ou WhatsApp.</div>';return;}
+  $('timeline').innerHTML=seq.map((x,i)=>`<div class="step"><div class="ico">${esc(x.step.code||i+1)}</div><div class="stepcard"><h3>${esc(x.subject)}</h3><span class="when">Envoi prévu : ${esc(nice(x.at))}</span><div class="msg">${x.blocks.map(b=>`<p><strong>${esc(b.title)}</strong><br>${esc(txt(b.body)).slice(0,230)}${txt(b.body).length>230?'…':''}</p>`).join('')}${x.missing.length?`<p style="color:#b91c1c">Briques non affichées sur ce canal : ${esc(x.missing.join(', '))}</p>`:''}</div><div class="hint">Calculé depuis le ${esc(refLabel(x.step.window_ref))}, fenêtre ${esc(x.step.window_min_hours)}h → ${esc(x.step.window_max_hours)}h.</div></div></div>`).join('');
+}
+function renderPreview(seq){
+  const all=seq.flatMap(x=>x.blocks.map(b=>({...b,at:x.at,subject:x.subject}))); if(state.channel==='whatsapp'){ $('preview').innerHTML=`<div class="wa"><div class="waTop">Prévention routière</div>${all.map(b=>`<div class="bubble"><strong>${esc(b.title)}</strong><br>${esc(txt(b.body))}<div class="time">${esc(nice(b.at))}</div></div>`).join('')||'<div class="bubble">Aucun message WhatsApp à afficher.</div>'}</div>`; return; }
+  const subject=all.length>1?`Prévention routière : ${all.length} point(s) de vigilance`:all[0]?.subject||'Prévention routière';
+  $('preview').innerHTML=`<div class="emailHead"><div class="from">De : Service prévention<br>À : ${esc($('email').value)}</div><div class="subject">${esc(subject)}</div></div><div class="body"><p>Bonjour,</p><p>Voici les points de vigilance identifiés pour ${esc($('company').value)}.</p>${all.map(b=>`<div class="block"><strong>${esc(b.title)}</strong><br>${b.body}</div>`).join('')||'<p>Aucun contenu email à afficher.</p>'}<p>Bonne diffusion interne.</p></div>`;
+}
+$('scenario').addEventListener('change',()=>{fillEvents();simulate();}); $('event').addEventListener('change',simulate); $('simulate').addEventListener('click',simulate); ['company','email'].forEach(id=>$(id).addEventListener('input',simulate));
+$('emailBtn').onclick=()=>{state.channel='email';$('emailBtn').classList.add('active');$('waBtn').classList.remove('active');simulate();}; $('waBtn').onclick=()=>{state.channel='whatsapp';$('waBtn').classList.add('active');$('emailBtn').classList.remove('active');simulate();};
+load().catch(e=>{console.error(e);$('timeline').innerHTML='<div class="empty">Erreur de chargement. Vérifiez la clé anon Supabase et les règles RLS en lecture.</div>';});
+</script>
 </body>
 </html>
