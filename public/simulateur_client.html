@@ -6,35 +6,982 @@
   <title>Votre programme de prévention – Simulation client</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--bg:#f6f8fb;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--green:#16a34a;--dark:#0f172a;--shadow:0 22px 70px rgba(15,23,42,.12);--r:28px}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,#dbeafe,#f8fafc 38%,#eef2f7);color:var(--ink)}.wrap{max-width:1240px;margin:0 auto;padding:22px}.hero{border-radius:36px;background:linear-gradient(135deg,#0f172a,#164e63 58%,#166534);color:white;padding:34px;box-shadow:var(--shadow);overflow:hidden;position:relative}.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:280px;height:280px;border-radius:999px;background:rgba(255,255,255,.12)}.hero>*{position:relative;z-index:1}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#34d399}.hero h1{font-size:clamp(31px,5vw,58px);line-height:1;margin:18px 0 12px;letter-spacing:-.05em;max-width:920px}.hero p{font-size:18px;line-height:1.55;max-width:780px;color:#dbeafe;margin:0}.status{margin-top:18px;display:inline-flex;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:800;background:#fef3c7;color:#92400e}.status.ok{background:#dcfce7;color:#166534}.status.err{background:#fee2e2;color:#991b1b}.journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.j{background:white;border:1px solid var(--line);border-radius:22px;padding:17px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.j b{display:block;font-size:15px;margin-bottom:5px}.j span{font-size:13px;color:var(--muted);line-height:1.4}.num{width:30px;height:30px;border-radius:12px;background:#eff6ff;color:#1d4ed8;display:grid;place-items:center;font-weight:950;margin-bottom:10px}.grid{display:grid;grid-template-columns:330px 1fr;gap:20px}.panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 16px 42px rgba(15,23,42,.07)}.side{position:sticky;top:18px;height:max-content}.panel h2{margin:0 0 8px;font-size:20px}.sub{color:var(--muted);font-size:14px;line-height:1.45;margin:0 0 18px}label{display:block;font-size:13px;font-weight:900;margin:14px 0 7px;color:#334155}select,input,textarea{width:100%;border:1px solid var(--line);border-radius:15px;background:white;padding:12px 13px;font-size:14px}textarea{min-height:130px;resize:vertical;line-height:1.45}button{border:0;border-radius:15px;padding:12px 14px;font-weight:950;cursor:pointer;background:#0f172a;color:white}.hint{font-size:12px;color:var(--muted);line-height:1.4;margin-top:10px}.headline{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.headline h2{margin:0;font-size:24px}.headline p{margin:5px 0 0;color:var(--muted);font-size:14px}.badge{border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:900;padding:7px 10px;white-space:nowrap}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.kpi{background:#f8fafc;border:1px solid var(--line);border-radius:20px;padding:14px}.kpi span{font-size:12px;color:var(--muted)}.kpi b{display:block;font-size:28px;margin-top:3px}.timeline{display:grid;gap:13px}.step{display:grid;grid-template-columns:54px 1fr;gap:12px}.ico{width:50px;height:50px;border-radius:18px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;display:grid;place-items:center;font-weight:950}.stepcard{background:white;border:1px solid var(--line);border-radius:22px;padding:16px;cursor:pointer;transition:.18s;text-align:left;color:#0f172a}.stepcard:hover{transform:translateY(-2px);box-shadow:0 14px 35px rgba(15,23,42,.12);border-color:#bfdbfe}.stepcard h3{margin:0;font-size:17px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.when,.chan{display:inline-block;padding:6px 9px;border-radius:999px;background:#f8fafc;border:1px solid var(--line);font-size:12px;color:#475569}.chan.email{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.chan.sms{background:#ecfdf5;color:#166534;border-color:#bbf7d0}.msg{margin-top:12px;color:#475569;font-size:14px;line-height:1.5}.msg strong{color:#0f172a}.empty{padding:18px;border:1px dashed #cbd5e1;border-radius:20px;background:#f8fafc;color:#64748b;line-height:1.45}.cta{margin-top:12px;display:inline-flex;align-items:center;gap:8px;color:#1d4ed8;font-weight:900;font-size:13px}.clientNote{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.note{background:white;border:1px solid var(--line);border-radius:20px;padding:15px}.note b{display:block;margin-bottom:5px}.note span{font-size:13px;color:var(--muted);line-height:1.45}.technical{margin-top:18px}.technical summary{cursor:pointer;color:#475569;font-weight:900}.raw{margin-top:10px;white-space:pre-wrap;background:#0f172a;color:#dbeafe;border-radius:16px;padding:14px;font-size:12px;max-height:260px;overflow:auto}.modalBackdrop{position:fixed;inset:0;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}.modalBackdrop.show{display:flex}.modal{width:min(620px,100%);background:white;border-radius:28px;box-shadow:0 30px 120px rgba(0,0,0,.35);padding:22px}.modal h2{margin:0 0 8px;font-size:24px}.modal p{margin:0 0 16px;color:#64748b;line-height:1.45}.modalActions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}.secondary{background:#e2e8f0;color:#0f172a}.smallPreview{border:1px solid var(--line);background:#f8fafc;border-radius:18px;padding:13px;margin:12px 0;color:#334155;font-size:14px;line-height:1.45}@media(max-width:1050px){.grid{grid-template-columns:1fr}.side{position:static}.journey,.clientNote{grid-template-columns:1fr 1fr}}@media(max-width:650px){.wrap{padding:12px}.hero{padding:24px;border-radius:26px}.journey,.kpis,.clientNote{grid-template-columns:1fr}.headline{display:block}.step{grid-template-columns:1fr}.ico{display:none}}
+    :root {
+      --bg: #f6f8fb;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --dark: #0f172a;
+      --shadow: 0 22px 70px rgba(15, 23, 42, .12);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top left, #dbeafe, #f8fafc 38%, #eef2f7);
+      color: var(--ink);
+    }
+
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 22px; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 36px;
+      background: linear-gradient(135deg, #0f172a, #164e63 58%, #166534);
+      color: white;
+      padding: 34px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 280px;
+      height: 280px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+      font-size: 13px;
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; }
+
+    .hero h1 {
+      max-width: 920px;
+      margin: 18px 0 12px;
+      font-size: clamp(31px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: -.05em;
+    }
+
+    .hero p {
+      max-width: 780px;
+      margin: 0;
+      color: #dbeafe;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .status {
+      display: inline-flex;
+      margin-top: 18px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .status.ok { background: #dcfce7; color: #166534; }
+    .status.err { background: #fee2e2; color: #991b1b; }
+
+    .journey {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .journey-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 17px;
+      box-shadow: 0 10px 24px rgba(15,23,42,.05);
+    }
+
+    .journey-card b { display: block; margin-bottom: 5px; font-size: 15px; }
+    .journey-card span { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+    .num {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 950;
+    }
+
+    .layout { display: grid; grid-template-columns: 330px 1fr; gap: 20px; }
+
+    .panel {
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 16px 42px rgba(15,23,42,.07);
+    }
+
+    .side { position: sticky; top: 18px; height: max-content; }
+    .panel h2 { margin: 0 0 8px; font-size: 20px; }
+
+    .sub { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+    label { display: block; margin: 14px 0 7px; color: #334155; font-size: 13px; font-weight: 900; }
+
+    select, input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: white;
+      padding: 12px 13px;
+      font-size: 14px;
+    }
+
+    textarea { min-height: 130px; resize: vertical; line-height: 1.45; }
+
+    button {
+      border: 0;
+      border-radius: 15px;
+      padding: 12px 14px;
+      background: #0f172a;
+      color: white;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .secondary { background: #e2e8f0; color: #0f172a; }
+
+    .hint { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+
+    .headline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .headline h2 { margin: 0; font-size: 24px; }
+    .headline p { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+
+    .badge {
+      white-space: nowrap;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+    .kpi { background: #f8fafc; border: 1px solid var(--line); border-radius: 20px; padding: 14px; }
+    .kpi span { color: var(--muted); font-size: 12px; }
+    .kpi b { display: block; margin-top: 3px; font-size: 28px; }
+
+    .timeline { display: grid; gap: 13px; }
+    .step { display: grid; grid-template-columns: 54px 1fr; gap: 12px; }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-weight: 950;
+    }
+
+    .step-card {
+      width: 100%;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 16px;
+      cursor: pointer;
+      transition: .18s;
+      text-align: left;
+      color: #0f172a;
+      font-weight: 400;
+    }
+
+    .step-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 35px rgba(15,23,42,.12);
+      border-color: #bfdbfe;
+    }
+
+    .step-title {
+      margin: 0;
+      color: #0f172a;
+      font-size: 17px;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .step-subtitle {
+      margin: 6px 0 0;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 11px; }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      color: #475569;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .tag.email { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .tag.sms { background: #ecfdf5; color: #166534; border-color: #bbf7d0; }
+
+    .message-excerpt {
+      margin-top: 12px;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    .message-excerpt p { margin: 0; }
+
+    .calculation-note {
+      margin-top: 10px;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    .open-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      color: #1d4ed8;
+      font-weight: 850;
+      font-size: 13px;
+    }
+
+    .empty {
+      padding: 18px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 20px;
+      background: #f8fafc;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    .client-notes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+    .note-card { background: white; border: 1px solid var(--line); border-radius: 20px; padding: 15px; }
+    .note-card b { display: block; margin-bottom: 5px; }
+    .note-card span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .technical { margin-top: 18px; }
+    .technical summary { cursor: pointer; color: #475569; font-weight: 900; }
+    .raw { max-height: 260px; overflow: auto; margin-top: 10px; white-space: pre-wrap; background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 14px; font-size: 12px; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 18px;
+      background: rgba(15,23,42,.62);
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal {
+      width: min(620px, 100%);
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 30px 120px rgba(0,0,0,.35);
+      padding: 22px;
+    }
+
+    .modal h2 { margin: 0 0 8px; font-size: 24px; }
+    .modal p { margin: 0 0 16px; color: #64748b; line-height: 1.45; }
+
+    .small-preview {
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #f8fafc;
+      padding: 13px;
+      color: #334155;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: static; }
+      .journey, .client-notes { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 650px) {
+      .wrap { padding: 12px; }
+      .hero { padding: 24px; border-radius: 26px; }
+      .journey, .kpis, .client-notes { grid-template-columns: 1fr; }
+      .headline { display: block; }
+      .step { grid-template-columns: 1fr; }
+      .step-number { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap"><section class="hero"><div class="pill"><span class="dot"></span> Démonstration client connectée à votre base</div><h1>Voyez le parcours de prévention, puis ouvrez le message final.</h1><p>Choisissez une situation. Le simulateur montre les messages prévus. En cliquant sur un message, le client peut ajouter une note, puis ouvrir l’aperçu exact destiné à ses équipes.</p><div id="status" class="status">Connexion à Supabase…</div></section>
-  <section class="journey"><div class="j"><div class="num">1</div><b>Un signal est détecté</b><span>Météo, transport, sécurité routière ou déclenchement manuel.</span></div><div class="j"><div class="num">2</div><b>Le scénario prépare la séquence</b><span>Une ou plusieurs étapes selon le moment et l’urgence.</span></div><div class="j"><div class="num">3</div><b>Le client peut compléter</b><span>Une courte note interne peut être ajoutée avant diffusion.</span></div><div class="j"><div class="num">4</div><b>L’aperçu s’ouvre</b><span>Email ou SMS est affiché automatiquement selon la brique de contenu.</span></div></section>
-  <div class="grid"><aside class="panel side"><h2>Tester une situation</h2><p class="sub">Aucune notion technique : choisissez simplement une situation et un contexte.</p><label>Situation à montrer</label><select id="scenario"></select><label>Événement de contexte</label><select id="event"></select><label>Nom affiché de l’entreprise</label><input id="company" value="Entreprise cliente" /><label>Contact destinataire</label><input id="email" value="responsable@entreprise.fr" /><button id="simulate" style="width:100%;margin-top:16px">Actualiser la simulation</button><div class="hint">Lecture seule : cette page ne programme aucun envoi et ne modifie pas la base.</div></aside>
-  <main class="panel"><div class="headline"><div><h2 id="title">Simulation</h2><p id="subtitle">Chargement des scénarios…</p></div><div class="badge">Parcours client</div></div><div class="kpis"><div class="kpi"><span>Moments de contact</span><b id="kSteps">0</b></div><div class="kpi"><span>Messages cliquables</span><b id="kMessages">0</b></div><div class="kpi"><span>Canal</span><b id="kChannel">Auto</b></div></div><h2>Messages prévus</h2><p class="sub">Cliquez sur un message pour ajouter une note éventuelle, puis ouvrir l’aperçu destiné aux équipes.</p><div id="timeline" class="timeline"><div class="empty">Chargement…</div></div><div class="clientNote"><div class="note"><b>Ce que le client comprend</b><span>Une alerte arrive au bon moment, avec une raison claire.</span></div><div class="note"><b>Ce qui est automatisé</b><span>Le scénario, l’ordre des messages, le canal et la personnalisation.</span></div><div class="note"><b>Ce qui reste maîtrisé</b><span>Le client peut ajouter une note avant de visualiser le message final.</span></div></div><details class="technical"><summary>Voir les détails techniques utilisés pour cette simulation</summary><pre id="raw" class="raw"></pre></details></main></div></div>
-  <div id="modalBackdrop" class="modalBackdrop" role="dialog" aria-modal="true"><div class="modal"><h2>Ajouter une note au message ?</h2><p>Cette note sera ajoutée au-dessus du message préparé automatiquement. Vous pouvez laisser le champ vide.</p><div id="modalSummary" class="smallPreview"></div><label>Message complémentaire du client</label><textarea id="clientNote" placeholder="Ex. Merci de relayer cette consigne aux équipes terrain avant la prise de poste."></textarea><div class="modalActions"><button class="secondary" id="cancelModal">Annuler</button><button id="openPreview">Valider et ouvrir l’aperçu</button></div></div></div>
-<script>
-const SUPABASE_URL="https://vnjdnshvixzqawkewwfk.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const state={scenarios:[],steps:[],items:[],versions:[],triggers:[],events:[],messages:[],selectedMessage:null};
-const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');const strip=h=>String(h||'').replace(/<br\s*\/?>(\s*)/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<[^>]+>/g,' ').replace(/\s+\n/g,'\n').replace(/[ \t]+/g,' ').trim();
-function nice(v){const d=new Date(v);return isNaN(d)?(v||'date à définir'):d.toLocaleString('fr-FR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}function setStatus(t,c){$('status').textContent=t;$('status').className='status '+(c||'');}function renderTemplate(t,c){return String(t||'').replace(/\{([^}]+)\}/g,(_,k)=>{k=k.trim();return c[k]!==undefined&&c[k]!==null?String(c[k]):'{'+k+'}';});}function normChannel(v){const s=String(v||'email').toLowerCase().trim();return s.includes('sms')?'sms':'email';}function channelLabel(c){return c==='sms'?'SMS':'Email';}
-function selectedScenario(){return state.scenarios.find(s=>String(s.id)===$('scenario').value)||state.scenarios[0];}function selectedEvent(){return state.events.find(e=>String(e.id)===$('event').value)||state.events[0]||null;}function latestVersion(itemId){return state.versions.filter(v=>Number(v.content_item_id)===Number(itemId)&&String(v.status).toLowerCase()==='published').sort((a,b)=>Number(b.version_no||0)-Number(a.version_no||0))[0];}
-function refDate(ev,st){if(st.window_ref==='occurs_at'&&ev?.occurs_at)return new Date(ev.occurs_at);if(st.window_ref==='predicted_start_at'&&ev?.predicted_start_at)return new Date(ev.predicted_start_at);if(st.window_ref==='predicted_end_at'&&ev?.predicted_end_at)return new Date(ev.predicted_end_at);if(st.window_ref==='date_evenement'&&ev?.date_evenement)return new Date(ev.date_evenement+'T08:00:00');return new Date();}function planned(ev,st){const d=refDate(ev,st);return new Date(d.getTime()-Number(st.window_max_hours||0)*3600*1000);}function refLabel(r){return {occurs_at:'moment de l’événement',predicted_start_at:'début prévu',predicted_end_at:'fin prévue',date_evenement:'date de l’événement'}[r]||'date de référence';}
-function context(ev,st,sc){return {...(ev?.payload||{}),zone_cible:ev?.zone_cible||'',date_evenement:ev?.date_evenement||'',occurs_at:ev?.occurs_at||'',predicted_start_at:ev?.predicted_start_at||'',predicted_end_at:ev?.predicted_end_at||'',severity:ev?.severity||'',client_name:$('company').value,client_email:$('email').value,scenario_code:sc?.code||'',scenario_label:sc?.label||'',step_code:st?.code||''};}
-async function load(){setStatus('Connexion à Supabase…','');const [sc,st,ci,cv,tt,ev]=await Promise.all([db.from('scenarios').select('*').eq('active',true).order('priority',{ascending:false}),db.from('scenario_steps').select('*').eq('active',true).order('scenario_id').order('step_order'),db.from('content_items').select('*').eq('active',true),db.from('content_versions').select('*').eq('status','published').order('version_no',{ascending:false}),db.from('trigger_types').select('*'),db.from('events').select('*').order('id',{ascending:false}).limit(100)]);const err=[sc,st,ci,cv,tt,ev].find(x=>x.error)?.error;if(err){setStatus('Erreur Supabase : '+err.message,'err');throw err;}Object.assign(state,{scenarios:sc.data||[],steps:st.data||[],items:ci.data||[],versions:cv.data||[],triggers:tt.data||[],events:ev.data||[]});fillControls();simulate();setStatus('Connecté à Supabase · lecture seule','ok');}
-function fillControls(){$('scenario').innerHTML=state.scenarios.map(s=>`<option value="${s.id}">${esc(s.label||s.code)}</option>`).join('')||'<option>Aucun scénario actif</option>';fillEvents();}function fillEvents(){const sc=selectedScenario();const relevant=state.events.filter(e=>!sc||Number(e.trigger_type_id)===Number(sc.trigger_type_id));const arr=relevant.length?relevant:state.events;$('event').innerHTML=arr.map(e=>`<option value="${e.id}">Zone ${esc(e.zone_cible||'?')} · ${esc(e.severity||'info')} · ${esc(nice(e.predicted_start_at||e.occurs_at||e.created_at))}</option>`).join('')||'<option value="">Contexte de démonstration</option>';}
-function buildMessages(){const sc=selectedScenario(),ev=selectedEvent();if(!sc)return [];const steps=state.steps.filter(s=>Number(s.scenario_id)===Number(sc.id)).sort((a,b)=>Number(a.step_order)-Number(b.step_order));const messages=[];steps.forEach(st=>{const ctx=context(ev,st,sc);const rules=Array.isArray(st.logic_json?.contents)?st.logic_json.contents:[];rules.forEach((r,idx)=>{const item=state.items.find(i=>i.code===r.content_code);if(!item)return;const version=latestVersion(item.id);if(!version)return;const subject=renderTemplate(version.sujet_template||item.sujet||'Prévention routière',ctx);const body=renderTemplate(version.corps_template||'',ctx);messages.push({id:`${st.id}-${item.id}-${idx}`,scenario:sc,event:ev,step:st,item,version,channel:normChannel(item.channel),at:planned(ev,st),subject:subject||'Prévention routière',body,bodyText:strip(body),ctx});});});return messages;}
-function simulate(){fillEvents();const sc=selectedScenario();const messages=buildMessages();state.messages=messages;const stepCount=new Set(messages.map(m=>m.step.id)).size;const channels=[...new Set(messages.map(m=>channelLabel(m.channel)))];$('title').textContent=sc?(sc.label||sc.code):'Aucun scénario actif';$('subtitle').textContent=sc?'Voici les messages que le client peut prévisualiser avant diffusion interne.':'Aucun scénario actif trouvé.';$('kSteps').textContent=stepCount;$('kMessages').textContent=messages.length;$('kChannel').textContent=channels.length?channels.join(' + '):'Auto';renderTimeline(messages);$('raw').textContent=JSON.stringify({scenario:sc,event:selectedEvent(),messages:messages.map(m=>({canal:m.channel,etape:m.step.code,envoi_prevu:m.at,objet:m.subject,brique:m.item.code}))},null,2);}
-function renderTimeline(messages){if(!messages.length){$('timeline').innerHTML='<div class="empty">Aucun message affichable. Vérifiez que les briques du scénario existent bien en version publiée avec un canal email ou sms.</div>';return;}$('timeline').innerHTML=messages.map((m,i)=>`<div class="step"><div class="ico">${esc(m.step.code||i+1)}</div><button class="stepcard" type="button" data-msg="${esc(m.id)}"><h3>${esc(m.subject)}</h3><div class="meta"><span class="chan ${esc(m.channel)}">${esc(channelLabel(m.channel))}</span><span class="when">Envoi prévu : ${esc(nice(m.at))}</span></div><div class="msg"><p><strong>${esc(m.item.sujet||m.item.code)}</strong><br>${esc(m.bodyText).slice(0,260)}${m.bodyText.length>260?'…':''}</p></div><div class="hint">Calculé depuis le ${esc(refLabel(m.step.window_ref))}, fenêtre ${esc(m.step.window_min_hours)}h → ${esc(m.step.window_max_hours)}h.</div><span class="cta">Ouvrir l’aperçu destiné aux équipes →</span></button></div>`).join('');document.querySelectorAll('[data-msg]').forEach(btn=>btn.addEventListener('click',()=>openModal(btn.dataset.msg)));}
-function openModal(id){const m=state.messages.find(x=>x.id===id);if(!m)return;state.selectedMessage=m;$('modalSummary').innerHTML=`<strong>${esc(channelLabel(m.channel))} · ${esc(m.subject)}</strong><br><span>${esc(nice(m.at))}</span><br>${esc(m.bodyText).slice(0,220)}${m.bodyText.length>220?'…':''}`;$('clientNote').value='';$('modalBackdrop').classList.add('show');$('clientNote').focus();}function closeModal(){$('modalBackdrop').classList.remove('show');state.selectedMessage=null;}
-function buildPreviewHtml(m,note){const label=channelLabel(m.channel);const content=m.channel==='sms'?smsPreview(m,note):emailPreview(m,note);return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aperçu ${esc(label)}</title><style>*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f1f5f9;color:#0f172a}.wrap{max-width:980px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}.pill{display:inline-flex;border-radius:999px;background:#e0f2fe;color:#075985;padding:8px 12px;font-weight:900;font-size:13px}.card{background:white;border:1px solid #e2e8f0;border-radius:28px;box-shadow:0 22px 70px rgba(15,23,42,.12);overflow:hidden}.meta{color:#64748b;font-size:14px;line-height:1.5}.emailHead{padding:22px;border-bottom:1px solid #e2e8f0;background:#fff}.from{font-size:13px;color:#64748b;line-height:1.55}.subject{font-size:24px;font-weight:950;margin-top:10px;letter-spacing:-.03em}.body{padding:24px;font-size:15px;line-height:1.65;color:#334155}.block{border-left:4px solid #2563eb;background:#f8fafc;border-radius:16px;padding:16px;margin:16px 0}.note{background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:16px;margin:0 0 16px;color:#7c2d12}.phone{max-width:430px;margin:0 auto;background:#111827;border-radius:38px;padding:13px;box-shadow:0 22px 70px rgba(15,23,42,.25)}.screen{background:#eef6ff;border-radius:28px;min-height:620px;overflow:hidden}.smsTop{background:#1d4ed8;color:white;padding:18px;font-weight:950}.smsBody{padding:16px}.bubble{background:white;border-radius:18px 18px 18px 6px;padding:13px 14px;margin:0 0 12px;box-shadow:0 1px 2px rgba(0,0,0,.15);font-size:15px;line-height:1.45}.time{text-align:right;color:#64748b;font-size:11px;margin-top:8px}.actions{margin-top:18px;display:flex;gap:10px;justify-content:flex-end}.print{border:0;border-radius:14px;background:#0f172a;color:white;padding:12px 15px;font-weight:950;cursor:pointer}@media print{.actions,.top{display:none}.wrap{padding:0}.card,.phone{box-shadow:none;border:0}}</style></head><body><div class="wrap"><div class="top"><div><span class="pill">Aperçu ${esc(label)} destiné aux équipes</span><h1>${esc(m.subject)}</h1><div class="meta">Entreprise : ${esc($('company').value)}<br>Envoi prévu : ${esc(nice(m.at))}</div></div><div class="actions"><button class="print" onclick="window.print()">Imprimer</button></div></div>${content}</div></body></html>`;}
-function emailPreview(m,note){note=String(note||'').trim();return `<div class="card"><div class="emailHead"><div class="from">De : Service prévention<br>À : ${esc($('email').value)}</div><div class="subject">${esc(m.subject)}</div></div><div class="body"><p>Bonjour,</p>${note?`<div class="note"><strong>Message de ${esc($('company').value)}</strong><br>${esc(note).replace(/\n/g,'<br>')}</div>`:''}<p>Voici le point de vigilance identifié pour vos équipes.</p><div class="block">${m.body}</div><p>Bonne diffusion interne.</p></div></div>`;}function smsPreview(m,note){note=String(note||'').trim();return `<div class="phone"><div class="screen"><div class="smsTop">Prévention routière</div><div class="smsBody">${note?`<div class="bubble"><strong>${esc($('company').value)}</strong><br>${esc(note).replace(/\n/g,'<br>')}<div class="time">${esc(nice(new Date()))}</div></div>`:''}<div class="bubble"><strong>${esc(m.subject)}</strong><br>${esc(m.bodyText)}<div class="time">${esc(nice(m.at))}</div></div></div></div></div>`;}
-function openFinalPreview(){const m=state.selectedMessage;if(!m)return;const note=$('clientNote').value;const w=window.open('','_blank');if(!w){alert('Le navigateur a bloqué l’ouverture du nouvel onglet. Autorisez les pop-ups pour cette page.');return;}w.document.open();w.document.write(buildPreviewHtml(m,note));w.document.close();closeModal();}
-$('scenario').addEventListener('change',()=>{fillEvents();simulate();});$('event').addEventListener('change',simulate);$('simulate').addEventListener('click',simulate);['company','email'].forEach(id=>$(id).addEventListener('input',simulate));$('cancelModal').addEventListener('click',closeModal);$('openPreview').addEventListener('click',openFinalPreview);$('modalBackdrop').addEventListener('click',e=>{if(e.target.id==='modalBackdrop')closeModal();});load().catch(e=>{console.error(e);$('timeline').innerHTML='<div class="empty">Erreur de chargement. Vérifiez la clé anon Supabase et les règles RLS en lecture.</div>';});
-</script>
+  <div class="wrap">
+    <section class="hero">
+      <div class="pill"><span class="dot"></span> Démonstration client connectée à votre base</div>
+      <h1>Voyez le parcours de prévention, puis ouvrez le message final.</h1>
+      <p>Choisissez une situation. Le simulateur montre les messages prévus. En cliquant sur un message, le client peut ajouter une note, puis ouvrir l’aperçu exact destiné à ses équipes.</p>
+      <div id="status" class="status">Connexion à Supabase…</div>
+    </section>
+
+    <section class="journey">
+      <div class="journey-card"><div class="num">1</div><b>Un signal est détecté</b><span>Météo, transport, sécurité routière ou déclenchement manuel.</span></div>
+      <div class="journey-card"><div class="num">2</div><b>Le scénario prépare la séquence</b><span>Une ou plusieurs étapes selon le moment et l’urgence.</span></div>
+      <div class="journey-card"><div class="num">3</div><b>Le client peut compléter</b><span>Une courte note interne peut être ajoutée avant diffusion.</span></div>
+      <div class="journey-card"><div class="num">4</div><b>L’aperçu s’ouvre</b><span>Email ou SMS est affiché automatiquement selon la brique de contenu.</span></div>
+    </section>
+
+    <div class="layout">
+      <aside class="panel side">
+        <h2>Tester une situation</h2>
+        <p class="sub">Aucune notion technique : choisissez simplement une situation et un contexte.</p>
+
+        <label for="scenario">Situation à montrer</label>
+        <select id="scenario"></select>
+
+        <label for="event">Événement de contexte</label>
+        <select id="event"></select>
+
+        <label for="company">Nom affiché de l’entreprise</label>
+        <input id="company" value="Entreprise cliente" />
+
+        <label for="email">Contact destinataire</label>
+        <input id="email" value="responsable@entreprise.fr" />
+
+        <button id="simulate" style="width:100%;margin-top:16px">Actualiser la simulation</button>
+        <div class="hint">Lecture seule : cette page ne programme aucun envoi et ne modifie pas la base.</div>
+      </aside>
+
+      <main class="panel">
+        <div class="headline">
+          <div>
+            <h2 id="title">Simulation</h2>
+            <p id="subtitle">Chargement des scénarios…</p>
+          </div>
+          <div class="badge">Parcours client</div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><span>Moments de contact</span><b id="kSteps">0</b></div>
+          <div class="kpi"><span>Messages cliquables</span><b id="kMessages">0</b></div>
+          <div class="kpi"><span>Canal</span><b id="kChannel">Auto</b></div>
+        </div>
+
+        <h2>Messages prévus</h2>
+        <p class="sub">Cliquez sur un message pour ajouter une note éventuelle, puis ouvrir l’aperçu destiné aux équipes.</p>
+
+        <div id="timeline" class="timeline"><div class="empty">Chargement…</div></div>
+
+        <div class="client-notes">
+          <div class="note-card"><b>Ce que le client comprend</b><span>Une alerte arrive au bon moment, avec une raison claire.</span></div>
+          <div class="note-card"><b>Ce qui est automatisé</b><span>Le scénario, l’ordre des messages, le canal et la personnalisation.</span></div>
+          <div class="note-card"><b>Ce qui reste maîtrisé</b><span>Le client peut ajouter une note avant de visualiser le message final.</span></div>
+        </div>
+
+        <details class="technical">
+          <summary>Voir les détails techniques utilisés pour cette simulation</summary>
+          <pre id="raw" class="raw"></pre>
+        </details>
+      </main>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2>Ajouter une note au message ?</h2>
+      <p>Cette note sera ajoutée au-dessus du message préparé automatiquement. Vous pouvez laisser le champ vide.</p>
+      <div id="modalSummary" class="small-preview"></div>
+      <label for="clientNote">Message complémentaire du responsable</label>
+      <textarea id="clientNote" placeholder="Ex. Merci d’être particulièrement vigilants sur les trajets de fin de journée."></textarea>
+      <div class="modal-actions">
+        <button id="cancelModal" class="secondary" type="button">Annuler</button>
+        <button id="openPreview" type="button">Ouvrir l’aperçu</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://vnjdnshvixzqawkewwfk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ2bm pk".replace(
+      "2bm pk",
+      "ZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E"
+    );
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const state = {
+      scenarios: [],
+      steps: [],
+      items: [],
+      versions: [],
+      triggers: [],
+      events: [],
+      messages: [],
+      selectedMessage: null
+    };
+
+    function getElement(id) {
+      return document.getElementById(id);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function setStatus(message, type) {
+      const badge = getElement("status");
+      badge.textContent = message;
+      badge.className = "status" + (type ? " " + type : "");
+    }
+
+    function formatDate(value) {
+      if (!value) return "date non renseignée";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function stripHtml(html) {
+      return String(html || "")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<br\s*\/?\s*>/gi, "\n")
+        .replace(/<\/p>/gi, "\n\n")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n\s+\n/g, "\n\n")
+        .trim();
+    }
+
+    function renderTemplate(template, context) {
+      return String(template || "").replace(/\{([^}]+)\}/g, function (_match, key) {
+        const cleanKey = key.trim();
+        const value = context[cleanKey];
+        return value !== undefined && value !== null ? String(value) : "{" + cleanKey + "}";
+      });
+    }
+
+    function normaliseChannel(channel) {
+      const value = String(channel || "email").toLowerCase();
+      return value === "sms" ? "sms" : "email";
+    }
+
+    function channelLabel(channel) {
+      return normaliseChannel(channel) === "sms" ? "SMS" : "Email";
+    }
+
+    function getReferenceLabel(reference) {
+      const labels = {
+        occurs_at: "moment de détection",
+        predicted_start_at: "début prévu",
+        predicted_end_at: "fin prévue",
+        date_evenement: "date de l’événement"
+      };
+      return labels[reference] || "date de référence";
+    }
+
+    function selectedScenario() {
+      const id = Number(getElement("scenario").value);
+      return state.scenarios.find(function (scenario) {
+        return Number(scenario.id) === id;
+      }) || null;
+    }
+
+    function selectedEvent() {
+      const id = Number(getElement("event").value);
+      return state.events.find(function (event) {
+        return Number(event.id) === id;
+      }) || null;
+    }
+
+    function latestPublishedVersion(contentItemId) {
+      const versions = state.versions
+        .filter(function (version) {
+          return Number(version.content_item_id) === Number(contentItemId);
+        })
+        .sort(function (a, b) {
+          return Number(b.version_no || 0) - Number(a.version_no || 0);
+        });
+
+      return versions[0] || null;
+    }
+
+    function calculatePlannedDate(event, step) {
+      const referenceValue = event && (
+        step.window_ref === "occurs_at" ? event.occurs_at :
+        step.window_ref === "predicted_start_at" ? event.predicted_start_at :
+        step.window_ref === "predicted_end_at" ? event.predicted_end_at :
+        step.window_ref === "date_evenement" ? event.date_evenement :
+        event.occurs_at
+      );
+
+      const fallback = new Date();
+      const referenceDate = referenceValue ? new Date(referenceValue) : fallback;
+      const validReferenceDate = Number.isNaN(referenceDate.getTime()) ? fallback : referenceDate;
+      const maxHours = Number(step.window_max_hours || 0);
+
+      return new Date(validReferenceDate.getTime() - maxHours * 60 * 60 * 1000).toISOString();
+    }
+
+    function buildRenderContext(event, step, scenario) {
+      return {
+        ...(event && event.payload ? event.payload : {}),
+        zone_cible: event ? event.zone_cible || "" : "",
+        date_evenement: event ? event.date_evenement || "" : "",
+        occurs_at: event ? event.occurs_at || "" : "",
+        predicted_start_at: event ? event.predicted_start_at || "" : "",
+        predicted_end_at: event ? event.predicted_end_at || "" : "",
+        severity: event ? event.severity || "" : "",
+        client_name: getElement("company").value,
+        client_email: getElement("email").value,
+        scenario_code: scenario ? scenario.code || "" : "",
+        scenario_label: scenario ? scenario.label || "" : "",
+        step_code: step ? step.code || "" : ""
+      };
+    }
+
+    async function loadDataFromSupabase() {
+      setStatus("Connexion à Supabase…", "");
+
+      const responses = await Promise.all([
+        supabaseClient.from("scenarios").select("*").eq("active", true).order("priority", { ascending: false }),
+        supabaseClient.from("scenario_steps").select("*").eq("active", true).order("scenario_id").order("step_order"),
+        supabaseClient.from("content_items").select("*").eq("active", true),
+        supabaseClient.from("content_versions").select("*").eq("status", "published").order("version_no", { ascending: false }),
+        supabaseClient.from("trigger_types").select("*"),
+        supabaseClient.from("events").select("*").order("id", { ascending: false }).limit(100)
+      ]);
+
+      const failed = responses.find(function (response) { return response.error; });
+      if (failed) {
+        setStatus("Erreur Supabase : " + failed.error.message, "err");
+        throw failed.error;
+      }
+
+      state.scenarios = responses[0].data || [];
+      state.steps = responses[1].data || [];
+      state.items = responses[2].data || [];
+      state.versions = responses[3].data || [];
+      state.triggers = responses[4].data || [];
+      state.events = responses[5].data || [];
+
+      fillScenarioSelect();
+      refreshSimulation();
+      setStatus("Connecté à Supabase · lecture seule", "ok");
+    }
+
+    function fillScenarioSelect() {
+      const scenarioSelect = getElement("scenario");
+
+      if (!state.scenarios.length) {
+        scenarioSelect.innerHTML = "<option>Aucun scénario actif</option>";
+        return;
+      }
+
+      scenarioSelect.innerHTML = state.scenarios.map(function (scenario) {
+        const label = scenario.label || scenario.code || "Scénario sans nom";
+        return `<option value="${escapeHtml(scenario.id)}">${escapeHtml(label)}</option>`;
+      }).join("");
+
+      fillEventSelect();
+    }
+
+    function fillEventSelect() {
+      const eventSelect = getElement("event");
+      const scenario = selectedScenario();
+
+      const eventsForScenario = state.events.filter(function (event) {
+        return scenario && Number(event.trigger_type_id) === Number(scenario.trigger_type_id);
+      });
+
+      const eventsToShow = eventsForScenario.length ? eventsForScenario : state.events;
+
+      if (!eventsToShow.length) {
+        eventSelect.innerHTML = `<option value="">Contexte de démonstration</option>`;
+        return;
+      }
+
+      eventSelect.innerHTML = eventsToShow.map(function (event) {
+        const eventDate = event.predicted_start_at || event.occurs_at || event.created_at;
+        const label = `Zone ${event.zone_cible || "?"} · ${event.severity || "info"} · ${formatDate(eventDate)}`;
+        return `<option value="${escapeHtml(event.id)}">${escapeHtml(label)}</option>`;
+      }).join("");
+    }
+
+    function buildMessagesForSelectedScenario() {
+      const scenario = selectedScenario();
+      const event = selectedEvent();
+
+      if (!scenario) return [];
+
+      const scenarioSteps = state.steps
+        .filter(function (step) {
+          return Number(step.scenario_id) === Number(scenario.id);
+        })
+        .sort(function (a, b) {
+          return Number(a.step_order || 0) - Number(b.step_order || 0);
+        });
+
+      const messages = [];
+
+      scenarioSteps.forEach(function (step) {
+        const context = buildRenderContext(event, step, scenario);
+        const rules = Array.isArray(step.logic_json && step.logic_json.contents) ? step.logic_json.contents : [];
+
+        rules.forEach(function (rule, index) {
+          const item = state.items.find(function (contentItem) {
+            return contentItem.code === rule.content_code;
+          });
+
+          if (!item) return;
+
+          const version = latestPublishedVersion(item.id);
+          if (!version) return;
+
+          const subject = renderTemplate(version.sujet_template || item.sujet || "Prévention routière", context);
+          const bodyHtml = renderTemplate(version.corps_template || "", context);
+          const bodyText = stripHtml(bodyHtml);
+          const channel = normaliseChannel(item.channel);
+
+          messages.push({
+            id: `${step.id}-${item.id}-${index}`,
+            scenario: scenario,
+            event: event,
+            step: step,
+            item: item,
+            version: version,
+            channel: channel,
+            plannedAt: calculatePlannedDate(event, step),
+            subject: subject || "Prévention routière",
+            bodyHtml: bodyHtml,
+            bodyText: bodyText,
+            context: context
+          });
+        });
+      });
+
+      return messages;
+    }
+
+    function refreshSimulation() {
+      fillEventSelect();
+
+      const scenario = selectedScenario();
+      const messages = buildMessagesForSelectedScenario();
+      state.messages = messages;
+
+      const stepCount = new Set(messages.map(function (message) { return message.step.id; })).size;
+      const channelNames = Array.from(new Set(messages.map(function (message) { return channelLabel(message.channel); })));
+
+      getElement("title").textContent = scenario ? (scenario.label || scenario.code) : "Aucun scénario actif";
+      getElement("subtitle").textContent = scenario
+        ? "Voici les messages que le client peut prévisualiser avant diffusion interne."
+        : "Aucun scénario actif trouvé.";
+
+      getElement("kSteps").textContent = String(stepCount);
+      getElement("kMessages").textContent = String(messages.length);
+      getElement("kChannel").textContent = channelNames.length ? channelNames.join(" + ") : "Auto";
+
+      renderTimeline(messages);
+      renderTechnicalDetails(scenario, selectedEvent(), messages);
+    }
+
+    function renderTimeline(messages) {
+      const timeline = getElement("timeline");
+
+      if (!messages.length) {
+        timeline.innerHTML = '<div class="empty">Aucun message affichable. Vérifiez que les briques du scénario existent bien en version publiée avec un canal email ou sms.</div>';
+        return;
+      }
+
+      timeline.innerHTML = messages.map(function (message, index) {
+        return renderTimelineCard(message, index);
+      }).join("");
+
+      document.querySelectorAll("[data-message-id]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          openModalForMessage(button.dataset.messageId);
+        });
+      });
+    }
+
+    function renderTimelineCard(message, index) {
+      const stepLabel = message.step.code || String(index + 1);
+      const stepTitle = message.subject;
+      const stepSubtitle = message.item.sujet || message.item.code || "Message de prévention";
+      const excerpt = message.bodyText.length > 260 ? message.bodyText.slice(0, 260) + "…" : message.bodyText;
+      const calculation = `Calculé depuis le ${getReferenceLabel(message.step.window_ref)}, fenêtre ${message.step.window_min_hours}h → ${message.step.window_max_hours}h.`;
+
+      return `
+        <div class="step">
+          <div class="step-number">${escapeHtml(stepLabel)}</div>
+          <button class="step-card" type="button" data-message-id="${escapeHtml(message.id)}">
+            <h3 class="step-title">${escapeHtml(stepTitle)}</h3>
+            <p class="step-subtitle">${escapeHtml(stepSubtitle)}</p>
+            <div class="meta">
+              <span class="tag ${escapeHtml(message.channel)}">${escapeHtml(channelLabel(message.channel))}</span>
+              <span class="tag">Envoi prévu : ${escapeHtml(formatDate(message.plannedAt))}</span>
+            </div>
+            <div class="message-excerpt"><p>${escapeHtml(excerpt)}</p></div>
+            <div class="calculation-note">${escapeHtml(calculation)}</div>
+            <span class="open-link">Ouvrir l’aperçu destiné aux équipes →</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function renderTechnicalDetails(scenario, event, messages) {
+      getElement("raw").textContent = JSON.stringify({
+        scenario: scenario,
+        event: event,
+        messages: messages.map(function (message) {
+          return {
+            canal: message.channel,
+            etape: message.step.code,
+            envoi_prevu: message.plannedAt,
+            objet: message.subject,
+            brique: message.item.code
+          };
+        })
+      }, null, 2);
+    }
+
+    function openModalForMessage(messageId) {
+      const message = state.messages.find(function (candidate) {
+        return candidate.id === messageId;
+      });
+
+      if (!message) return;
+
+      state.selectedMessage = message;
+
+      const excerpt = message.bodyText.length > 220 ? message.bodyText.slice(0, 220) + "…" : message.bodyText;
+      getElement("modalSummary").innerHTML = `
+        <strong>${escapeHtml(channelLabel(message.channel))} · ${escapeHtml(message.subject)}</strong><br>
+        <span>${escapeHtml(formatDate(message.plannedAt))}</span><br>
+        ${escapeHtml(excerpt)}
+      `;
+
+      getElement("clientNote").value = "";
+      getElement("modalBackdrop").classList.add("show");
+      getElement("clientNote").focus();
+    }
+
+    function closeModal() {
+      getElement("modalBackdrop").classList.remove("show");
+      state.selectedMessage = null;
+    }
+
+    function openFinalPreview() {
+      const message = state.selectedMessage;
+      if (!message) return;
+
+      const note = getElement("clientNote").value;
+      const previewWindow = window.open("", "_blank");
+
+      if (!previewWindow) {
+        alert("Le navigateur a bloqué l’ouverture du nouvel onglet. Autorisez les pop-ups pour cette page.");
+        return;
+      }
+
+      previewWindow.document.open();
+      previewWindow.document.write(buildPreviewPageHtml(message, note));
+      previewWindow.document.close();
+      closeModal();
+    }
+
+    function buildPreviewPageHtml(message, note) {
+      const channel = normaliseChannel(message.channel);
+      const previewContent = channel === "sms"
+        ? buildSmsPreview(message, note)
+        : buildEmailPreview(message, note);
+
+      return `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Aperçu ${escapeHtml(channelLabel(channel))}</title>
+          ${buildPreviewStyles()}
+        </head>
+        <body>
+          <div class="preview-wrap">
+            <div class="preview-top">
+              <div>
+                <span class="preview-pill">Aperçu ${escapeHtml(channelLabel(channel))} destiné aux équipes</span>
+                <h1>${escapeHtml(message.subject)}</h1>
+                <div class="preview-meta">
+                  Entreprise : ${escapeHtml(getElement("company").value)}<br>
+                  Envoi prévu : ${escapeHtml(formatDate(message.plannedAt))}
+                </div>
+              </div>
+              <div class="preview-actions"><button class="print" onclick="window.print()">Imprimer</button></div>
+            </div>
+            ${previewContent}
+          </div>
+        </body>
+        </html>
+      `;
+    }
+
+    function buildPreviewStyles() {
+      return `
+        <style>
+          * { box-sizing: border-box; }
+          body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #0f172a; }
+          .preview-wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+          .preview-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+          .preview-pill { display: inline-flex; border-radius: 999px; background: #e0f2fe; color: #075985; padding: 8px 12px; font-weight: 900; font-size: 13px; }
+          h1 { margin: 14px 0 8px; font-size: 32px; letter-spacing: -.04em; line-height: 1.05; }
+          .preview-meta { color: #64748b; font-size: 14px; line-height: 1.5; }
+          .card { background: white; border: 1px solid #e2e8f0; border-radius: 28px; box-shadow: 0 22px 70px rgba(15,23,42,.12); overflow: hidden; }
+          .email-head { padding: 22px; border-bottom: 1px solid #e2e8f0; background: #fff; }
+          .from { color: #64748b; font-size: 13px; line-height: 1.55; }
+          .subject { margin-top: 10px; font-size: 24px; font-weight: 950; letter-spacing: -.03em; }
+          .body { padding: 24px; color: #334155; font-size: 15px; line-height: 1.65; }
+          .auto-message { border-left: 4px solid #2563eb; background: #f8fafc; border-radius: 16px; padding: 16px; margin: 16px 0 0; }
+          .manager-note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 16px; padding: 16px; margin: 0 0 16px; color: #7c2d12; }
+          .phone { max-width: 430px; margin: 0 auto; background: #111827; border-radius: 38px; padding: 13px; box-shadow: 0 22px 70px rgba(15,23,42,.25); }
+          .screen { min-height: 620px; overflow: hidden; background: #eef6ff; border-radius: 28px; }
+          .sms-top { background: #1d4ed8; color: white; padding: 18px; font-weight: 950; }
+          .sms-body { padding: 16px; }
+          .bubble { margin: 0 0 12px; padding: 13px 14px; border-radius: 18px 18px 18px 6px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,.15); font-size: 15px; line-height: 1.45; }
+          .time { margin-top: 8px; color: #64748b; text-align: right; font-size: 11px; }
+          .preview-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+          .print { border: 0; border-radius: 14px; background: #0f172a; color: white; padding: 12px 15px; font-weight: 950; cursor: pointer; }
+          @media print { .preview-actions, .preview-top { display: none; } .preview-wrap { padding: 0; } .card, .phone { box-shadow: none; border: 0; } }
+        </style>
+      `;
+    }
+
+    function buildEmailPreview(message, note) {
+      const cleanNote = String(note || "").trim();
+      const noteBlock = cleanNote ? `
+        <div class="manager-note">
+          <strong>Message du responsable</strong><br>
+          ${escapeHtml(cleanNote).replace(/\n/g, "<br>")}
+        </div>
+      ` : "";
+
+      return `
+        <div class="card">
+          <div class="email-head">
+            <div class="from">De : Service prévention<br>À : ${escapeHtml(getElement("email").value)}</div>
+            <div class="subject">${escapeHtml(message.subject)}</div>
+          </div>
+          <div class="body">
+            ${noteBlock}
+            <div class="auto-message">${message.bodyHtml}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildSmsPreview(message, note) {
+      const cleanNote = String(note || "").trim();
+      const noteBubble = cleanNote ? `
+        <div class="bubble">
+          <strong>Message du responsable</strong><br>
+          ${escapeHtml(cleanNote).replace(/\n/g, "<br>")}
+          <div class="time">${escapeHtml(formatDate(new Date()))}</div>
+        </div>
+      ` : "";
+
+      return `
+        <div class="phone">
+          <div class="screen">
+            <div class="sms-top">Prévention routière</div>
+            <div class="sms-body">
+              ${noteBubble}
+              <div class="bubble">
+                <strong>${escapeHtml(message.subject)}</strong><br>
+                ${escapeHtml(message.bodyText)}
+                <div class="time">${escapeHtml(formatDate(message.plannedAt))}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindEvents() {
+      getElement("scenario").addEventListener("change", function () {
+        fillEventSelect();
+        refreshSimulation();
+      });
+
+      getElement("event").addEventListener("change", refreshSimulation);
+      getElement("simulate").addEventListener("click", refreshSimulation);
+      getElement("company").addEventListener("input", refreshSimulation);
+      getElement("email").addEventListener("input", refreshSimulation);
+      getElement("cancelModal").addEventListener("click", closeModal);
+      getElement("openPreview").addEventListener("click", openFinalPreview);
+
+      getElement("modalBackdrop").addEventListener("click", function (event) {
+        if (event.target.id === "modalBackdrop") closeModal();
+      });
+    }
+
+    bindEvents();
+    loadDataFromSupabase().catch(function (error) {
+      console.error(error);
+      getElement("timeline").innerHTML = '<div class="empty">Erreur de chargement. Vérifiez la clé anon Supabase et les règles RLS en lecture.</div>';
+    });
+  </script>
 </body>
 </html>
