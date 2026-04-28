@@ -6,15 +6,15 @@
   <title>Votre programme de prévention – Simulation</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--bg:#f6f8fb;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--card:#fff;--blue:#2563eb;--green:#16a34a;--orange:#f97316;--dark:#0f172a;--wa:#16a34a;--shadow:0 22px 70px rgba(15,23,42,.12);--r:28px}
+    :root{--bg:#f6f8fb;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--card:#fff;--blue:#2563eb;--green:#16a34a;--orange:#f97316;--dark:#0f172a;--sms:#2563eb;--shadow:0 22px 70px rgba(15,23,42,.12);--r:28px}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,#dbeafe,#f8fafc 38%,#eef2f7);color:var(--ink)}
     .wrap{max-width:1240px;margin:0 auto;padding:22px}.hero{border-radius:36px;background:linear-gradient(135deg,#0f172a,#164e63 58%,#166534);color:white;padding:34px;box-shadow:var(--shadow);overflow:hidden;position:relative}.hero:after{content:"";position:absolute;right:-80px;top:-80px;width:280px;height:280px;border-radius:999px;background:rgba(255,255,255,.12)}
     .hero>*{position:relative;z-index:1}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#34d399}.hero h1{font-size:clamp(31px,5vw,58px);line-height:1;margin:18px 0 12px;letter-spacing:-.05em;max-width:920px}.hero p{font-size:18px;line-height:1.55;max-width:780px;color:#dbeafe;margin:0}.status{margin-top:18px;display:inline-flex;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:800;background:#fef3c7;color:#92400e}.status.ok{background:#dcfce7;color:#166534}.status.err{background:#fee2e2;color:#991b1b}
     .journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.j{background:white;border:1px solid var(--line);border-radius:22px;padding:17px;box-shadow:0 10px 24px rgba(15,23,42,.05)}.j b{display:block;font-size:15px;margin-bottom:5px}.j span{font-size:13px;color:var(--muted);line-height:1.4}.num{width:30px;height:30px;border-radius:12px;background:#eff6ff;color:#1d4ed8;display:grid;place-items:center;font-weight:950;margin-bottom:10px}
     .grid{display:grid;grid-template-columns:330px 1fr;gap:20px}.panel{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 16px 42px rgba(15,23,42,.07)}.side{position:sticky;top:18px;height:max-content}.panel h2{margin:0 0 8px;font-size:20px}.sub{color:var(--muted);font-size:14px;line-height:1.45;margin:0 0 18px}label{display:block;font-size:13px;font-weight:900;margin:14px 0 7px;color:#334155}select,input{width:100%;border:1px solid var(--line);border-radius:15px;background:white;padding:12px 13px;font-size:14px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}button{border:0;border-radius:15px;padding:12px 14px;font-weight:950;cursor:pointer;background:#e2e8f0;color:#0f172a}.active,button.primary{background:#0f172a;color:white}.hint{font-size:12px;color:var(--muted);line-height:1.4;margin-top:10px}
     .headline{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.headline h2{margin:0;font-size:24px}.headline p{margin:5px 0 0;color:var(--muted);font-size:14px}.badge{border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:900;padding:7px 10px;white-space:nowrap}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.kpi{background:#f8fafc;border:1px solid var(--line);border-radius:20px;padding:14px}.kpi span{font-size:12px;color:var(--muted)}.kpi b{display:block;font-size:28px;margin-top:3px}
-    .experience{display:grid;grid-template-columns:1fr 420px;gap:20px}.timeline{display:grid;gap:13px}.step{display:grid;grid-template-columns:54px 1fr;gap:12px}.ico{width:50px;height:50px;border-radius:18px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;display:grid;place-items:center;font-weight:950}.stepcard{background:white;border:1px solid var(--line);border-radius:22px;padding:16px}.stepcard h3{margin:0;font-size:17px}.when{display:inline-block;margin-top:9px;padding:6px 9px;border-radius:999px;background:#f8fafc;border:1px solid var(--line);font-size:12px;color:#475569}.msg{margin-top:12px;color:#475569;font-size:14px;line-height:1.5}.msg strong{color:#0f172a}.empty{padding:18px;border:1px dashed #cbd5e1;border-radius:20px;background:#f8fafc;color:#64748b;line-height:1.45}.phone{background:#111827;border-radius:34px;padding:12px;box-shadow:var(--shadow)}.screen{background:white;border-radius:24px;min-height:560px;overflow:hidden}.emailHead{padding:17px;border-bottom:1px solid var(--line);background:#fff}.from{font-size:12px;color:#64748b;line-height:1.45}.subject{font-size:18px;font-weight:950;margin-top:7px}.body{padding:17px;font-size:14px;line-height:1.55;color:#334155}.block{border-left:4px solid var(--blue);background:#f8fafc;border-radius:13px;padding:12px;margin:12px 0}.wa{background:#e8f5e9;min-height:560px;padding:16px;background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.55) 0 1px,transparent 1px);background-size:18px 18px}.waTop{margin:-16px -16px 16px;background:#075e54;color:#fff;padding:16px;border-radius:24px 24px 0 0;font-weight:950}.bubble{background:white;border-radius:16px 16px 16px 5px;padding:12px 13px;margin:0 0 10px;box-shadow:0 1px 2px rgba(0,0,0,.15);font-size:14px;line-height:1.45}.time{text-align:right;color:#64748b;font-size:11px;margin-top:7px}.clientNote{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.note{background:white;border:1px solid var(--line);border-radius:20px;padding:15px}.note b{display:block;margin-bottom:5px}.note span{font-size:13px;color:var(--muted);line-height:1.45}.hidden{display:none!important}.technical{margin-top:18px}.technical summary{cursor:pointer;color:#475569;font-weight:900}.raw{margin-top:10px;white-space:pre-wrap;background:#0f172a;color:#dbeafe;border-radius:16px;padding:14px;font-size:12px;max-height:260px;overflow:auto}
-    @media(max-width:1050px){.grid,.experience{grid-template-columns:1fr}.side{position:static}.journey,.clientNote{grid-template-columns:1fr 1fr}}@media(max-width:650px){.wrap{padding:12px}.hero{padding:24px;border-radius:26px}.journey,.kpis,.clientNote{grid-template-columns:1fr}.headline{display:block}.screen,.wa{min-height:auto}}
+    .experience{display:grid;grid-template-columns:1fr 420px;gap:20px}.timeline{display:grid;gap:13px}.step{display:grid;grid-template-columns:54px 1fr;gap:12px}.ico{width:50px;height:50px;border-radius:18px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;display:grid;place-items:center;font-weight:950}.stepcard{background:white;border:1px solid var(--line);border-radius:22px;padding:16px}.stepcard h3{margin:0;font-size:17px}.when{display:inline-block;margin-top:9px;padding:6px 9px;border-radius:999px;background:#f8fafc;border:1px solid var(--line);font-size:12px;color:#475569}.msg{margin-top:12px;color:#475569;font-size:14px;line-height:1.5}.msg strong{color:#0f172a}.empty{padding:18px;border:1px dashed #cbd5e1;border-radius:20px;background:#f8fafc;color:#64748b;line-height:1.45}.phone{background:#111827;border-radius:34px;padding:12px;box-shadow:var(--shadow)}.screen{background:white;border-radius:24px;min-height:560px;overflow:hidden}.emailHead{padding:17px;border-bottom:1px solid var(--line);background:#fff}.from{font-size:12px;color:#64748b;line-height:1.45}.subject{font-size:18px;font-weight:950;margin-top:7px}.body{padding:17px;font-size:14px;line-height:1.55;color:#334155}.block{border-left:4px solid var(--blue);background:#f8fafc;border-radius:13px;padding:12px;margin:12px 0}.sms{background:#eef6ff;min-height:560px;padding:16px;background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.7) 0 1px,transparent 1px);background-size:18px 18px}.smsTop{margin:-16px -16px 16px;background:#1d4ed8;color:#fff;padding:16px;border-radius:24px 24px 0 0;font-weight:950}.bubble{background:white;border-radius:16px 16px 16px 5px;padding:12px 13px;margin:0 0 10px;box-shadow:0 1px 2px rgba(0,0,0,.15);font-size:14px;line-height:1.45}.auto-channel{width:100%;border:1px solid var(--line);border-radius:15px;background:#f8fafc;padding:12px 13px;font-size:14px;color:#475569;font-weight:800}.time{text-align:right;color:#64748b;font-size:11px;margin-top:7px}.clientNote{margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.note{background:white;border:1px solid var(--line);border-radius:20px;padding:15px}.note b{display:block;margin-bottom:5px}.note span{font-size:13px;color:var(--muted);line-height:1.45}.hidden{display:none!important}.technical{margin-top:18px}.technical summary{cursor:pointer;color:#475569;font-weight:900}.raw{margin-top:10px;white-space:pre-wrap;background:#0f172a;color:#dbeafe;border-radius:16px;padding:14px;font-size:12px;max-height:260px;overflow:auto}
+    @media(max-width:1050px){.grid,.experience{grid-template-columns:1fr}.side{position:static}.journey,.clientNote{grid-template-columns:1fr 1fr}}@media(max-width:650px){.wrap{padding:12px}.hero{padding:24px;border-radius:26px}.journey,.kpis,.clientNote{grid-template-columns:1fr}.headline{display:block}.screen,.sms{min-height:auto}}
   </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
       <div class="j"><div class="num">1</div><b>Un signal est détecté</b><span>Météo, transport, sécurité routière ou déclenchement manuel.</span></div>
       <div class="j"><div class="num">2</div><b>Le scénario choisit la bonne séquence</b><span>Une ou plusieurs étapes selon l’urgence et le moment.</span></div>
       <div class="j"><div class="num">3</div><b>Le message est personnalisé</b><span>Zone, date, lieu, gravité et conseils adaptés au contexte.</span></div>
-      <div class="j"><div class="num">4</div><b>Vos équipes reçoivent l’alerte</b><span>Email ou WhatsApp, sans action technique côté client.</span></div>
+      <div class="j"><div class="num">4</div><b>Vos équipes reçoivent l’alerte</b><span>Email ou SMS, sans action technique côté client.</span></div>
     </section>
 
     <div class="grid">
@@ -42,7 +42,7 @@
         <label>Événement de contexte</label>
         <select id="event"></select>
         <label>Canal reçu</label>
-        <div class="buttons"><button id="emailBtn" class="active">Email</button><button id="waBtn">WhatsApp</button></div>
+        <div id="autoChannel" class="auto-channel">Déduit automatiquement à partir des contenus du scénario.</div>
         <label>Nom affiché de l’entreprise</label>
         <input id="company" value="Entreprise cliente" />
         <label>Contact destinataire</label>
@@ -85,14 +85,14 @@
 const SUPABASE_URL="https://vnjdnshvixzqawkewwfk.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuamRuc2h2aXh6cWF3a2V3d2ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExODcxNzcsImV4cCI6MjA4Njc2MzE3N30.n_53Gb1AUXOqkhpHD6uVscy_3RV3OHye61tWmWHtC7E";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const state={scenarios:[],steps:[],items:[],versions:[],triggers:[],events:[],channel:'email'};
+const state={scenarios:[],steps:[],items:[],versions:[],triggers:[],events:[]};
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 const txt=h=>String(h||'').replace(/<br\s*\/?>(\s*)/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<[^>]+>/g,' ').replace(/[ \t]+/g,' ').trim();
 function nice(v){const d=new Date(v);return isNaN(d)?(v||'date à définir'):d.toLocaleString('fr-FR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
 function setStatus(t,c){$('status').textContent=t;$('status').className='status '+(c||'');}
 function renderTemplate(t,c){return String(t||'').replace(/\{([^}]+)\}/g,(_,k)=>{k=k.trim();return c[k]!==undefined&&c[k]!==null?String(c[k]):'{'+k+'}';});}
-function norm(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace('whatsApp','whatsapp');}
+function norm(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace('text','sms');}
 function selectedScenario(){return state.scenarios.find(s=>String(s.id)===$('scenario').value)||state.scenarios[0];}
 function selectedEvent(){return state.events.find(e=>String(e.id)===$('event').value)||state.events[0]||null;}
 function latestVersion(itemId){return state.versions.filter(v=>Number(v.content_item_id)===Number(itemId)&&String(v.status).toLowerCase()==='published').sort((a,b)=>Number(b.version_no||0)-Number(a.version_no||0))[0];}
@@ -122,31 +122,60 @@ function fillEvents(){
   $('event').innerHTML=arr.map(e=>`<option value="${e.id}">Zone ${esc(e.zone_cible||'?')} · ${esc(e.severity||'info')} · ${esc(nice(e.predicted_start_at||e.occurs_at||e.created_at))}</option>`).join('')||'<option value="">Contexte de démonstration</option>';
 }
 function context(ev,st,sc){return {...(ev?.payload||{}),zone_cible:ev?.zone_cible||'',date_evenement:ev?.date_evenement||'',occurs_at:ev?.occurs_at||'',predicted_start_at:ev?.predicted_start_at||'',predicted_end_at:ev?.predicted_end_at||'',severity:ev?.severity||'',client_name:$('company').value,client_email:$('email').value,scenario_code:sc?.code||'',scenario_label:sc?.label||'',step_code:st?.code||''};}
+function contentChannel(item){
+  const c=norm(item?.channel||'email');
+  return c==='sms' ? 'sms' : 'email';
+}
 function build(){
   const sc=selectedScenario(); const ev=selectedEvent(); if(!sc)return [];
   const steps=state.steps.filter(s=>Number(s.scenario_id)===Number(sc.id)).sort((a,b)=>Number(a.step_order)-Number(b.step_order));
   return steps.map(st=>{const ctx=context(ev,st,sc); const blocks=[]; const missing=[]; const rules=Array.isArray(st.logic_json?.contents)?st.logic_json.contents:[]; let subject='';
-    rules.forEach(r=>{const it=state.items.find(i=>i.code===r.content_code&&(!i.channel||norm(i.channel)===state.channel)); if(!it){missing.push(r.content_code);return;} const v=latestVersion(it.id); if(!v){missing.push(r.content_code);return;} const s=renderTemplate(v.sujet_template||'',ctx); const b=renderTemplate(v.corps_template||'',ctx); if(!subject&&s)subject=s; if(b)blocks.push({title:s||it.sujet||it.code,body:b,code:it.code});});
+    rules.forEach(r=>{const it=state.items.find(i=>i.code===r.content_code); if(!it){missing.push(r.content_code);return;} const v=latestVersion(it.id); if(!v){missing.push(r.content_code);return;} const channel=contentChannel(it); const s=renderTemplate(v.sujet_template||'',ctx); const b=renderTemplate(v.corps_template||'',ctx); if(channel==='email'&&!subject&&s)subject=s; if(b)blocks.push({title:s||it.sujet||it.code,body:b,code:it.code,channel});});
     return {step:st,at:planned(ev,st),subject:subject||`Prévention routière – ${(sc.label||sc.code)} ${st.code||''}`,blocks,missing,ctx};
   }).filter(x=>x.blocks.length||x.missing.length);
+}
+function detectChannels(seq){
+  const channels=[...new Set(seq.flatMap(x=>x.blocks.map(b=>b.channel)))];
+  if(!channels.length)return [];
+  return channels;
+}
+function channelLabel(channels){
+  if(channels.length===1)return channels[0]==='sms'?'SMS':'Email';
+  if(channels.includes('email')&&channels.includes('sms'))return 'Email + SMS';
+  return 'Automatique';
 }
 function simulate(){
   fillEvents(); const sc=selectedScenario(); const ev=selectedEvent(); const seq=build(); const count=seq.reduce((a,x)=>a+x.blocks.length,0);
   $('title').textContent=sc?(sc.label||sc.code):'Aucun scénario actif'; $('subtitle').textContent=sc?'Voici la séquence telle qu’elle pourrait être expliquée à un client.':'Aucun scénario actif trouvé.';
-  $('channelBadge').textContent=state.channel==='email'?'Email':'WhatsApp'; $('kChannel').textContent=$('channelBadge').textContent; $('kSteps').textContent=seq.length; $('kMessages').textContent=count;
-  renderTimeline(seq); renderPreview(seq); $('raw').textContent=JSON.stringify({scenario:sc,event:ev,canal:state.channel,messages:seq.map(x=>({etape:x.step.code,envoi_prevu:x.at,objet:x.subject,briques:x.blocks.map(b=>b.code),non_affiche:x.missing}))},null,2);
+  const channels=detectChannels(seq); const label=channelLabel(channels);
+  $('channelBadge').textContent=label; $('kChannel').textContent=label; $('autoChannel').textContent=channels.length ? ('Canal détecté : '+label) : 'Canal détecté après sélection d’un scénario contenant des contenus publiés.'; $('kSteps').textContent=seq.length; $('kMessages').textContent=count;
+  renderTimeline(seq); renderPreview(seq); $('raw').textContent=JSON.stringify({scenario:sc,event:ev,canaux:detectChannels(seq),messages:seq.map(x=>({etape:x.step.code,envoi_prevu:x.at,objet:x.subject,briques:x.blocks.map(b=>({code:b.code,channel:b.channel})),non_affiche:x.missing}))},null,2);
 }
 function renderTimeline(seq){
-  if(!seq.length){$('timeline').innerHTML='<div class="empty">Aucun message affichable pour ce canal. Vérifiez que les briques du scénario existent bien en version publiée pour Email ou WhatsApp.</div>';return;}
-  $('timeline').innerHTML=seq.map((x,i)=>`<div class="step"><div class="ico">${esc(x.step.code||i+1)}</div><div class="stepcard"><h3>${esc(x.subject)}</h3><span class="when">Envoi prévu : ${esc(nice(x.at))}</span><div class="msg">${x.blocks.map(b=>`<p><strong>${esc(b.title)}</strong><br>${esc(txt(b.body)).slice(0,230)}${txt(b.body).length>230?'…':''}</p>`).join('')}${x.missing.length?`<p style="color:#b91c1c">Briques non affichées sur ce canal : ${esc(x.missing.join(', '))}</p>`:''}</div><div class="hint">Calculé depuis le ${esc(refLabel(x.step.window_ref))}, fenêtre ${esc(x.step.window_min_hours)}h → ${esc(x.step.window_max_hours)}h.</div></div></div>`).join('');
+  if(!seq.length){$('timeline').innerHTML='<div class="empty">Aucun message affichable. Vérifiez que les briques du scénario existent bien en version publiée.</div>';return;}
+  $('timeline').innerHTML=seq.map((x,i)=>`<div class="step"><div class="ico">${esc(x.step.code||i+1)}</div><div class="stepcard"><h3>${esc(x.subject)}</h3><span class="when">Envoi prévu : ${esc(nice(x.at))}</span><div class="msg">${x.blocks.map(b=>`<p><strong>${esc(b.title)}</strong><br>${esc(txt(b.body)).slice(0,230)}${txt(b.body).length>230?'…':''}</p>`).join('')}${x.missing.length?`<p style="color:#b91c1c">Briques non affichées : ${esc(x.missing.join(', '))}</p>`:''}</div><div class="hint">Calculé depuis le ${esc(refLabel(x.step.window_ref))}, fenêtre ${esc(x.step.window_min_hours)}h → ${esc(x.step.window_max_hours)}h.</div></div></div>`).join('');
 }
 function renderPreview(seq){
-  const all=seq.flatMap(x=>x.blocks.map(b=>({...b,at:x.at,subject:x.subject}))); if(state.channel==='whatsapp'){ $('preview').innerHTML=`<div class="wa"><div class="waTop">Prévention routière</div>${all.map(b=>`<div class="bubble"><strong>${esc(b.title)}</strong><br>${esc(txt(b.body))}<div class="time">${esc(nice(b.at))}</div></div>`).join('')||'<div class="bubble">Aucun message WhatsApp à afficher.</div>'}</div>`; return; }
-  const subject=all.length>1?`Prévention routière : ${all.length} point(s) de vigilance`:all[0]?.subject||'Prévention routière';
-  $('preview').innerHTML=`<div class="emailHead"><div class="from">De : Service prévention<br>À : ${esc($('email').value)}</div><div class="subject">${esc(subject)}</div></div><div class="body"><p>Bonjour,</p><p>Voici les points de vigilance identifiés pour ${esc($('company').value)}.</p>${all.map(b=>`<div class="block"><strong>${esc(b.title)}</strong><br>${b.body}</div>`).join('')||'<p>Aucun contenu email à afficher.</p>'}<p>Bonne diffusion interne.</p></div>`;
+  const all=seq.flatMap(x=>x.blocks.map(b=>({...b,at:x.at,subject:x.subject})));
+  const emails=all.filter(b=>b.channel==='email');
+  const sms=all.filter(b=>b.channel==='sms');
+
+  if(sms.length && !emails.length){
+    $('preview').innerHTML=`<div class="sms"><div class="smsTop">SMS prévention</div>${sms.map(b=>`<div class="bubble"><strong>${esc(b.title)}</strong><br>${esc(txt(b.body))}<div class="time">${esc(nice(b.at))}</div></div>`).join('')||'<div class="bubble">Aucun SMS à afficher.</div>'}</div>`;
+    return;
+  }
+
+  const subject=emails.length>1?`Prévention routière : ${emails.length} point(s) de vigilance`:emails[0]?.subject||'Prévention routière';
+  let html=`<div class="emailHead"><div class="from">De : Service prévention<br>À : ${esc($('email').value)}</div><div class="subject">${esc(subject)}</div></div><div class="body"><p>Bonjour,</p><p>Voici les points de vigilance identifiés pour ${esc($('company').value)}.</p>${emails.map(b=>`<div class="block"><strong>${esc(b.title)}</strong><br>${b.body}</div>`).join('')||'<p>Aucun contenu email à afficher.</p>'}<p>Bonne diffusion interne.</p>`;
+
+  if(sms.length){
+    html+=`<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0"><p><strong>SMS également prévu :</strong></p>${sms.map(b=>`<div class="block" style="border-left-color:#1d4ed8"><strong>${esc(b.title)}</strong><br>${esc(txt(b.body))}</div>`).join('')}`;
+  }
+
+  html+='</div>';
+  $('preview').innerHTML=html;
 }
 $('scenario').addEventListener('change',()=>{fillEvents();simulate();}); $('event').addEventListener('change',simulate); $('simulate').addEventListener('click',simulate); ['company','email'].forEach(id=>$(id).addEventListener('input',simulate));
-$('emailBtn').onclick=()=>{state.channel='email';$('emailBtn').classList.add('active');$('waBtn').classList.remove('active');simulate();}; $('waBtn').onclick=()=>{state.channel='whatsapp';$('waBtn').classList.add('active');$('emailBtn').classList.remove('active');simulate();};
 load().catch(e=>{console.error(e);$('timeline').innerHTML='<div class="empty">Erreur de chargement. Vérifiez la clé anon Supabase et les règles RLS en lecture.</div>';});
 </script>
 </body>
