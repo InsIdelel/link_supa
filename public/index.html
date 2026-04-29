@@ -363,9 +363,10 @@
             </div>
 
             <div class="row" style="margin-bottom:14px;">
-              <button class="secondary" onclick="addPlannerRow()">Ajouter une étape</button>
-              <button class="success" onclick="saveScenarioPlan()">Enregistrer toute la séquence</button>
+              <button class="secondary" type="button" onclick="addPlannerRow()">Ajouter une étape</button>
+              <button class="success" type="button" onclick="saveScenarioPlan()">Enregistrer toute la séquence</button>
             </div>
+            <div id="plannerNotice"></div>
 
             <div id="scenarioPlannerRows"></div>
           </div>
@@ -797,8 +798,18 @@ async function deleteScenarioStep(id) {
 
     function setGlobalNotice(text, type) {
       const box = document.getElementById('globalNotice');
-      if (!box) return;
-      box.innerHTML = `<div class="notice ${type}">${escapeHtml(text)}</div>`;
+      if (box) {
+        box.innerHTML = `<div class="notice ${type}">${escapeHtml(text)}</div>`;
+      }
+      const plannerBox = document.getElementById('plannerNotice');
+      if (plannerBox) {
+        plannerBox.innerHTML = `<div class="notice ${type}">${escapeHtml(text)}</div>`;
+      }
+    }
+
+    function setPlannerNotice(text, type) {
+      const box = document.getElementById('plannerNotice');
+      if (box) box.innerHTML = `<div class="notice ${type}">${escapeHtml(text)}</div>`;
     }
 
     function showPage(id, btn) {
@@ -945,7 +956,7 @@ async function deleteScenarioStep(id) {
       }
     }
 
-    async function refreshAll() {
+    async function refreshAll(options = {}) {
       if (!db()) return;
       const requests = await Promise.all([
         db().from('content_items').select('*').order('id', { ascending: false }),
@@ -979,6 +990,11 @@ async function deleteScenarioStep(id) {
       renderEvents();
       populateSelects();
       updateContentVersionEditorMode();
+      if (options.keepPlannerScenarioId) {
+        const select = document.getElementById('pl_scenario_id');
+        if (select) select.value = String(options.keepPlannerScenarioId);
+        renderScenarioPlanner();
+      }
       setGlobalNotice('Les données ont été rechargées.', 'ok');
     }
 
@@ -1677,31 +1693,75 @@ async function deleteScenarioStep(id) {
     }
 
     async function saveScenarioPlan() {
+      const selectedScenarioId = Number(val('pl_scenario_id'));
+
       try {
-        const rows = plannerRowsData();
+        if (!db()) throw new Error('Connexion Supabase non disponible.');
+        if (!selectedScenarioId) throw new Error('Choisissez d’abord un scénario.');
+
+        const rows = plannerRowsData()
+          .sort((a, b) => Number(a.step_order || 0) - Number(b.step_order || 0));
+
         if (!rows.length) {
-          setGlobalNotice('Aucune étape à enregistrer.', 'warn');
+          setPlannerNotice('Aucune étape à enregistrer.', 'warn');
           return;
         }
 
+        const seenOrders = new Set();
+        const seenCodes = new Set();
+
         for (const row of rows) {
           if (!row.code) throw new Error('Chaque étape doit avoir un code : J-2, J-1, J, etc.');
+          if (!row.step_order || row.step_order < 1) throw new Error('Chaque étape doit avoir un ordre supérieur ou égal à 1.');
+          if (seenOrders.has(row.step_order)) throw new Error('Deux étapes ont le même ordre. Corrigez l’ordre avant d’enregistrer.');
+          if (seenCodes.has(row.code)) throw new Error('Deux étapes ont le même code. Corrigez les codes avant d’enregistrer.');
           if (!row.logic_json.contents.length) throw new Error('Chaque étape doit contenir au moins une brique de contenu.');
-          if (row.id) {
-            const { id, ...payload } = row;
-            const { error } = await db().from('scenario_steps').update(payload).eq('id', id);
+          seenOrders.add(row.step_order);
+          seenCodes.add(row.code);
+        }
+
+        setPlannerNotice('Enregistrement en cours…', 'info');
+
+        let updated = 0;
+        let inserted = 0;
+
+        for (const row of rows) {
+          const { id, ...payload } = row;
+
+          if (id) {
+            const { data, error } = await db()
+              .from('scenario_steps')
+              .update(payload)
+              .eq('id', id)
+              .select('id')
+              .maybeSingle();
+
             if (error) throw error;
+            if (!data || !data.id) {
+              throw new Error('Aucune ligne modifiée pour l’étape ' + row.code + '. Vérifiez les droits Supabase/RLS sur la table scenario_steps.');
+            }
+            updated++;
           } else {
-            const { id, ...payload } = row;
-            const { error } = await db().from('scenario_steps').insert(payload);
+            const { data, error } = await db()
+              .from('scenario_steps')
+              .insert(payload)
+              .select('id')
+              .maybeSingle();
+
             if (error) throw error;
+            if (!data || !data.id) {
+              throw new Error('L’étape ' + row.code + ' n’a pas été créée. Vérifiez les droits Supabase/RLS sur la table scenario_steps.');
+            }
+            inserted++;
           }
         }
 
-        setGlobalNotice('La séquence complète du scénario a été enregistrée.', 'ok');
-        await refreshAll();
+        setPlannerNotice(`Séquence enregistrée : ${updated} étape(s) mise(s) à jour, ${inserted} étape(s) créée(s).`, 'ok');
+
+        await refreshAll({ keepPlannerScenarioId: selectedScenarioId });
       } catch (e) {
-        setGlobalNotice(e.message || 'Erreur lors de l’enregistrement de la séquence.', 'err');
+        console.error('Erreur saveScenarioPlan()', e);
+        setPlannerNotice(e.message || 'Erreur lors de l’enregistrement de la séquence.', 'err');
       }
     }
 
