@@ -89,6 +89,43 @@
     .preview-box { white-space:pre-wrap; line-height:1.45; background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; min-height:250px; }
     .help { font-size:12px; color:var(--muted); margin:-6px 0 10px; }
     .hidden { display:none; }
+
+    .scenario-planner-head {
+      display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .scenario-planner-grid {
+      display:grid; grid-template-columns: 1.1fr .9fr; gap:16px;
+    }
+    .step-editor {
+      border:1px solid var(--line); border-radius:16px; padding:14px; background:#fff; margin-bottom:12px;
+      box-shadow:0 1px 2px rgba(0,0,0,.03);
+    }
+    .step-editor-title {
+      display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;
+    }
+    .step-editor-title strong { font-size:15px; }
+    .step-fields {
+      display:grid; grid-template-columns: 90px 90px 1fr 150px; gap:10px; align-items:start;
+    }
+    .step-fields textarea { min-height:70px; font-family:Arial, Helvetica, sans-serif; }
+    .timeline-preview { display:grid; gap:10px; }
+    .timeline-preview-item {
+      display:grid; grid-template-columns:46px 1fr; gap:10px; align-items:start;
+    }
+    .timeline-preview-dot {
+      width:38px; height:38px; border-radius:14px; background:#eff6ff; border:1px solid #bfdbfe;
+      display:grid; place-items:center; color:#1d4ed8; font-weight:bold; font-size:12px;
+    }
+    .timeline-preview-card { border:1px solid var(--line); border-radius:14px; padding:12px; background:#fff; }
+    .timeline-preview-card b { display:block; margin-bottom:4px; }
+    .readable-date { color:#065f46; font-weight:bold; }
+    .soft-panel { background:#f8fafc; border:1px solid var(--line); border-radius:16px; padding:14px; }
+    .advanced-small { font-size:12px; color:var(--muted); line-height:1.4; }
+    @media (max-width: 1180px) {
+      .scenario-planner-grid, .step-fields { grid-template-columns:1fr; }
+    }
+
     @media (max-width: 980px) {
       .app { grid-template-columns:1fr; }
       aside { border-right:0; border-bottom:1px solid var(--line); }
@@ -257,84 +294,92 @@
       <section id="scenarios" class="page">
         <div class="grid-2">
           <div class="card">
-            <h2>Créer un scénario</h2>
-            <div class="help">Le scénario définit la logique générale à appliquer à un type de déclencheur.</div>
-            <label>Code technique</label>
+            <h2>Créer ou modifier un scénario</h2>
+            <div class="notice info">
+              Un scénario correspond à une situation métier : orage, radar, changement de limitation, alerte transport, message manuel…
+              Les messages précis se règlent ensuite dans la page <strong>Étapes des scénarios</strong>.
+            </div>
+
+            <label>Nom interne court</label>
             <input id="sc_code" placeholder="Ex. SCN_STORM_SEQUENCE">
-            <label>Libellé</label>
-            <input id="sc_label" placeholder="Ex. Scénario séquence orage">
-            <label>Type de déclencheur associé</label>
+
+            <label>Nom visible dans l’interface</label>
+            <input id="sc_label" placeholder="Ex. Séquence d’alerte orage">
+
+            <label>Ce qui déclenche ce scénario</label>
             <select id="sc_trigger_type_id"></select>
-            <label>Mode d’agrégation</label>
+
+            <label>Type de scénario</label>
             <select id="sc_aggregation_mode">
               <option>Message simple</option>
               <option>Séquence temporelle</option>
               <option>Regroupement quotidien</option>
             </select>
             <div id="scenarioAggregationHelp" class="notice info small"></div>
+
             <label>Priorité</label>
             <input id="sc_priority" type="number" value="80">
+            <div class="help">Plus la priorité est élevée, plus ce scénario sera traité comme important en cas de concurrence avec d’autres messages.</div>
+
             <div class="row">
-             <div class="row">
-                <button id="sc_submit_btn" onclick="submitScenario()">Créer le scénario</button>
-                <button class="secondary" onclick="clearScenarioForm()">Vider</button>
-                <button id="sc_cancel_edit_btn" class="secondary hidden" onclick="cancelEditScenario()">Annuler l’édition</button>
-              </div>
+              <button id="sc_submit_btn" onclick="submitScenario()">Créer le scénario</button>
+              <button class="secondary" onclick="clearScenarioForm()">Vider</button>
+              <button id="sc_cancel_edit_btn" class="secondary hidden" onclick="cancelEditScenario()">Annuler l’édition</button>
+            </div>
           </div>
+
           <div class="card">
             <h2>Scénarios existants</h2>
+            <div class="help">Cliquez sur “Gérer les étapes” pour voir et modifier toute la séquence d’un scénario au même endroit.</div>
             <div id="scenariosList" class="list"></div>
           </div>
         </div>
       </section>
 
       <section id="scenario-steps" class="page">
-        <div class="grid-2">
-          <div class="card">
-            <h2>Créer une étape de scénario</h2>
-            <div class="help">Une étape correspond à un moment dans le temps : J-2, J-1, J, etc.</div>
-            <label>Scénario</label>
-            <select id="ss_scenario_id"></select>
-            <label>Code de l’étape</label>
-            <input id="ss_code" placeholder="Ex. D2">
-            <label>Ordre d’exécution</label>
-            <input id="ss_step_order" type="number" value="1" readonly>
-            <div class="help">L’ordre est proposé automatiquement. Si une étape 1 existe déjà pour ce scénario, l’interface proposera automatiquement 2, puis 3, etc.</div>
-            <label>Référence temporelle</label>
-            <select id="ss_window_ref">
-              <option>Date de survenance</option>
-              <option>Début prévu</option>
-              <option>Fin prévue</option>
-              <option>Date d’événement</option>
-            </select>
-            <div id="stepWindowHelp" class="notice info small"></div>
-            <div class="grid-2">
-              <div>
-                <label>Heures minimales</label>
-                <input id="ss_window_min_hours" type="number" value="0">
-                <div class="help">Début de la fenêtre. Exemple : 12 signifie « à partir de 12 heures avant l’événement ».</div>
-              </div>
-              <div>
-                <label>Heures maximales</label>
-                <input id="ss_window_max_hours" type="number" value="24">
-                <div class="help">Fin de la fenêtre. Exemple : 36 signifie « jusqu’à 36 heures avant l’événement ».</div>
-              </div>
-            </div>
-            <h3>Contenus à inclure</h3>
-            <div class="help">Ajoutez ici les briques de contenu à afficher dans cette étape.</div>
-            <div id="stepRules"></div>
-            <div class="row">
-              <button class="secondary" onclick="addStepRule()">Ajouter un contenu</button>
-              <button id="ss_submit_btn" onclick="submitScenarioStep()">Créer l’étape</button>
-              <button id="ss_cancel_edit_btn" class="secondary hidden" onclick="cancelEditScenarioStep()">Annuler l’édition</button>
-            </div>
+        <div class="scenario-planner-head">
+          <div>
+            <h2>Vue d’ensemble des étapes d’un scénario</h2>
+            <p class="muted" style="margin-top:4px;">
+              Ici, vous modifiez toute la séquence en une seule fois. L’objectif est de comprendre immédiatement :
+              <strong>si l’événement est prévu à telle date, quand chaque message partira</strong>.
+            </p>
           </div>
+          <button class="secondary" onclick="refreshAll()">Recharger les données</button>
+        </div>
+
+        <div class="scenario-planner-grid">
           <div class="card">
-            <h2>Étapes existantes</h2>
-            <div id="scenarioStepsList" class="list"></div>
+            <h3>1. Choisir le scénario à régler</h3>
+            <label>Scénario</label>
+            <select id="pl_scenario_id"></select>
+
+            <label>Date de l’événement pour visualiser les envois</label>
+            <input id="pl_demo_date" type="datetime-local">
+            <div class="help">
+              Exemple : si vous indiquez vendredi 18h et qu’une étape part 48h avant le début prévu,
+              l’aperçu affichera mercredi 18h.
+            </div>
+
+            <div class="row" style="margin-bottom:14px;">
+              <button class="secondary" onclick="addPlannerRow()">Ajouter une étape</button>
+              <button class="success" onclick="saveScenarioPlan()">Enregistrer toute la séquence</button>
+            </div>
+
+            <div id="scenarioPlannerRows"></div>
+          </div>
+
+          <div class="card">
+            <h3>2. Aperçu lisible de la séquence</h3>
+            <div class="notice info">
+              Les anciennes notions “heures minimales / heures maximales” sont masquées.
+              Vous renseignez simplement <strong>combien d’heures avant la date de référence</strong> le message doit partir.
+            </div>
+            <div id="scenarioTimelinePreview" class="timeline-preview"></div>
           </div>
         </div>
       </section>
+
 
       <section id="events" class="page">
         <div class="grid-2">
@@ -361,13 +406,9 @@
             <input id="ev_date_evenement" placeholder="2026-03-27">
             <label>Niveau de gravité</label>
             <select id="ev_severity"><option value="">Non renseigné</option><option>Information</option><option>Faible</option><option>Moyen</option><option>Élevé</option><option>Critique</option></select>
-            <label>Données de contexte (JSON)</label>
-            <textarea id="ev_payload">{
-  "city": "Vannes",
-  "department": "56",
-  "event_type": "violent_storm",
-  "confidence": 0.87
-}</textarea>
+            <label>Données de contexte optionnelles (JSON)</label>
+            <div class="help">Vous pouvez laisser ce champ vide. Dans ce cas, l’événement sera créé avec un contexte vide et la date actuelle sera utilisée pour les dates non renseignées.</div>
+            <textarea id="ev_payload" placeholder='Ex. { "city": "Vannes", "department": "56" }'></textarea>
             <div class="row">
               <button onclick="createEvent()">Créer l’événement</button>
               <button class="secondary" onclick="clearEventForm()">Vider</button>
@@ -977,6 +1018,7 @@ async function deleteScenarioStep(id) {
       updateNextStepOrder();
       updateContentVersionEditorMode();
       prefillContentVersionFromPrevious();
+      fillScenarioPlannerSelect();
     }
 
     function renderContentItems() {
@@ -1058,6 +1100,7 @@ async function deleteScenarioStep(id) {
             </div>
             <div class="row" style="margin-top:10px;">
               <button class="secondary" onclick="startEditScenario(${s.id})">Modifier</button>
+              <button class="success" onclick="openScenarioPlanner(${s.id})">Gérer les étapes</button>
               <button class="danger" onclick="deleteScenario(${s.id})">Supprimer</button>
             </div>
           `;
@@ -1229,18 +1272,24 @@ async function deleteScenarioStep(id) {
 
     async function createEvent() {
       try {
+        const now = new Date();
+        const nowIso = now.toISOString();
+        const today = nowIso.slice(0, 10);
+        const contextText = val('ev_payload');
+        const contextPayload = contextText ? parseJson(contextText, 'Données de contexte') : {};
+
         const payload = {
           trigger_type_id: Number(val('ev_trigger_type_id')),
           connecteur_id: val('ev_connecteur_id') ? Number(val('ev_connecteur_id')) : null,
           source_external_id: val('ev_source_external_id') || null,
-          dedupe_key: val('ev_dedupe_key'),
-          zone_cible: val('ev_zone_cible'),
-          occurs_at: val('ev_occurs_at') || null,
-          predicted_start_at: val('ev_predicted_start_at') || null,
+          dedupe_key: val('ev_dedupe_key') || ('MANUAL|' + nowIso),
+          zone_cible: val('ev_zone_cible') || 'MANUAL',
+          occurs_at: val('ev_occurs_at') || nowIso,
+          predicted_start_at: val('ev_predicted_start_at') || val('ev_occurs_at') || nowIso,
           predicted_end_at: val('ev_predicted_end_at') || null,
-          date_evenement: val('ev_date_evenement') || null,
+          date_evenement: val('ev_date_evenement') || today,
           severity: dictionnaires.gravite[val('ev_severity')] || null,
-          payload: parseJson(val('ev_payload'), 'Données de contexte'),
+          payload: contextPayload,
           statut: 'open',
           validated_by: 'admin-ui'
         };
@@ -1295,6 +1344,7 @@ async function deleteScenarioStep(id) {
 
     function syncStepRuleDropdowns() {
       const wrap = document.getElementById('stepRules');
+      if (!wrap) return;
       if (wrap.children.length === 0) addStepRule();
     }
 
@@ -1306,19 +1356,21 @@ async function deleteScenarioStep(id) {
     }
 
     function updateStepWindowHelp() {
+      const box = document.getElementById('stepWindowHelp');
+      if (!box || !document.getElementById('ss_window_ref')) return;
       const value = val('ss_window_ref');
       const min = val('ss_window_min_hours') || '0';
       const max = val('ss_window_max_hours') || '24';
-      const box = document.getElementById('stepWindowHelp');
-      if (!box) return;
       const intro = dictionnaires.aideFenetreTemps[value] || '';
       box.textContent = `${intro} La règle s’appliquera si l’on se situe entre ${min}h et ${max}h de cette référence temporelle.`;
     }
 
     function updateNextStepOrder() {
-      const scenarioId = Number(val('ss_scenario_id'));
+      const scenarioSelect = document.getElementById('ss_scenario_id');
       const input = document.getElementById('ss_step_order');
-      if (!input || !scenarioId) return;
+      if (!scenarioSelect || !input) return;
+      const scenarioId = Number(scenarioSelect.value);
+      if (!scenarioId) return;
       const existing = state.scenarioSteps.filter(st => st.scenario_id === scenarioId);
       const maxOrder = existing.length ? Math.max(...existing.map(st => Number(st.step_order) || 0)) : 0;
       input.value = String(maxOrder + 1);
@@ -1393,8 +1445,283 @@ async function deleteScenarioStep(id) {
 
     function clearEventForm() {
       ['ev_connecteur_id','ev_source_external_id','ev_dedupe_key','ev_zone_cible','ev_occurs_at','ev_predicted_start_at','ev_predicted_end_at','ev_date_evenement'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('ev_payload').value = '{\n  "city": "Vannes",\n  "department": "56",\n  "event_type": "violent_storm",\n  "confidence": 0.87\n}';
+      document.getElementById('ev_payload').value = '';
     }
+
+
+    function setDefaultPlannerDate() {
+      const el = document.getElementById('pl_demo_date');
+      if (!el || el.value) return;
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      el.value = d.toISOString().slice(0, 16);
+    }
+
+    function fillScenarioPlannerSelect() {
+      setOptions('pl_scenario_id', state.scenarios, 'id', s => `${s.label || s.code} (${s.code})`);
+      setDefaultPlannerDate();
+      renderScenarioPlanner();
+    }
+
+    function openScenarioPlanner(id) {
+      showPage('scenario-steps');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.textContent.includes('Étapes'));
+      if (btn) btn.classList.add('active');
+      const select = document.getElementById('pl_scenario_id');
+      if (select) select.value = String(id);
+      renderScenarioPlanner();
+    }
+
+    function plannerRefLabel(ref) {
+      return {
+        occurs_at: 'Date de survenance',
+        predicted_start_at: 'Début prévu',
+        predicted_end_at: 'Fin prévue',
+        date_evenement: 'Date d’événement'
+      }[ref] || ref || 'Début prévu';
+    }
+
+    function plannerDateFromInput() {
+      const raw = val('pl_demo_date');
+      const d = raw ? new Date(raw) : new Date();
+      return isNaN(d.getTime()) ? new Date() : d;
+    }
+
+    function formatPlannerDate(date) {
+      return date.toLocaleString('fr-FR', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function contentCodesFromStep(step) {
+      const contents = Array.isArray(step.logic_json?.contents) ? step.logic_json.contents : [];
+      return contents.map(c => c.content_code).filter(Boolean).join(', ');
+    }
+
+    function conditionFromStep(step) {
+      const contents = Array.isArray(step.logic_json?.contents) ? step.logic_json.contents : [];
+      return contents[0]?.when || 'always';
+    }
+
+    function plannerRowHtml(step = {}) {
+      const id = step.id || '';
+      const code = step.code || '';
+      const order = step.step_order || nextPlannerOrder();
+      const ref = step.window_ref || 'predicted_start_at';
+      const offset = Number(step.window_max_hours ?? 24);
+      const codes = contentCodesFromStep(step);
+      const condition = conditionFromStep(step);
+
+      return `
+        <div class="step-editor" data-id="${escapeHtml(id)}">
+          <div class="step-editor-title">
+            <strong>Étape ${escapeHtml(code || order)}</strong>
+            <button class="danger" type="button" onclick="removePlannerRow(this)">Supprimer cette étape</button>
+          </div>
+
+          <div class="step-fields">
+            <div>
+              <label>Code</label>
+              <input class="pl_code" value="${escapeHtml(code)}" placeholder="J-2">
+            </div>
+            <div>
+              <label>Ordre</label>
+              <input class="pl_order" type="number" value="${escapeHtml(order)}">
+            </div>
+            <div>
+              <label>Moment de référence</label>
+              <select class="pl_ref">
+                <option value="predicted_start_at" ${ref === 'predicted_start_at' ? 'selected' : ''}>Début prévu de l’événement</option>
+                <option value="occurs_at" ${ref === 'occurs_at' ? 'selected' : ''}>Date de détection / survenance</option>
+                <option value="predicted_end_at" ${ref === 'predicted_end_at' ? 'selected' : ''}>Fin prévue de l’événement</option>
+                <option value="date_evenement" ${ref === 'date_evenement' ? 'selected' : ''}>Date simple de l’événement</option>
+              </select>
+            </div>
+            <div>
+              <label>Envoi</label>
+              <input class="pl_offset" type="number" min="0" value="${escapeHtml(offset)}">
+              <div class="help">heures avant la référence</div>
+            </div>
+          </div>
+
+          <label>Briques de contenu à envoyer</label>
+          <textarea class="pl_codes" placeholder="Ex. STORM_DPLUS2_ALERT, AQUAPLANING_WARNING">${escapeHtml(codes)}</textarea>
+          <div class="help">Séparez les codes par des virgules. Les codes disponibles sont visibles dans “Briques de contenu”.</div>
+
+          <details>
+            <summary class="advanced-small">Condition avancée d’affichage</summary>
+            <select class="pl_condition" style="margin-top:8px;">
+              <option value="always" ${condition === 'always' ? 'selected' : ''}>Toujours afficher</option>
+              <option value="cooldown_ok" ${condition === 'cooldown_ok' ? 'selected' : ''}>Si le délai de répétition est respecté</option>
+              <option value="not_sent_in_event && cooldown_ok" ${condition === 'not_sent_in_event && cooldown_ok' ? 'selected' : ''}>Si non envoyé dans cet événement + délai respecté</option>
+              <option value="first_detection_for_event && cooldown_ok" ${condition === 'first_detection_for_event && cooldown_ok' ? 'selected' : ''}>Uniquement à la première détection + délai respecté</option>
+            </select>
+          </details>
+
+          <div class="soft-panel planner-readable" style="margin-top:10px;"></div>
+        </div>
+      `;
+    }
+
+    function nextPlannerOrder() {
+      const rows = Array.from(document.querySelectorAll('#scenarioPlannerRows .step-editor'));
+      if (!rows.length) {
+        const scenarioId = Number(val('pl_scenario_id'));
+        const existing = state.scenarioSteps.filter(st => Number(st.scenario_id) === scenarioId);
+        return existing.length ? Math.max(...existing.map(st => Number(st.step_order) || 0)) + 1 : 1;
+      }
+      return Math.max(...rows.map(r => Number(r.querySelector('.pl_order')?.value || 0))) + 1;
+    }
+
+    function renderScenarioPlanner() {
+      const select = document.getElementById('pl_scenario_id');
+      const wrap = document.getElementById('scenarioPlannerRows');
+      if (!select || !wrap) return;
+
+      const scenarioId = Number(select.value);
+      const steps = state.scenarioSteps
+        .filter(st => Number(st.scenario_id) === scenarioId)
+        .sort((a, b) => Number(a.step_order || 0) - Number(b.step_order || 0));
+
+      wrap.innerHTML = steps.map(st => plannerRowHtml(st)).join('');
+      if (!steps.length) {
+        wrap.innerHTML = '<div class="notice warn">Aucune étape pour ce scénario. Cliquez sur “Ajouter une étape”.</div>';
+      }
+      updatePlannerPreview();
+    }
+
+    function addPlannerRow() {
+      const wrap = document.getElementById('scenarioPlannerRows');
+      if (!wrap) return;
+      const warn = wrap.querySelector('.notice.warn');
+      if (warn) warn.remove();
+      wrap.insertAdjacentHTML('beforeend', plannerRowHtml({}));
+      updatePlannerPreview();
+    }
+
+    async function removePlannerRow(btn) {
+      const row = btn.closest('.step-editor');
+      const id = row?.dataset?.id;
+      if (!row) return;
+
+      if (id) {
+        const confirmed = window.confirm('Supprimer cette étape du scénario ?');
+        if (!confirmed) return;
+        const { error } = await db().from('scenario_steps').delete().eq('id', id);
+        if (error) {
+          setGlobalNotice(error.message || 'Erreur lors de la suppression de l’étape.', 'err');
+          return;
+        }
+        setGlobalNotice('L’étape a été supprimée.', 'ok');
+        await refreshAll();
+        return;
+      }
+
+      row.remove();
+      updatePlannerPreview();
+    }
+
+    function plannerRowsData() {
+      const scenarioId = Number(val('pl_scenario_id'));
+      return Array.from(document.querySelectorAll('#scenarioPlannerRows .step-editor')).map(row => {
+        const offset = Number(row.querySelector('.pl_offset')?.value || 0);
+        const condition = row.querySelector('.pl_condition')?.value || 'always';
+        const codes = String(row.querySelector('.pl_codes')?.value || '')
+          .split(',')
+          .map(x => x.trim())
+          .filter(Boolean);
+
+        return {
+          id: row.dataset.id ? Number(row.dataset.id) : null,
+          scenario_id: scenarioId,
+          code: row.querySelector('.pl_code')?.value.trim() || '',
+          step_order: Number(row.querySelector('.pl_order')?.value || 1),
+          window_ref: row.querySelector('.pl_ref')?.value || 'predicted_start_at',
+          window_min_hours: Math.max(0, offset - 1),
+          window_max_hours: offset,
+          logic_json: {
+            contents: codes.map(code => ({ content_code: code, when: condition })),
+            priority: null
+          },
+          active: true
+        };
+      });
+    }
+
+    function updatePlannerPreview() {
+      const box = document.getElementById('scenarioTimelinePreview');
+      if (!box) return;
+
+      const referenceDate = plannerDateFromInput();
+      const rows = plannerRowsData().sort((a, b) => Number(a.step_order) - Number(b.step_order));
+
+      document.querySelectorAll('#scenarioPlannerRows .step-editor').forEach(row => {
+        const offset = Number(row.querySelector('.pl_offset')?.value || 0);
+        const ref = row.querySelector('.pl_ref')?.value || 'predicted_start_at';
+        const sendAt = new Date(referenceDate.getTime() - offset * 3600 * 1000);
+        const target = row.querySelector('.planner-readable');
+        if (target) {
+          target.innerHTML =
+            `Si la référence “${escapeHtml(plannerRefLabel(ref))}” vaut <strong>${escapeHtml(formatPlannerDate(referenceDate))}</strong>, ` +
+            `ce message partira le <span class="readable-date">${escapeHtml(formatPlannerDate(sendAt))}</span>.`;
+        }
+      });
+
+      if (!rows.length) {
+        box.innerHTML = '<div class="notice warn">Ajoutez au moins une étape pour visualiser la séquence.</div>';
+        return;
+      }
+
+      box.innerHTML = rows.map(row => {
+        const sendAt = new Date(referenceDate.getTime() - Number(row.window_max_hours || 0) * 3600 * 1000);
+        const codes = (row.logic_json.contents || []).map(c => c.content_code).join(', ') || 'Aucune brique renseignée';
+        return `
+          <div class="timeline-preview-item">
+            <div class="timeline-preview-dot">${escapeHtml(row.code || row.step_order)}</div>
+            <div class="timeline-preview-card">
+              <b>${escapeHtml(row.code || 'Étape ' + row.step_order)} · ${escapeHtml(formatPlannerDate(sendAt))}</b>
+              <div class="muted small">Référence : ${escapeHtml(plannerRefLabel(row.window_ref))} · ${escapeHtml(row.window_max_hours)}h avant</div>
+              <div class="small" style="margin-top:6px;">Contenus : ${escapeHtml(codes)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function saveScenarioPlan() {
+      try {
+        const rows = plannerRowsData();
+        if (!rows.length) {
+          setGlobalNotice('Aucune étape à enregistrer.', 'warn');
+          return;
+        }
+
+        for (const row of rows) {
+          if (!row.code) throw new Error('Chaque étape doit avoir un code : J-2, J-1, J, etc.');
+          if (!row.logic_json.contents.length) throw new Error('Chaque étape doit contenir au moins une brique de contenu.');
+          if (row.id) {
+            const { id, ...payload } = row;
+            const { error } = await db().from('scenario_steps').update(payload).eq('id', id);
+            if (error) throw error;
+          } else {
+            const { id, ...payload } = row;
+            const { error } = await db().from('scenario_steps').insert(payload);
+            if (error) throw error;
+          }
+        }
+
+        setGlobalNotice('La séquence complète du scénario a été enregistrée.', 'ok');
+        await refreshAll();
+      } catch (e) {
+        setGlobalNotice(e.message || 'Erreur lors de l’enregistrement de la séquence.', 'err');
+      }
+    }
+
 
     document.addEventListener('change', e => {
       if (e.target && e.target.id === 'pv_content_item_id') syncPreviewVersions();
@@ -1404,11 +1731,17 @@ async function deleteScenarioStep(id) {
       if (e.target && e.target.id === 'cv_content_item_id') {
         prefillContentVersionFromPrevious();
       }
+      if (e.target && e.target.id === 'pl_scenario_id') {
+        renderScenarioPlanner();
+      }
     });
 
     document.addEventListener('input', e => {
       if (e.target && (e.target.id === 'ss_window_min_hours' || e.target.id === 'ss_window_max_hours')) {
         updateStepWindowHelp();
+      }
+      if (e.target && (e.target.closest && e.target.closest('#scenarioPlannerRows') || e.target.id === 'pl_demo_date')) {
+        updatePlannerPreview();
       }
     });
 
