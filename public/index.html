@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administration – Prévention routière</title>
+  <link rel="icon" href="data:,">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tiny.cloud/1/6mhd3ogrj6lt9o030fvzsixg0ptvtvttdf9zm1owh42q0ipg/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
   <style>
@@ -1109,27 +1110,9 @@ async function deleteScenarioStep(id) {
     }
 
     function renderScenarioSteps() {
-      const box = document.getElementById('scenarioStepsList');
-      box.innerHTML = '';
-      state.scenarioSteps.forEach(st => {
-        const sc = state.scenarios.find(s => s.id === st.scenario_id);
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-            <strong>${escapeHtml(sc?.code || '')} / ${escapeHtml(st.code)}</strong>
-            <div class="chips">
-              <span class="chip">ordre ${escapeHtml(st.step_order)}</span>
-              <span class="chip">${escapeHtml(st.window_ref || '')}</span>
-              <span class="chip">${escapeHtml(st.window_min_hours)}h → ${escapeHtml(st.window_max_hours)}h</span>
-            </div>
-            <div class="mono" style="margin-top:10px;">${escapeHtml(JSON.stringify(st.logic_json || {}, null, 2))}</div>
-            <div class="row" style="margin-top:10px;">
-              <button class="secondary" onclick="startEditScenarioStep(${st.id})">Modifier</button>
-              <button class="danger" onclick="deleteScenarioStep(${st.id})">Supprimer</button>
-            </div>
-          `;
-        box.appendChild(div);
-      });
+      // Ancienne liste technique retirée dans cette version.
+      // La page utilise maintenant la vue globale scenarioPlannerRows.
+      renderScenarioPlanner();
     }
 
     function renderEvents() {
