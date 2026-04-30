@@ -1523,6 +1523,21 @@ async function deleteScenarioStep(id) {
       return contents[0]?.when || 'always';
     }
 
+    function plannerContentSelectHtml(selectedCode = '') {
+      const options = ['<option value="">-- Choisir une brique --</option>'];
+    
+      state.contentItems.forEach(item => {
+        const selected = item.code === selectedCode ? 'selected' : '';
+        options.push(
+          `<option value="${escapeHtml(item.code)}" ${selected}>
+            ${escapeHtml(item.code)} — ${escapeHtml(item.sujet || '')}
+          </option>`
+        );
+      });
+    
+      return `<select class="pl_content_code">${options.join('')}</select>`;
+    }
+
     function plannerRowHtml(step = {}) {
       const id = step.id || '';
       const code = step.code || '';
@@ -1564,9 +1579,11 @@ async function deleteScenarioStep(id) {
             </div>
           </div>
 
-          <label>Briques de contenu à envoyer</label>
-          <textarea class="pl_codes" placeholder="Ex. STORM_DPLUS2_ALERT, AQUAPLANING_WARNING">${escapeHtml(codes)}</textarea>
-          <div class="help">Séparez les codes par des virgules. Les codes disponibles sont visibles dans “Briques de contenu”.</div>
+          <label>Brique de contenu à envoyer</label>
+          <div class="pl_content_wrap">
+            ${plannerContentSelectHtml(codes.split(',')[0]?.trim() || '')}
+          </div>
+          <div class="help">Choisissez la brique dans la liste </div>
 
           <details>
             <summary class="advanced-small">Condition avancée d’affichage</summary>
@@ -1646,10 +1663,8 @@ async function deleteScenarioStep(id) {
       return Array.from(document.querySelectorAll('#scenarioPlannerRows .step-editor')).map(row => {
         const offset = Number(row.querySelector('.pl_offset')?.value || 0);
         const condition = row.querySelector('.pl_condition')?.value || 'always';
-        const codes = String(row.querySelector('.pl_codes')?.value || '')
-          .split(',')
-          .map(x => x.trim())
-          .filter(Boolean);
+        const selectedCode = row.querySelector('.pl_content_code')?.value || '';
+        const codes = selectedCode ? [selectedCode] : [];
 
         return {
           id: row.dataset.id ? Number(row.dataset.id) : null,
