@@ -1306,19 +1306,30 @@ async function deleteScenarioStep(id) {
       const wrap = document.getElementById('stepRules');
       const row = document.createElement('div');
       row.className = 'rule-row';
-
+    
+      // 🔽 SELECT CONTENT
       const contentSelect = document.createElement('select');
       contentSelect.className = 'rule-content';
+    
+      // option vide
+      const empty = document.createElement('option');
+      empty.value = '';
+      empty.textContent = '-- Choisir une brique --';
+      contentSelect.appendChild(empty);
+    
+      // 🔁 alimenté depuis Supabase
       state.contentItems.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item.code;
-        opt.textContent = item.code + ' — ' + (item.sujet || 'sans titre');
+        opt.textContent = `${item.code} — ${item.sujet || ''}`;
         if (item.code === contentCode) opt.selected = true;
         contentSelect.appendChild(opt);
       });
-
+    
+      // 🔽 CONDITION
       const whenSelect = document.createElement('select');
       whenSelect.className = 'rule-when';
+    
       Object.keys(dictionnaires.conditionContenu).forEach(libelle => {
         const opt = document.createElement('option');
         opt.value = libelle;
@@ -1326,18 +1337,23 @@ async function deleteScenarioStep(id) {
         if (libelle === when) opt.selected = true;
         whenSelect.appendChild(opt);
       });
-
+    
+      // ❌ SUPPRIMER
       const remove = document.createElement('button');
       remove.textContent = 'Supprimer';
       remove.className = 'danger';
       remove.type = 'button';
       remove.onclick = () => row.remove();
-
-      row.appendChild(labelEl('Brique à afficher'));
+    
+      // 🧱 STRUCTURE
+      row.appendChild(labelEl('Brique'));
       row.appendChild(contentSelect);
-      row.appendChild(labelEl('Condition d’affichage'));
+    
+      row.appendChild(labelEl('Condition'));
       row.appendChild(whenSelect);
+    
       row.appendChild(remove);
+    
       wrap.appendChild(row);
     }
 
