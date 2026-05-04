@@ -377,13 +377,13 @@
     <div class="layout">
       <aside class="panel side">
         <h2>Tester une situation</h2>
-        <p class="sub">Aucune notion technique : choisissez simplement une situation et un contexte.</p>
+        <p class="sub">Aucune notion technique : choisissez simplement une situation et la date de l’événement.</p>
 
         <label for="scenario">Situation à montrer</label>
         <select id="scenario"></select>
 
-        <label for="event">Événement de contexte</label>
-        <select id="event"></select>
+        <label for="eventDate">Date de l’événement</label>
+        <input id="eventDate" type="datetime-local" />
 
         <label for="company">Nom affiché de l’entreprise</label>
         <input id="company" value="Entreprise cliente" />
@@ -538,11 +538,39 @@
       }) || null;
     }
 
-    function selectedEvent() {
-      const id = Number(getElement("event").value);
+    function setDefaultEventDate() {
+      const input = getElement("eventDate");
+      if (!input || input.value) return;
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      input.value = d.toISOString().slice(0, 16);
+    }
+
+    function selectedSampleEventForScenario() {
+      const scenario = selectedScenario();
       return state.events.find(function (event) {
-        return Number(event.id) === id;
-      }) || null;
+        return scenario && Number(event.trigger_type_id) === Number(scenario.trigger_type_id);
+      }) || state.events[0] || null;
+    }
+
+    function selectedEvent() {
+      const rawDate = getElement("eventDate") && getElement("eventDate").value;
+      const chosenDate = rawDate ? new Date(rawDate) : new Date();
+      const validDate = Number.isNaN(chosenDate.getTime()) ? new Date() : chosenDate;
+      const iso = validDate.toISOString();
+      const sample = selectedSampleEventForScenario();
+
+      return {
+        ...(sample || {}),
+        id: "demo-date",
+        occurs_at: iso,
+        predicted_start_at: iso,
+        predicted_end_at: null,
+        date_evenement: iso.slice(0, 10),
+        payload: sample && sample.payload ? sample.payload : {},
+        zone_cible: sample ? sample.zone_cible || "" : "",
+        severity: sample ? sample.severity || "info" : "info"
+      };
     }
 
     function latestPublishedVersion(contentItemId) {
@@ -617,6 +645,7 @@
       state.events = responses[5].data || [];
 
       fillScenarioSelect();
+      setDefaultEventDate();
       refreshSimulation();
       setStatus("Connecté à Supabase · lecture seule", "ok");
     }
@@ -634,29 +663,6 @@
         return `<option value="${escapeHtml(scenario.id)}">${escapeHtml(label)}</option>`;
       }).join("");
 
-      fillEventSelect();
-    }
-
-    function fillEventSelect() {
-      const eventSelect = getElement("event");
-      const scenario = selectedScenario();
-
-      const eventsForScenario = state.events.filter(function (event) {
-        return scenario && Number(event.trigger_type_id) === Number(scenario.trigger_type_id);
-      });
-
-      const eventsToShow = eventsForScenario.length ? eventsForScenario : state.events;
-
-      if (!eventsToShow.length) {
-        eventSelect.innerHTML = `<option value="">Contexte de démonstration</option>`;
-        return;
-      }
-
-      eventSelect.innerHTML = eventsToShow.map(function (event) {
-        const eventDate = event.predicted_start_at || event.occurs_at || event.created_at;
-        const label = `Zone ${event.zone_cible || "?"} · ${event.severity || "info"} · ${formatDate(eventDate)}`;
-        return `<option value="${escapeHtml(event.id)}">${escapeHtml(label)}</option>`;
-      }).join("");
     }
 
     function buildMessagesForSelectedScenario() {
@@ -678,8 +684,12 @@
       scenarioSteps.forEach(function (step) {
         const context = buildRenderContext(event, step, scenario);
         const rules = Array.isArray(step.logic_json && step.logic_json.contents) ? step.logic_json.contents : [];
+        const blocks = [];
+        let firstSubject = "";
+        let firstItem = null;
+        let firstChannel = "email";
 
-        rules.forEach(function (rule, index) {
+        rules.forEach(function (rule) {
           const item = state.items.find(function (contentItem) {
             return contentItem.code === rule.content_code;
           });
@@ -694,20 +704,45 @@
           const bodyText = stripHtml(bodyHtml);
           const channel = normaliseChannel(item.channel);
 
-          messages.push({
-            id: `${step.id}-${item.id}-${index}`,
-            scenario: scenario,
-            event: event,
-            step: step,
+          if (!firstSubject && subject) firstSubject = subject;
+          if (!firstItem) firstItem = item;
+          if (!firstChannel) firstChannel = channel;
+
+          blocks.push({
             item: item,
             version: version,
-            channel: channel,
-            plannedAt: calculatePlannedDate(event, step),
-            subject: subject || "Prévention routière",
+            subject: subject,
             bodyHtml: bodyHtml,
             bodyText: bodyText,
-            context: context
+            channel: channel
           });
+        });
+
+        if (!blocks.length) return;
+
+        const mainChannel = blocks.some(function (block) { return block.channel === "sms"; }) ? "sms" : "email";
+        const subject = firstSubject || "Prévention routière";
+        const bodyHtml = blocks.map(function (block) {
+          return `<h3>${escapeHtml(block.subject)}</h3>\n${block.bodyHtml}`;
+        }).join('\n<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;" />\n');
+        const bodyText = blocks.map(function (block) {
+          return block.subject + "\n" + block.bodyText;
+        }).join("\n\n---\n\n");
+
+        messages.push({
+          id: `step-${step.id}`,
+          scenario: scenario,
+          event: event,
+          step: step,
+          item: firstItem || { code: "", sujet: "Message composé" },
+          version: null,
+          blocks: blocks,
+          channel: mainChannel,
+          plannedAt: calculatePlannedDate(event, step),
+          subject: subject,
+          bodyHtml: bodyHtml,
+          bodyText: bodyText,
+          context: context
         });
       });
 
@@ -715,8 +750,6 @@
     }
 
     function refreshSimulation() {
-      fillEventSelect();
-
       const scenario = selectedScenario();
       const messages = buildMessagesForSelectedScenario();
       state.messages = messages;
@@ -761,7 +794,7 @@
       const stepTitle = message.subject;
       const stepSubtitle = message.item.sujet || message.item.code || "Message de prévention";
       const excerpt = message.bodyText.length > 260 ? message.bodyText.slice(0, 260) + "…" : message.bodyText;
-      const calculation = `Calculé depuis le ${getReferenceLabel(message.step.window_ref)}, fenêtre ${message.step.window_min_hours}h → ${message.step.window_max_hours}h.`;
+      const calculation = `Calculé depuis le ${getReferenceLabel(message.step.window_ref)} · ${message.step.window_max_hours}h avant.`;
 
       return `
         <div class="step">
@@ -791,7 +824,7 @@
             etape: message.step.code,
             envoi_prevu: message.plannedAt,
             objet: message.subject,
-            brique: message.item.code
+            briques: (message.blocks || []).map(function (block) { return block.item.code; })
           };
         })
       }, null, 2);
@@ -957,12 +990,8 @@
     }
 
     function bindEvents() {
-      getElement("scenario").addEventListener("change", function () {
-        fillEventSelect();
-        refreshSimulation();
-      });
-
-      getElement("event").addEventListener("change", refreshSimulation);
+      getElement("scenario").addEventListener("change", refreshSimulation);
+      getElement("eventDate").addEventListener("input", refreshSimulation);
       getElement("simulate").addEventListener("click", refreshSimulation);
       getElement("company").addEventListener("input", refreshSimulation);
       getElement("email").addEventListener("input", refreshSimulation);
