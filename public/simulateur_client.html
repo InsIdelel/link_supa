@@ -259,6 +259,72 @@
     .tag.email { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
     .tag.sms { background: #ecfdf5; color: #166534; border-color: #bbf7d0; }
 
+
+
+    .group-info {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:16px;
+      background:#f0fdf4;
+      border:1px solid #bbf7d0;
+      color:#166534;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .group-info.single {
+      background:#f8fafc;
+      border-color:#e2e8f0;
+      color:#475569;
+    }
+
+    .block-list {
+      display:grid;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .block-chip {
+      display:grid;
+      grid-template-columns:26px 1fr;
+      gap:9px;
+      align-items:start;
+      padding:10px;
+      border:1px solid #e2e8f0;
+      border-radius:15px;
+      background:#f8fafc;
+    }
+
+    .block-chip-num {
+      width:24px;
+      height:24px;
+      display:grid;
+      place-items:center;
+      border-radius:9px;
+      background:#e0f2fe;
+      color:#075985;
+      font-size:12px;
+      font-weight:950;
+    }
+
+    .block-chip-title {
+      color:#0f172a;
+      font-size:13px;
+      font-weight:850;
+      line-height:1.25;
+    }
+
+    .block-chip-code {
+      color:#64748b;
+      font-size:11px;
+      margin-top:2px;
+      line-height:1.25;
+    }
+
     .message-excerpt {
       margin-top: 12px;
       color: #475569;
@@ -406,12 +472,12 @@
 
         <div class="kpis">
           <div class="kpi"><span>Moments de contact</span><b id="kSteps">0</b></div>
-          <div class="kpi"><span>Messages cliquables</span><b id="kMessages">0</b></div>
+          <div class="kpi"><span>Envois prévus</span><b id="kMessages">0</b></div>
           <div class="kpi"><span>Canal</span><b id="kChannel">Auto</b></div>
         </div>
 
         <h2>Messages prévus</h2>
-        <p class="sub">Cliquez sur un message pour ajouter une note éventuelle, puis ouvrir l’aperçu destiné aux équipes.</p>
+        <p class="sub">Chaque carte correspond à un moment d’envoi. Une carte peut contenir un seul message ou un regroupement de plusieurs briques envoyées ensemble.</p>
 
         <div id="timeline" class="timeline"><div class="empty">Chargement…</div></div>
 
@@ -758,8 +824,10 @@
       const channelNames = Array.from(new Set(messages.map(function (message) { return channelLabel(message.channel); })));
 
       getElement("title").textContent = scenario ? (scenario.label || scenario.code) : "Aucun scénario actif";
+      const totalBlocks = messages.reduce(function (sum, message) { return sum + ((message.blocks || []).length || 1); }, 0);
+      const groupedCount = messages.filter(function (message) { return (message.blocks || []).length > 1; }).length;
       getElement("subtitle").textContent = scenario
-        ? "Voici les messages que le client peut prévisualiser avant diffusion interne."
+        ? `Séquence de ${messages.length} moment(s) d’envoi · ${totalBlocks} contenu(s) au total${groupedCount ? " · dont " + groupedCount + " regroupement(s)" : ""}.`
         : "Aucun scénario actif trouvé.";
 
       getElement("kSteps").textContent = String(stepCount);
@@ -792,9 +860,27 @@
     function renderTimelineCard(message, index) {
       const stepLabel = message.step.code || String(index + 1);
       const stepTitle = message.subject;
-      const stepSubtitle = message.item.sujet || message.item.code || "Message de prévention";
+      const blockCount = Array.isArray(message.blocks) ? message.blocks.length : 1;
+      const isGrouped = blockCount > 1;
+      const stepSubtitle = isGrouped
+        ? `Regroupement de ${blockCount} briques dans le même envoi`
+        : (message.item.sujet || message.item.code || "Message de prévention");
       const excerpt = message.bodyText.length > 260 ? message.bodyText.slice(0, 260) + "…" : message.bodyText;
       const calculation = `Calculé depuis le ${getReferenceLabel(message.step.window_ref)} · ${message.step.window_max_hours}h avant.`;
+      const groupLabel = isGrouped
+        ? `Regroupement : ${blockCount} contenus envoyés ensemble`
+        : "Message simple";
+      const blockList = (message.blocks || []).map(function (block, blockIndex) {
+        return `
+          <div class="block-chip">
+            <div class="block-chip-num">${escapeHtml(blockIndex + 1)}</div>
+            <div>
+              <div class="block-chip-title">${escapeHtml(block.subject || block.item.sujet || block.item.code)}</div>
+              <div class="block-chip-code">${escapeHtml(block.item.code || "")}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
 
       return `
         <div class="step">
@@ -805,7 +891,10 @@
             <div class="meta">
               <span class="tag ${escapeHtml(message.channel)}">${escapeHtml(channelLabel(message.channel))}</span>
               <span class="tag">Envoi prévu : ${escapeHtml(formatDate(message.plannedAt))}</span>
+              <span class="tag">Moment ${escapeHtml(index + 1)} de la séquence</span>
             </div>
+            <div class="group-info ${isGrouped ? "" : "single"}">${escapeHtml(groupLabel)}</div>
+            ${isGrouped ? `<div class="block-list">${blockList}</div>` : ""}
             <div class="message-excerpt"><p>${escapeHtml(excerpt)}</p></div>
             <div class="calculation-note">${escapeHtml(calculation)}</div>
             <span class="open-link">Ouvrir l’aperçu destiné aux équipes →</span>
