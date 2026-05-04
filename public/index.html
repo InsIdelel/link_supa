@@ -123,6 +123,8 @@
     .readable-date { color:#065f46; font-weight:bold; }
     .soft-panel { background:#f8fafc; border:1px solid var(--line); border-radius:16px; padding:14px; }
     .advanced-small { font-size:12px; color:var(--muted); line-height:1.4; }
+    .pl_content_line { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:start; margin-bottom:8px; }
+    .pl_content_line button { white-space:nowrap; }
     @media (max-width: 1180px) {
       .scenario-planner-grid, .step-fields { grid-template-columns:1fr; }
     }
@@ -1513,9 +1515,13 @@ async function deleteScenarioStep(id) {
       });
     }
 
-    function contentCodesFromStep(step) {
+    function contentCodeArrayFromStep(step) {
       const contents = Array.isArray(step.logic_json?.contents) ? step.logic_json.contents : [];
-      return contents.map(c => c.content_code).filter(Boolean).join(', ');
+      return contents.map(c => c.content_code).filter(Boolean);
+    }
+
+    function contentCodesFromStep(step) {
+      return contentCodeArrayFromStep(step).join(', ');
     }
 
     function conditionFromStep(step) {
@@ -1525,17 +1531,46 @@ async function deleteScenarioStep(id) {
 
     function plannerContentSelectHtml(selectedCode = '') {
       const options = ['<option value="">-- Choisir une brique --</option>'];
-    
+
       state.contentItems.forEach(item => {
         const selected = item.code === selectedCode ? 'selected' : '';
         options.push(
-          `<option value="${escapeHtml(item.code)}" ${selected}>
-            ${escapeHtml(item.code)} — ${escapeHtml(item.sujet || '')}
-          </option>`
+          `<option value="${escapeHtml(item.code)}" ${selected}>${escapeHtml(item.code)} — ${escapeHtml(item.sujet || '')}</option>`
         );
       });
-    
-      return `<select class="pl_content_code">${options.join('')}</select>`;
+
+      return `
+        <div class="pl_content_line">
+          ${`<select class="pl_content_code">${options.join('')}</select>`}
+          <button class="secondary" type="button" onclick="removePlannerContentSelect(this)">Retirer</button>
+        </div>
+      `;
+    }
+
+    function plannerContentSelectsHtml(codes = []) {
+      const safeCodes = Array.isArray(codes) && codes.length ? codes : [''];
+      return safeCodes.map(code => plannerContentSelectHtml(code)).join('');
+    }
+
+    function addPlannerContentSelect(btn) {
+      const row = btn.closest('.step-editor');
+      const wrap = row ? row.querySelector('.pl_content_wrap') : null;
+      if (!wrap) return;
+      wrap.insertAdjacentHTML('beforeend', plannerContentSelectHtml(''));
+      updatePlannerPreview();
+    }
+
+    function removePlannerContentSelect(btn) {
+      const line = btn.closest('.pl_content_line');
+      const wrap = btn.closest('.pl_content_wrap');
+      if (!line || !wrap) return;
+      if (wrap.querySelectorAll('.pl_content_line').length <= 1) {
+        const select = line.querySelector('.pl_content_code');
+        if (select) select.value = '';
+      } else {
+        line.remove();
+      }
+      updatePlannerPreview();
     }
 
     function plannerRowHtml(step = {}) {
@@ -1544,7 +1579,7 @@ async function deleteScenarioStep(id) {
       const order = step.step_order || nextPlannerOrder();
       const ref = step.window_ref || 'predicted_start_at';
       const offset = Number(step.window_max_hours ?? 24);
-      const codes = contentCodesFromStep(step);
+      const codes = contentCodeArrayFromStep(step);
       const condition = conditionFromStep(step);
 
       return `
@@ -1579,11 +1614,12 @@ async function deleteScenarioStep(id) {
             </div>
           </div>
 
-          <label>Brique de contenu à envoyer</label>
+          <label>Briques de contenu à envoyer</label>
           <div class="pl_content_wrap">
-            ${plannerContentSelectHtml(codes.split(',')[0]?.trim() || '')}
+            ${plannerContentSelectsHtml(codes)}
           </div>
-          <div class="help">Choisissez la brique dans la liste </div>
+          <button class="secondary" type="button" onclick="addPlannerContentSelect(this)">Ajouter une brique à cette étape</button>
+          <div class="help">Chaque brique sélectionnée sera incluse dans le même message de cette étape.</div>
 
           <details>
             <summary class="advanced-small">Condition avancée d’affichage</summary>
@@ -1663,8 +1699,9 @@ async function deleteScenarioStep(id) {
       return Array.from(document.querySelectorAll('#scenarioPlannerRows .step-editor')).map(row => {
         const offset = Number(row.querySelector('.pl_offset')?.value || 0);
         const condition = row.querySelector('.pl_condition')?.value || 'always';
-        const selectedCode = row.querySelector('.pl_content_code')?.value || '';
-        const codes = selectedCode ? [selectedCode] : [];
+        const codes = Array.from(row.querySelectorAll('.pl_content_code'))
+          .map(select => select.value)
+          .filter(Boolean);
 
         return {
           id: row.dataset.id ? Number(row.dataset.id) : null,
@@ -1807,6 +1844,9 @@ async function deleteScenarioStep(id) {
       }
       if (e.target && e.target.id === 'pl_scenario_id') {
         renderScenarioPlanner();
+      }
+      if (e.target && e.target.closest && e.target.closest('#scenarioPlannerRows')) {
+        updatePlannerPreview();
       }
     });
 
