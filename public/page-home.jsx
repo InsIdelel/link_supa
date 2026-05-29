@@ -1,0 +1,358 @@
+/* MobiSûr — Home page (chef d'entreprise) */
+
+function HomePage({ setPage, t }) {
+  const [activeKey, setActiveKey] = React.useState("weather");
+
+  // auto-rotate phone messages
+  React.useEffect(() => {
+    if (t.heroAutoRotate === false) return;
+    const order = ["weather", "quiz", "boss", "local"];
+    const id = setInterval(() => {
+      setActiveKey((k) => order[(order.indexOf(k) + 1) % order.length]);
+    }, 4200);
+    return () => clearInterval(id);
+  }, [t.heroAutoRotate]);
+
+  const copy = COPY[t.tone] || COPY.punchy;
+
+  return (
+    <main>
+      {/* ============ HERO ============ */}
+      <section className="hero">
+        <div className="container">
+          <div className="hero-inner">
+            <div>
+              <span className="hero-tag">
+                <span style={{ width: 8, height: 8, background: "var(--ms-yellow)", borderRadius: 999 }}></span>
+                {copy.hero.eyebrow}
+              </span>
+              <h1 className="h-display">
+                {copy.hero.titleA}<br/>
+                <span className="accent">{copy.hero.titleAccent}</span><br/>
+                {copy.hero.titleB}
+              </h1>
+              <p className="hero-sub">{copy.hero.sub}</p>
+              <div className="hero-ctas">
+                <a className="btn btn-primary btn-lg" href="#pilote" onClick={(e) => { e.preventDefault(); document.getElementById("pilote")?.scrollIntoView({ behavior: "smooth" }); }}>
+                  Devenir abonné pilote <Icon name="arrow" size={18} stroke={2.5} />
+                </a>
+                <a className="btn btn-ghost btn-lg" href="#how" onClick={(e) => { e.preventDefault(); document.getElementById("how")?.scrollIntoView({ behavior: "smooth" }); }}>
+                  Voir comment ça marche
+                </a>
+              </div>
+              <div style={{ marginTop: 28, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+                <span className="hero-price-note"><strong>2&nbsp;€ / salarié / mois</strong></span>
+                <span style={{ fontSize: 14, color: "var(--ms-brown)", fontWeight: 700 }}>· 3 mois offerts en 2026 pour les pilotes</span>
+              </div>
+            </div>
+            <div className="hero-right">
+              <PhoneMockup activeKey={activeKey} onSelectKey={setActiveKey} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Marquee />
+
+      {/* ============ THE STAT ============ */}
+      <section className="section">
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span className="eyebrow">Le risque que tout le monde sous-estime</span>
+            <h2 className="h-display h2" style={{ margin: "16px auto 16px", maxWidth: "20ch" }}>
+              {copy.stat.title}
+            </h2>
+            <p className="lead" style={{ maxWidth: 720, margin: "0 auto" }}>{copy.stat.sub}</p>
+          </div>
+          <div className="stat-block">
+            <div className="stat-cell yellow">
+              <div className="figure">1<sup style={{ fontSize: "0.45em" }}>re</sup></div>
+              <div className="label">cause de mortalité au travail. Devant les chutes. Devant les machines.</div>
+            </div>
+            <div className="stat-cell dark">
+              <div className="figure">100<span style={{ fontSize: "0.6em" }}>%</span></div>
+              <div className="label">des entreprises sont concernées — de la PME au grand groupe.</div>
+            </div>
+            <div className="stat-cell blue">
+              <div className="figure">159k</div>
+              <div className="label">patrons de PME en France. Combien font de la prévention routière ?</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ THE PROBLEM (Claude story) ============ */}
+      <section className="section section-dark">
+        <div className="container">
+          <div className="problem-grid">
+            <div>
+              <span className="eyebrow" style={{ color: "var(--ms-yellow)" }}>Le scénario qu'on n'imagine jamais</span>
+              <h2 className="h-display h2" style={{ color: "var(--ms-yellow)", margin: "16px 0 24px" }}>
+                Claude de la compta<br/>n'est pas arrivé ce matin.
+              </h2>
+              <p className="lead" style={{ color: "rgba(253,250,242,0.78)", marginBottom: 16 }}>
+                Il vient d'habitude en trottinette. Aujourd'hui, dans le brouillard, un camion ne l'a pas vu.
+              </p>
+              <p className="lead" style={{ color: "rgba(253,250,242,0.78)" }}>
+                Il est à l'hôpital. Et bientôt, son avocat va vous demander <strong style={{ color: "white" }}>ce que vous aviez fait, vous, en matière de prévention.</strong>
+              </p>
+              <div style={{ marginTop: 32 }}>
+                <a className="btn btn-yellow" href="#" onClick={(e) => { e.preventDefault(); setPage("loi"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                  Lire ce que dit la loi <Icon name="arrow" size={18} stroke={2.5} />
+                </a>
+              </div>
+            </div>
+            <div className="problem-card">
+              <div className="who">
+                <div className="av">C</div>
+                <div>
+                  <div className="nm">Claude Berthier</div>
+                  <div className="rl">Comptable · Trottinette · Tous les matins</div>
+                </div>
+              </div>
+              <div className="quote">"Personne ne m'avait dit qu'il fallait des stickers rétro-réfléchissants."</div>
+              <div className="tx">
+                Au civil, l'employeur peut être condamné pour <strong style={{ color: "white" }}>faute inexcusable</strong> s'il n'a pas pris les mesures de prévention nécessaires.
+              </div>
+              <div className="tx">
+                Au pénal, c'est le délit de <strong style={{ color: "white" }}>manquement aux obligations de sécurité</strong>. La responsabilité du dirigeant peut être engagée.
+              </div>
+              <div style={{ marginTop: 28, padding: 18, background: "rgba(255,255,102,0.1)", borderRadius: 12, fontSize: 13, color: "rgba(253,250,242,0.85)" }}>
+                <strong style={{ color: "var(--ms-yellow)" }}>⚠ Ce que la loi exige :</strong> évaluer, agir, documenter. Pas une fois, en continu. (Code du travail L.4121-1 à 5)
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ THE SOLUTION : 3 steps ============ */}
+      <section className="section" id="how">
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: 80 }}>
+            <span className="eyebrow">La solution</span>
+            <h2 className="h-display h2" style={{ margin: "16px auto", maxWidth: "22ch" }}>
+              {copy.how.title}
+            </h2>
+            <p className="lead" style={{ maxWidth: 680, margin: "0 auto" }}>{copy.how.sub}</p>
+          </div>
+          <div className="steps-grid">
+            <div className="step">
+              <div className="num">1</div>
+              <h3>Vous abonnez vos salariés</h3>
+              <p>2 € par salarié et par mois. Pas de set-up, pas de formation, pas de logiciel à installer. Vous fournissez la liste des emails et numéros de mobile. C'est tout.</p>
+            </div>
+            <div className="step">
+              <div className="num">2</div>
+              <h3>On envoie au bon moment</h3>
+              <p>Brouillard demain&nbsp;? Travaux rue Jean-Jaurès&nbsp;? Pot d'entreprise vendredi&nbsp;? Le message part automatiquement, ciblé sur le risque réel — par email ou SMS.</p>
+            </div>
+            <div className="step">
+              <div className="num">3</div>
+              <h3>Signé par vous</h3>
+              <p>Votre nom. Votre photo. Vos mots si vous voulez. Vos salariés voient que c'est <em>vous</em> qui faites de la prévention — pas un robot anonyme. Et vous, vous avez la preuve.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ MESSAGE TYPES showcase ============ */}
+      <section className="section section-cream">
+        <div className="container">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }} className="msg-types-grid">
+            <div>
+              <span className="eyebrow">4 types de messages</span>
+              <h2 className="h-display h2" style={{ margin: "16px 0 24px", maxWidth: "16ch" }}>
+                Conçus pour que personne ne zappe la lecture.
+              </h2>
+              <p className="lead" style={{ marginBottom: 32 }}>
+                Quiz ludiques, alertes locales déclenchées par la météo ou les travaux, messages signés par la direction, affichettes à imprimer pour ceux qui n'ont ni mail ni mobile.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  { ic: "chat", t: "Quiz prévention", s: "Question + réponse argumentée. Le truc qu'on lit jusqu'au bout." },
+                  { ic: "cloud", t: "Alertes locales", s: "Météo, travaux, événements. Déclenchées au plus près du risque." },
+                  { ic: "user", t: "Mot de la direction", s: "Signé par le chef d'entreprise, avec sa photo. Ça change tout." },
+                  { ic: "paper", t: "Affichettes", s: "Pour l'atelier, l'accueil, la salle de pause. Imprimables A4." },
+                ].map((it, i) => (
+                  <div key={i} style={{ display: "flex", gap: 16, padding: "14px 18px", background: "white", borderRadius: 14, border: "1px solid var(--ms-line)" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: i % 2 === 0 ? "var(--ms-yellow)" : "var(--ms-blue)", color: i % 2 === 0 ? "var(--ms-brown)" : "white", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                      <Icon name={it.ic} size={20} stroke={2.2} />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, color: "var(--ms-brown)", marginBottom: 2 }}>{it.t}</div>
+                      <div style={{ fontSize: 14, color: "var(--ms-brown-soft)", fontWeight: 500 }}>{it.s}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 24 }}>
+                <a className="btn btn-dark" href="#" onClick={(e) => { e.preventDefault(); setPage("salarie"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                  Voir tous les exemples côté salarié <Icon name="arrow" size={18} stroke={2.5} />
+                </a>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <PhoneMockup activeKey={activeKey} onSelectKey={setActiveKey} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ WHY IT WORKS ============ */}
+      <section className="section">
+        <div className="container container-tight">
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span className="eyebrow">Pourquoi ça marche</span>
+            <h2 className="h-display h2" style={{ margin: "16px auto", maxWidth: "20ch" }}>
+              4 raisons que vos concurrents n'ont pas comprises.
+            </h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }} className="why-grid">
+            {[
+              { n: "01", t: "Au bon moment", d: "Un message sur le brouillard la veille d'un brouillard. Une alerte travaux le jour où la rue ferme. La pertinence rend la lecture inévitable." },
+              { n: "02", t: "Sans coût en temps", d: "Pas de réunion, pas de formation à organiser, pas de DRH à mobiliser. Zéro minute consommée sur le temps de travail." },
+              { n: "03", t: "Signé par vous", d: "Vos salariés savent que c'est leur direction qui s'engage. Pas un prestataire anonyme. Vous valorisez votre démarche RSE au passage." },
+              { n: "04", t: "Documenté", d: "Chaque envoi est tracé, daté, archivé. En cas de contrôle ou de litige, vous avez la preuve que vous avez agi en continu — pas une fois par an." },
+            ].map((it) => (
+              <div key={it.n} style={{ background: "white", border: "1.5px solid var(--ms-line)", borderRadius: 16, padding: 32 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 36, color: "var(--ms-yellow)", letterSpacing: "-0.04em", lineHeight: 1, WebkitTextStroke: "1.5px var(--ms-brown)" }}>{it.n}</div>
+                <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 22, letterSpacing: "-0.02em", margin: "16px 0 10px", color: "var(--ms-brown)" }}>{it.t}</h3>
+                <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "var(--ms-brown-soft)" }}>{it.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ PRICING / PILOTE ============ */}
+      <section className="section section-cream" id="pilote">
+        <div className="container">
+          <div className="price-grid">
+            <div>
+              <span className="eyebrow">Offre de lancement 2026</span>
+              <h2 className="h-display h2" style={{ margin: "16px 0 24px", maxWidth: "16ch" }}>
+                Devenez abonné pilote.
+              </h2>
+              <p className="lead" style={{ marginBottom: 28 }}>
+                Vous faites partie des 50 premières entreprises&nbsp;? Vous bénéficiez de <strong>3 mois offerts</strong>, d'un onboarding personnalisé, et de la possibilité d'influencer le contenu envoyé à vos salariés.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
+                {[
+                  "Engagement minimum : 6 mois (puis sans engagement)",
+                  "Affichettes A4 envoyées au format imprimable",
+                  "Votre signature & photo intégrées à chaque message",
+                  "Tableau de bord des envois pour votre DUERP",
+                ].map((it, i) => (
+                  <div key={i} style={{ display: "flex", gap: 12, alignItems: "start" }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 999, background: "var(--ms-yellow)", border: "2px solid var(--ms-brown)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                      <Icon name="check" size={14} stroke={3} color="var(--ms-brown)" />
+                    </div>
+                    <div style={{ fontWeight: 600, color: "var(--ms-brown)" }}>{it}</div>
+                  </div>
+                ))}
+              </div>
+              <a className="btn btn-primary btn-lg" href="mailto:hello@mobisur.fr">
+                Réserver une démo de 20 min <Icon name="arrow" size={18} stroke={2.5} />
+              </a>
+            </div>
+            <div className="price-card">
+              <div className="pilot-badge">3 mois<br/>offerts</div>
+              <div className="pre">Tarif transparent</div>
+              <div className="big">
+                2&nbsp;€<span className="unit">/ salarié / mois</span>
+              </div>
+              <div style={{ fontSize: 14, color: "var(--ms-brown-soft)", fontWeight: 600 }}>
+                soit 24 € par salarié et par an — moins qu'un déjeuner d'équipe.
+              </div>
+              <ul>
+                <li>Messages illimités par email & SMS</li>
+                <li>Affichettes imprimables incluses</li>
+                <li>Personnalisation par le chef d'établissement</li>
+                <li>Reporting compatible DUERP</li>
+                <li>Hébergement & RGPD France</li>
+              </ul>
+              <div style={{ borderTop: "1.5px dashed var(--ms-brown)", paddingTop: 20, fontSize: 13, color: "var(--ms-brown-soft)", fontWeight: 700 }}>
+                <strong style={{ color: "var(--ms-brown)" }}>Exemple :</strong> entreprise de 25 salariés → 50&nbsp;€ / mois. Pendant 3 mois en 2026, c'est offert.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ CTA STRIP ============ */}
+      <section className="cta-strip">
+        <div className="container container-tight">
+          <h2>Vos salariés prennent la route. Vous, vous prenez les devants.</h2>
+          <p>Rejoignez les pilotes. 3 mois offerts en 2026.</p>
+          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+            <a className="btn btn-dark btn-lg" href="mailto:hello@mobisur.fr">
+              Devenir pilote <Icon name="arrow" size={18} stroke={2.5} />
+            </a>
+            <a className="btn btn-ghost btn-lg" href="#" onClick={(e) => { e.preventDefault(); setPage("loi"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+              D'abord, comprendre la loi
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+/* ============================================================
+   Copy variants — switch via tone tweak
+   ============================================================ */
+const COPY = {
+  punchy: {
+    hero: {
+      eyebrow: "Prévention routière des PME",
+      titleA: "Vos salariés",
+      titleAccent: "prennent la route.",
+      titleB: "Vous, prenez les devants.",
+      sub: "Chaque salarié qui vient au travail prend un risque routier. C'est la 1re cause d'accident du travail. MobiSûr envoie au bon moment les bons messages — signés par vous.",
+    },
+    stat: {
+      title: "L'accident le plus fréquent ne se passe pas au bureau.",
+      sub: "Il se passe sur la route — entre la maison et le travail, ou pendant un déplacement pro. Et c'est vous qu'on va venir chercher.",
+    },
+    how: {
+      title: "Vos salariés reçoivent les bons messages au bon moment.",
+      sub: "Sans réunion. Sans formation. Sans temps perdu. Et vous gardez la preuve de votre démarche.",
+    },
+  },
+  serious: {
+    hero: {
+      eyebrow: "Solution de prévention pour les PME",
+      titleA: "Protéger vos salariés.",
+      titleAccent: "Protéger l'entreprise.",
+      titleB: "En continu.",
+      sub: "L'accident de la route est la première cause de mortalité au travail. MobiSûr accompagne les dirigeants de PME dans une démarche de prévention permanente, traçable et personnalisée.",
+    },
+    stat: {
+      title: "Le risque routier dépasse tous les autres risques professionnels.",
+      sub: "Et la responsabilité juridique du dirigeant — civile comme pénale — peut être engagée à chaque accident lié au travail.",
+    },
+    how: {
+      title: "Un dispositif de sensibilisation permanente, sans charge opérationnelle.",
+      sub: "Conforme au DUERP. Documenté. Personnalisé par votre direction.",
+    },
+  },
+  warm: {
+    hero: {
+      eyebrow: "Pour vous, pour eux",
+      titleA: "Tous les matins,",
+      titleAccent: "Claude prend la route.",
+      titleB: "Vous y pensez aussi ?",
+      sub: "Vos salariés — Claude, Jeremy, Noémie — prennent tous une petite dose de risque pour venir travailler. MobiSûr leur glisse les bons réflexes au bon moment, en votre nom.",
+    },
+    stat: {
+      title: "Le risque qu'on oublie est aussi le plus fréquent.",
+      sub: "Et c'est vous, le dirigeant, qui restez moralement et juridiquement responsable de ce qui arrive à vos équipes en allant au travail.",
+    },
+    how: {
+      title: "Un petit message au bon moment vaut mieux qu'un grand séminaire annuel.",
+      sub: "Vos salariés sentent que vous y pensez. Vous, vous documentez votre démarche.",
+    },
+  },
+};
+
+window.HomePage = HomePage;
