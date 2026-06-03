@@ -1,3 +1,4 @@
 /simu_client  /simulateur_client  200
 /simu_client/*  /simulateur_client  200
 /  /MobiSur  200
+/admin  /index  200
