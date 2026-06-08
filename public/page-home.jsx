@@ -160,9 +160,9 @@ function HomePage({ setPage, t }) {
         <div className="container">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }} className="msg-types-grid">
             <div>
-              <span className="eyebrow">4 types de messages</span>
+              <span className="eyebrow">La preuve par 4 !</span>
               <h2 className="h-display h2" style={{ margin: "16px 0 24px", maxWidth: "16ch" }}>
-                Conçus pour que personne ne zappe la lecture.
+                Des messages conçus pour que personne ne zappe.
               </h2>
               <p className="lead" style={{ marginBottom: 32 }}>
                 Quiz ludiques, alertes locales déclenchées par la météo ou les travaux, messages signés par la direction, affichettes à imprimer pour ceux qui n'ont ni mail ni mobile.
