@@ -259,18 +259,11 @@ function HomePage({ setPage, t }) {
               <div className="pilot-badge">3 mois<br/>offerts</div>
               <div className="pre">Tarif transparent</div>
               <div className="big">
-                2&nbsp;€ HT<span className="unit">/ salarié / mois</span>
+                \n 2&nbsp;€ HT<span className="unit">/ salarié / mois</span>
               </div>
               <div style={{ fontSize: 14, color: "var(--ms-brown-soft)", fontWeight: 600 }}>
                 soit 24 € HT par salarié et par an — soit à peine le prix d'un café !.
               </div>
-              <ul>
-                <li>Messages illimités par email & SMS</li>
-                <li>Affichettes imprimables incluses</li>
-                <li>Personnalisation par le chef d'établissement</li>
-                <li>Reporting compatible DUERP</li>
-                <li>Hébergement & RGPD France</li>
-              </ul>
               <div style={{ borderTop: "1.5px dashed var(--ms-brown)", paddingTop: 20, fontSize: 13, color: "var(--ms-brown-soft)", fontWeight: 700 }}>
                 <strong style={{ color: "var(--ms-brown)" }}>Exemple :</strong> entreprise de 25 salariés → 50&nbsp;€ / mois. Pendant 3 mois en 2026, c'est offert.
               </div>
