@@ -7,7 +7,7 @@ function SalariePage({ setPage, t }) {
   const types = [
     { key: "quiz", label: "Quiz prévention", n: "01" },
     { key: "local", label: "Alerte locale", n: "02" },
-    { key: "boss", label: "Mot du chef", n: "03" },
+    { key: "boss", label: "Mot du patron", n: "03" },
     { key: "poster", label: "Affichettes", n: "04" },
   ];
 
@@ -27,14 +27,14 @@ function SalariePage({ setPage, t }) {
                 et Jeremy<br/>vont recevoir.
               </h1>
               <p>
-                Quatre formats. Aucune obligation de lire — mais conçus pour qu'on lise quand même. Toujours signés par leur direction. Toujours déclenchés par un vrai contexte (météo, travaux, événement).
+                Quatre formats. Aucune obligation de lire — mais des messages conçus pour qu'on lise quand même. Toujours signés par leur patron. Toujours déclenchés par un vrai contexte (météo, travaux, événement).
               </p>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <a className="btn btn-yellow" href="#types" onClick={(e) => { e.preventDefault(); document.getElementById("types")?.scrollIntoView({ behavior: "smooth" }); }}>
                   Voir les 4 formats <Icon name="arrow" size={18} stroke={2.5} />
                 </a>
                 <a className="btn" href="#" style={{ background: "white", color: "var(--ms-blue)" }} onClick={(e) => { e.preventDefault(); setPage("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-                  Retour côté chef
+                  Retour côté patron
                 </a>
               </div>
             </div>
@@ -46,7 +46,7 @@ function SalariePage({ setPage, t }) {
                     <div style={{ fontSize: 11, color: "var(--ms-muted)", fontWeight: 700 }}>MobiSûr · maintenant</div>
                   </div>
                   <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 15, color: "var(--ms-brown)", lineHeight: 1.2, marginBottom: 6 }}>Brouillard demain matin</div>
-                  <div style={{ fontSize: 12, color: "var(--ms-brown-soft)", lineHeight: 1.45 }}>Pensez aux stickers rétro-réfléchissants sur votre trottinette…</div>
+                  <div style={{ fontSize: 12, color: "var(--ms-brown-soft)", lineHeight: 1.45 }}>Pensez à rester visible sur votre trottinette…</div>
                 </div>
                 <div style={{ background: "var(--ms-yellow)", border: "2px solid var(--ms-brown)", borderRadius: 14, padding: 18, maxWidth: 260, transform: "rotate(2deg) translateY(-20px)" }}>
                   <div style={{ fontSize: 11, color: "var(--ms-brown)", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>SMS · Quiz du jour</div>
@@ -173,8 +173,8 @@ function SalariePage({ setPage, t }) {
       {/* CTA */}
       <section className="cta-strip">
         <div className="container container-tight">
-          <h2>Ce qu'ils reçoivent vient d'avoir un sens. Et c'est signé de votre main.</h2>
-          <p>Activez le service pour vos équipes en 5 minutes.</p>
+          <h2>Ce qu'ils viennent de recevoir trouve toutson sens. Et c'est vous qui le dites !</h2>
+          <p>Activez le service pour vos équipes dès maintenant !</p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <a className="btn btn-dark btn-lg" href="#" onClick={(e) => { e.preventDefault(); setPage("home"); setTimeout(() => document.getElementById("pilote")?.scrollIntoView({ behavior: "smooth" }), 50); }}>
               Devenir pilote <Icon name="arrow" size={18} stroke={2.5} />
@@ -201,7 +201,7 @@ function MetaQuiz() {
         <li>Envoyé par email (HTML) ou SMS</li>
         <li>Rythme : 1 à 2 par mois maximum</li>
         <li>Thèmes : code de la route, vélo, trottinette, distances</li>
-        <li>Toujours signé par votre directeur d'établissement</li>
+        <li>Toujours signé par votre patron</li>
       </ul>
     </div>
   );
@@ -229,9 +229,9 @@ function MetaBoss() {
   return (
     <div className="msg-meta-card">
       <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 10px", background: "var(--ms-yellow)", color: "var(--ms-brown)", borderRadius: 999, fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14, border: "1.5px solid var(--ms-brown)" }}>
-        Signé par la direction
+        Engagement de l'entreprise
       </div>
-      <h3>Mot du chef</h3>
+      <h3>Mot du patron</h3>
       <p>Un message court, personnel, en lien avec un événement interne — un pot, un objectif atteint, une période de congés. La direction signe et ajoute son mot.</p>
       <ul className="msg-meta-list">
         <li>Vous validez chaque envoi en 1 clic</li>
@@ -263,8 +263,8 @@ function MetaPoster() {
 
 const compareData = {
   quiz: {
-    bad: "Une affiche du code de la route fade collée dans la salle de pause. Personne ne la lit plus depuis 6 mois.",
-    good: "Une question piège qui chatouille la curiosité, et l'envie d'avoir la bonne réponse avant les collègues.",
+    bad: "Un vague souvenir des leçons de code qu'on s'est empressé d'oublier",
+    good: "Une question piège qui chatouille la curiosité, et l'envie d'avoir la bonne réponse.",
   },
   local: {
     bad: "Le salarié découvre les travaux le matin même, en arrivant en retard et énervé. Il roule plus vite pour rattraper.",
@@ -275,8 +275,8 @@ const compareData = {
     good: "Un message du directeur lui-même, avec son visage, qui pense à la sécurité de son équipe le jour d'un pot.",
   },
   poster: {
-    bad: "Aucun support pour les 30 % de salariés sans mail pro ni mobile renseigné. Trou de raquette dans la prévention.",
-    good: "Une affichette claire en salle de pause. Toute l'équipe voit le même message, peu importe son téléphone.",
+    bad: "Aucun support pour les 30 % de salariés sans mail pro ni mobile renseigné. Une stigmatisation inacceptable.",
+    good: "Une affichette claire placardée dans les lieux de passage et de pause. Toute l'équipe voit le même message, peu importe son téléphone.",
   },
 };
 
