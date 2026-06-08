@@ -94,7 +94,7 @@ function HomePage({ setPage, t }) {
                 Il vient d'habitude en trottinette. Aujourd'hui, dans le brouillard, un camion ne l'a pas vu.
               </p>
               <p className="lead" style={{ color: "rgba(253,250,242,0.78)" }}>
-                Il est à l'hôpital. Et bientôt, son avocat va vous demander <strong style={{ color: "white" }}>ce que vous aviez fait, vous, en matière de prévention.</strong>
+                Il est à l'hôpital. Et bientôt, son avocat vous demandera <strong style={{ color: "white" }}>votre DUERP et s'informera sur vos actions de prévention des risques routiers.</strong>
               </p>
               <div style={{ marginTop: 32 }}>
                 <a className="btn btn-yellow" href="#" onClick={(e) => { e.preventDefault(); setPage("loi"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
@@ -110,7 +110,7 @@ function HomePage({ setPage, t }) {
                   <div className="rl">Comptable · Trottinette · Tous les matins</div>
                 </div>
               </div>
-              <div className="quote">"Personne ne m'avait dit qu'il fallait des stickers rétro-réfléchissants."</div>
+              <div className="quote">"Personne ne m'avait dit qu'en trotinette il fallait veiller à toujours se rendre visible quelles que soient les circonstances !"</div>
               <div className="tx">
                 Au civil, l'employeur peut être condamné pour <strong style={{ color: "white" }}>faute inexcusable</strong> s'il n'a pas pris les mesures de prévention nécessaires.
               </div>
