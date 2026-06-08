@@ -259,7 +259,7 @@ function HomePage({ setPage, t }) {
               <div className="pilot-badge">3 mois<br/>offerts</div>
               <div className="pre">Tarif transparent</div>
               <div className="big">
-                \n 2&nbsp;€ HT<span className="unit">/ salarié / mois</span>
+                2&nbsp;€ HT<span className="unit"> \n / salarié / mois</span>
               </div>
               <div style={{ fontSize: 14, color: "var(--ms-brown-soft)", fontWeight: 600 }}>
                 soit 24 € HT par salarié et par an — soit à peine le prix d'un café !.
