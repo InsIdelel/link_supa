@@ -183,7 +183,7 @@ function LoiPage({ setPage, t }) {
       <section className="cta-strip">
         <div className="container container-tight">
           <h2>Maintenant que vous savez ce qu'exige la loi, prenez les devants avec MobiSûr</h2>
-          <p>2 € / salarié / mois — 3 mois offerts en 2026 pour les abonnés pilotes.</p>
+          <p>2 € HT / salarié / mois — 3 mois offerts en 2026 pour les PME pilotes.</p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <a className="btn btn-dark btn-lg" href="#" onClick={(e) => { e.preventDefault(); setPage("home"); setTimeout(() => document.getElementById("pilote")?.scrollIntoView({ behavior: "smooth" }), 50); }}>
               Devenir abonné pilote <Icon name="arrow" size={18} stroke={2.5} />
