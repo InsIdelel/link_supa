@@ -167,13 +167,13 @@ function LoiPage({ setPage, t }) {
             </div>
             <div className="step">
               <div className="num">2</div>
-              <h3>Lancer une action documentable</h3>
-              <p>Un dispositif comme MobiSûr coche les cases — sensibilisation, information, formation au sens large — sans charge opérationnelle ni temps consommé.</p>
+              <h3>Engager une action complète</h3>
+              <p>Un dispositif comme MobiSûr coche les cases — sensibilisation, information, formation au sens large — sans charge opérationnelle ni perte de temps.</p>
             </div>
             <div className="step">
               <div className="num">3</div>
               <h3>Tracer & archiver</h3>
-              <p>Chaque message envoyé est daté et archivé. Annexez le reporting trimestriel à votre DUERP. En cas de contrôle ou de litige, vous avez la preuve.</p>
+              <p>Chaque message envoyé est daté et archivé. Annexez le reporting trimestriel à votre DUERP. En cas de contrôle ou de litige, vous avez des preuves tangibles et opposables.</p>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ function LoiPage({ setPage, t }) {
       {/* CTA */}
       <section className="cta-strip">
         <div className="container container-tight">
-          <h2>Vous savez maintenant ce que la loi exige. Faites le pas qui vous protège, et qui les protège.</h2>
+          <h2>Maintenant que vous savez ce qu'exige la loi, prenez les devants avec MobiSûr</h2>
           <p>2 € / salarié / mois — 3 mois offerts en 2026 pour les abonnés pilotes.</p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <a className="btn btn-dark btn-lg" href="#" onClick={(e) => { e.preventDefault(); setPage("home"); setTimeout(() => document.getElementById("pilote")?.scrollIntoView({ behavior: "smooth" }), 50); }}>
