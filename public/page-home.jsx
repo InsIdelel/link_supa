@@ -34,14 +34,14 @@ function HomePage({ setPage, t }) {
               <p className="hero-sub">{copy.hero.sub}</p>
               <div className="hero-ctas">
                 <a className="btn btn-primary btn-lg" href="#pilote" onClick={(e) => { e.preventDefault(); document.getElementById("pilote")?.scrollIntoView({ behavior: "smooth" }); }}>
-                  Devenir abonné pilote <Icon name="arrow" size={18} stroke={2.5} />
+                  Devenir PME pilote <Icon name="arrow" size={18} stroke={2.5} />
                 </a>
                 <a className="btn btn-ghost btn-lg" href="#how" onClick={(e) => { e.preventDefault(); document.getElementById("how")?.scrollIntoView({ behavior: "smooth" }); }}>
-                  Voir comment ça marche
+                  Comment ça marche ?
                 </a>
               </div>
               <div style={{ marginTop: 28, display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-                <span className="hero-price-note"><strong>2&nbsp;€ / salarié / mois</strong></span>
+                <span className="hero-price-note"><strong>2&nbsp;€ HT</strong></span>
                 <span style={{ fontSize: 14, color: "var(--ms-brown)", fontWeight: 700 }}>· 3 mois offerts en 2026 pour les pilotes</span>
               </div>
             </div>
@@ -307,8 +307,8 @@ const COPY = {
       eyebrow: "Prévention routière des PME",
       titleA: "Vos salariés",
       titleAccent: "prennent la route.",
-      titleB: "Vous, prenez les devants.",
-      sub: "À pied, à vélo, à moto ou au volant, la route est la 1re cause d'accident du travail. Avec MobiSûr, vous aurez fait ce qu'il fallait. MobiSûr envoie au bon moment les bons messages, signés par vous.",
+      titleB: "Vous prenez les devants.",
+      sub: "À pied, à vélo, à moto ou au volant, la route est la 1re cause d'accident du travail. Avec MobiSûr, vous aurez fait ce qu'il fallait. Avec MobiSûr, vous aurez fait ce qu'il fallait pour l'éviter.",
     },
     stat: {
       title: "L'accident du travail le plus fréquent ne se passe pas où l'on croit !.",
