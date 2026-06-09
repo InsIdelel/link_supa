@@ -389,16 +389,24 @@ img { display: block; max-width: 100%; }
   .footer-grid { grid-template-columns: 1fr; gap: 24px; }
 }
 
+/* Correction espacement gras / texte dans les law-card */
 .law-card li {
   display: list-item;
-  gap: 0;
   text-align: left;
+  text-wrap: normal;
+  white-space: normal;
+  word-spacing: normal;
+  letter-spacing: normal;
 }
 
 .law-card li strong {
   display: inline;
   margin: 0;
   padding: 0;
-  min-width: 0;
   width: auto;
+  min-width: 0;
+  text-wrap: normal;
+  white-space: normal;
+  word-spacing: normal;
+  letter-spacing: normal;
 }
