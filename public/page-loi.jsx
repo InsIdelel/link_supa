@@ -65,9 +65,9 @@ function LoiPage({ setPage, t }) {
             <div className="ref">Code du travail · Art. L.4121-1 à L.4121-5</div>
             <div className="ttl">L'employeur prend les mesures nécessaires pour assurer la sécurité et protéger la santé physique et mentale des travailleurs.</div>
             <ul>
-              <li><strong>Évaluer</strong> les risques professionnels, y compris le risque routier — quels que soient le poste et le mode de déplacement.</li>
-              <li><strong>Mettre en place</strong> des actions de prévention, d'information et de formation adaptées.</li>
-              <li><strong>Adapter</strong> les mesures en continu pour améliorer la sécurité, dès que la situation évolue.</li>
+              <li><strong>Évaluer</strong>les risques professionnels, y compris le risque routier — quels que soient le poste et le mode de déplacement.</li>
+              <li><strong>Mettre en place</strong>des actions de prévention, d'information et de formation adaptées.</li>
+              <li><strong>Adapter</strong>les mesures en continu pour améliorer la sécurité, dès que la situation évolue.</li>
             </ul>
           </div>
 
