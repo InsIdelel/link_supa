@@ -301,7 +301,7 @@ const COPY = {
       titleA: "Vos salariés",
       titleAccent: "prennent la route.",
       titleB: "Vous prenez les devants.",
-      sub: "À pied, à vélo, à moto ou au volant, la route est la 1re cause d'accident du travail. Avec MobiSûr, vous aurez fait ce qu'il fallait. Avec MobiSûr, vous aurez fait ce qu'il fallait pour l'éviter.",
+      sub: "À pied, à vélo, à moto ou au volant, la route est la 1ère cause d'accident de mortalité par accident du travail. Avec MobiSûr, vous aurez fait ce qu'il fallait pour l'éviter.",
     },
     stat: {
       title: "L'accident du travail le plus fréquent ne se passe pas où l'on croit !.",
