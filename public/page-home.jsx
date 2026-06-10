@@ -304,8 +304,8 @@ const COPY = {
       sub: "À pied, à vélo, à moto ou au volant, la route est la 1ère cause d'accident de mortalité par accident du travail. Avec MobiSûr, vous aurez fait ce qu'il fallait pour l'éviter.",
     },
     stat: {
-      title: "L'accident du travail le plus fréquent ne survient pas là où l'on croit",
-      sub: "Il se passe sur la route, entre la maison et le travail, ou pendant un déplacement profesionnel. Et dans ce cas, aussi c'est vous qu'on viendra chercher",
+      title: "L'accident du travail le plus fréquent ne survient pas là où l'on croit!",
+      sub: "Il se passe sur la route, entre la maison et le travail, ou pendant un déplacement profesionnel. Et dans ce cas, aussi c'est vous qu'on viendra chercher.",
     },
     how: {
       title: "Vos salariés reçoivent les bons messages au bon moment.",
