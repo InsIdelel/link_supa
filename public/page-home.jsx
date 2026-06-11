@@ -139,7 +139,7 @@ function HomePage({ setPage, t }) {
             <div className="step">
               <div className="num">1</div>
               <h3>Vous abonnez vos salariés</h3>
-              <p>2 € HT par salarié et par mois. Vous avez juste à établir votre propre liste des emails et/ou des numéros de mobile de vos collaborateurs. C'est tout.</p>
+              <p>Vous avez juste à établir votre propre liste des emails et/ou des numéros de mobile de vos collaborateurs.</p>
             </div>
             <div className="step">
               <div className="num">2</div>
