@@ -309,7 +309,7 @@ const COPY = {
     },
     how: {
       title: "Vos salariés reçoivent les bons messages au bon moment.",
-      sub: `Sans réunion. Sans formation. Sans temps perdu.<br/>Et vous gardez la preuve de votre démarche.`,
+      sub: `Sans réunion. Sans formation. Sans temps perdu.<br></br>Et vous gardez la preuve de votre démarche.`,
     },
   },
   serious: {
