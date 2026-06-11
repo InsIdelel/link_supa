@@ -165,7 +165,7 @@ function HomePage({ setPage, t }) {
                 Des messages conçus pour que personne ne zappe.
               </h2>
               <p className="lead" style={{ marginBottom: 32 }}>
-                Quiz ludiques, alertes locales déclenchées par la météo ou les travaux, messages signés par la direction, affichettes à imprimer pour ceux qui n'ont ni mail ni mobile.
+                Quiz ludiques, alertes locales déclenchées par la météo ou les travaux, messages signés par vous, affichettes à imprimer pour ceux qui n'ont ni mail ni mobile.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {[
@@ -262,7 +262,7 @@ function HomePage({ setPage, t }) {
                 2&nbsp;€ HT<span className="unit"> <br></br> / salarié / mois</span>
               </div>
               <div style={{ fontSize: 14, color: "var(--ms-brown-soft)", fontWeight: 600 }}>
-                soit 24 € HT par salarié et par an — soit à peine le prix d'un café !.
+                soit 24 € HT par salarié et par an, à peine le prix d'un café !.
               </div>
               <div style={{ borderTop: "1.5px dashed var(--ms-brown)", paddingTop: 20, fontSize: 13, color: "var(--ms-brown-soft)", fontWeight: 700 }}>
                 <strong style={{ color: "var(--ms-brown)" }}>Exemple :</strong> entreprise de 25 salariés → 50&nbsp;€ / mois. Pendant 3 mois en 2026, c'est offert.
