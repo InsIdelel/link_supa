@@ -11,7 +11,7 @@ function Header({ page, setPage }) {
     <header className="site-header">
       <div className="site-header-inner">
         <button className="site-logo" onClick={() => setPage("home")} aria-label="Accueil MobiSûr">
-          <img src="assets/logo-mobisur.png" alt="MobiSûr — Prévention routière des PME" />
+          <img src="assets/logo-mobisur.png" alt="MobiSûr — Prévention routière des PME" style={{ height: 100}}/>
         </button>
         <nav className="site-nav">
           {PAGES.map((p) => (
@@ -38,7 +38,7 @@ function Footer({ setPage }) {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-col">
-            <img src="assets/logo-mobisur.png" alt="MobiSûr" style={{ height: 200, filter: "brightness(0) invert(1)", marginBottom: 18 }} />
+            <img src="assets/logo-mobisur.png" alt="MobiSûr" style={{ height: 44, filter: "brightness(0) invert(1)", marginBottom: 18 }} />
             <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "rgba(253,250,242,0.7)", maxWidth: 320 }}>
               La prévention routière des PME, livrée aux salariés au bon moment, signée par leur direction. Pour 2 €&nbsp;/&nbsp;salarié&nbsp;/&nbsp;mois.
             </p>
