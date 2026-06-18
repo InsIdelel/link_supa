@@ -504,7 +504,6 @@
     <div class="layout">
       <aside class="panel side">
         <h2>Tester une situation</h2>
-        <p class="sub">Aucune notion technique : choisissez simplement une situation et la date de l’événement.</p>
 
         <label for="scenario">Situation à montrer</label>
         <select id="scenario"></select>
@@ -512,14 +511,10 @@
         <label for="eventDate">Date de l’événement</label>
         <input id="eventDate" type="datetime-local" />
 
-        <label for="company">Nom affiché de l’entreprise</label>
-        <input id="company" value="Entreprise cliente" />
-
         <label for="email">Contact destinataire</label>
         <input id="email" value="responsable@entreprise.fr" />
 
-        <button id="simulate" style="width:100%;margin-top:16px">Actualiser la simulation</button>
-        <div class="hint">Lecture seule : cette page ne programme aucun envoi et ne modifie pas la base.</div>
+        <button id="simulate" style="width:100%;margin-top:16px">Envoi</button>
       </aside>
 
       <main class="panel">
@@ -536,7 +531,6 @@
         </div>
 
         <h2>Messages prévus</h2>
-        <p class="sub">Chaque carte correspond à un moment d’envoi. Une carte peut contenir un seul message ou un regroupement de plusieurs briques envoyées ensemble.</p>
 
         <div id="timeline" class="timeline"><div class="empty">Chargement…</div></div>
 
@@ -732,7 +726,7 @@
         predicted_start_at: event ? event.predicted_start_at || "" : "",
         predicted_end_at: event ? event.predicted_end_at || "" : "",
         severity: event ? event.severity || "" : "",
-        client_name: getElement("company").value,
+        client_name: "Entreprise",
         client_email: getElement("email").value,
         scenario_code: scenario ? scenario.code || "" : "",
         scenario_label: scenario ? scenario.label || "" : "",
@@ -1034,7 +1028,7 @@
                 <span class="preview-pill">Aperçu ${escapeHtml(channelLabel(channel))} destiné aux équipes</span>
                 <h1>${escapeHtml(message.subject)}</h1>
                 <div class="preview-meta">
-                  Entreprise : ${escapeHtml(getElement("company").value)}<br>
+                  Entreprise : Entreprise<br>
                   Envoi prévu : ${escapeHtml(formatDate(message.plannedAt))}
                 </div>
               </div>
@@ -1131,7 +1125,6 @@
       getElement("scenario").addEventListener("change", refreshSimulation);
       getElement("eventDate").addEventListener("input", refreshSimulation);
       getElement("simulate").addEventListener("click", refreshSimulation);
-      getElement("company").addEventListener("input", refreshSimulation);
       getElement("email").addEventListener("input", refreshSimulation);
       getElement("cancelModal").addEventListener("click", closeModal);
       getElement("openPreview").addEventListener("click", openFinalPreview);
