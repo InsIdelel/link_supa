@@ -110,7 +110,7 @@ function HomePage({ setPage, t }) {
                   <div className="rl">Comptable · Trottinette · Tous les matins</div>
                 </div>
               </div>
-              <div className="quote">"Personne ne m'avait dit qu'avec un tel brouillard, il faut laissé la trottinette au garage !"</div>
+              <div className="quote">"Personne ne m'avait dit qu'avec un tel brouillard, il faut laisser la trottinette au garage !"</div>
               <div className="tx">
                 Au civil, l'employeur peut être condamné pour <strong style={{ color: "white" }}>faute inexcusable</strong> s'il n'a pas pris les mesures de prévention nécessaires.
               </div>
