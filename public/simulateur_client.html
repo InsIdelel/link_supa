@@ -531,7 +531,6 @@
         </div>
 
         <div class="kpis">
-          <div class="kpi"><span>Moments de contact</span><b id="kSteps">0</b></div>
           <div class="kpi"><span>Envois prévus</span><b id="kMessages">0</b></div>
           <div class="kpi"><span>Canal</span><b id="kChannel">Auto</b></div>
         </div>
@@ -881,8 +880,6 @@
       const totalBlocks = messages.reduce(function (sum, message) { return sum + ((message.blocks || []).length || 1); }, 0);
       const groupedCount = messages.filter(function (message) { return (message.blocks || []).length > 1; }).length;
       
-
-      getElement("kSteps").textContent = String(stepCount);
       getElement("kMessages").textContent = String(messages.length);
       getElement("kChannel").textContent = channelNames.length ? channelNames.join(" + ") : "Auto";
 
