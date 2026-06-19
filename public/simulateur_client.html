@@ -818,7 +818,7 @@
         const mainChannel = blocks.some(function (block) { return block.channel === "sms"; }) ? "sms" : "email";
         const subject = firstSubject || "Prévention routière";
         const bodyHtml = blocks.map(function (block) {
-          return `<h3>${escapeHtml(block.subject)}</h3>\n${block.bodyHtml}`;
+          return block.bodyHtml;
         }).join('\n<hr style="border:none;border-top:1px solid #eadfe1;margin:18px 0;" />\n');
         const bodyText = blocks.map(function (block) {
           return block.subject + "\n" + block.bodyText;
