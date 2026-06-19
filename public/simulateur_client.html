@@ -1035,8 +1035,8 @@
           .from { color: #6f5b5f; font-size: 13px; line-height: 1.55; }
           .subject { margin-top: 10px; font-size: 24px; font-weight: 950; letter-spacing: -.03em; }
           .body { padding: 24px; color: #280c10; font-size: 15px; line-height: 1.65; }
-          .auto-message { border-left: 4px solid #3633d2; background: #fbf8f2; border-radius: 16px; padding: 16px; margin: 0 0 16px; }
-          .manager-note { background: #c6c6c6; border: 1px solid #4d4d4d; border-radius: 16px; padding: 16px; margin: 16px 0 0; color: #280c10; }
+          .auto-message { background: white; padding: 16px; margin: 0 0 16px; }
+          .manager-note { background: #c8c8c8; border: 1px solid #4d4d4d; padding: 16px; margin: 16px 0 0; color: #280c10; }
           .phone { max-width: 430px; margin: 0 auto; background: #280c10; border-radius: 38px; padding: 13px; box-shadow: 0 22px 70px rgba(15,23,42,.25); }
           .screen { min-height: 620px; overflow: hidden; background: #f0f0ff; border-radius: 28px; }
           .sms-top { background: #3633d2; color: white; padding: 18px; font-weight: 950; }
@@ -1054,15 +1054,15 @@
       const cleanNote = String(note || "").trim();
       const noteBlock = cleanNote ? `
         <div class="manager-note">
-          <strong>Message du responsable</strong><br>
           ${escapeHtml(cleanNote).replace(/\n/g, "<br>")}
+          <br><strong>Michel Dupont</strong><br>responsable d'entreprise
         </div>
       ` : "";
 
       return `
         <div class="card">
           <div class="email-head">
-            <div class="from">De : Mobisur.net<br>À : entreprise@contact.fr</div>
+            <div class="from">De : Mobisur.net<br>À : alexandre.martin@contact.fr</div>
             <div class="subject">${escapeHtml(message.subject)}</div>
           </div>
           <div class="body">
