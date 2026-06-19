@@ -126,7 +126,7 @@
     .readable-date { color:#3633d2; font-weight:bold; }
     .soft-panel { background:#f8fafc; border:1px solid var(--line); border-radius:16px; padding:14px; }
     .advanced-small { font-size:12px; color:var(--muted); line-height:1.4; }
-    .pl_content_line { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:start; margin-bottom:8px; }
+    .pl_content_line { display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:start; margin-bottom:8px; }
     .pl_content_line button { white-space:nowrap; }
     input:focus, textarea:focus, select:focus { outline:3px solid rgba(255,255,102,.8); border-color:var(--brand-blue); }
     a, summary { color:var(--brand-blue); }
@@ -342,8 +342,9 @@
             <label>Note de modification</label>
             <input id="cv_change_note" value="création initiale">
             <div class="row">
-              <button onclick="createContentVersion()">Créer la version</button>
+              <button id="cv_submit_btn" onclick="submitContentVersion()">Créer la version</button>
               <button class="secondary" onclick="clearContentVersionForm()">Vider</button>
+              <button id="cv_cancel_edit_btn" class="secondary hidden" onclick="cancelEditContentVersion()">Annuler l’édition</button>
             </div>
           </div>
           <div class="card">
@@ -616,6 +617,7 @@
 
     let tinyReady = false;
 
+    let editingContentVersionId = null;
     let editingScenarioId = null;
     let editingScenarioStepId = null;
 
@@ -932,6 +934,17 @@ async function deleteScenarioStep(id) {
       return state.contentItems.find(item => Number(item.id) === Number(id));
     }
 
+    function dictionaryLabelFromValue(dictionary, value, fallback = '') {
+      return Object.keys(dictionary || {}).find(key => dictionary[key] === value) || fallback;
+    }
+
+    function openContentVersionsPage() {
+      showPage('content-versions');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.textContent.includes('Versions des contenus'));
+      if (btn) btn.classList.add('active');
+    }
+
     function isEmailContentVersionSelected() {
       const item = getContentItemById(Number(val('cv_content_item_id')));
       return item && item.channel === 'email';
@@ -1023,9 +1036,11 @@ async function deleteScenarioStep(id) {
         return;
       }
     
+      const nextVersionNo = (Number(latest.version_no) || 0) + 1;
+      document.getElementById('cv_version_no').value = String(nextVersionNo);
       document.getElementById('cv_sujet_template').value = latest.sujet_template || '';
       document.getElementById('cv_source_ref').value = latest.source_ref || 'interne';
-      document.getElementById('cv_change_note').value = 'nouvelle version à partir de la version ' + latest.version_no;
+      document.getElementById('cv_change_note').value = 'nouvelle version à partir de la version ' + nextVersionNo;
     
       const body = latest.corps_template || '';
     
@@ -1039,6 +1054,153 @@ async function deleteScenarioStep(id) {
         }
       } else {
         document.getElementById('cv_corps_template').value = body;
+      }
+    }
+
+    function getEditableContentVersionForContentCode(contentCode) {
+      const item = state.contentItems.find(i => i.code === contentCode);
+      if (!item) return null;
+
+      const versions = state.contentVersions
+        .filter(v => Number(v.content_item_id) === Number(item.id))
+        .sort((a, b) => Number(b.version_no || 0) - Number(a.version_no || 0));
+
+      return versions[0] || null;
+    }
+
+    function setContentVersionBodyValue(version) {
+      const body = version?.corps_template || '';
+      updateContentVersionEditorMode();
+
+      if (isEmailContentVersionSelected()) {
+        const editor = tinymce.get('cv_corps_template_html');
+        if (editor) {
+          editor.setContent(body);
+        } else {
+          document.getElementById('cv_corps_template_html').value = body;
+        }
+        document.getElementById('cv_corps_template').value = '';
+      } else {
+        document.getElementById('cv_corps_template').value = body;
+        const editor = tinymce.get('cv_corps_template_html');
+        if (editor) {
+          editor.setContent('');
+        } else {
+          document.getElementById('cv_corps_template_html').value = '';
+        }
+      }
+    }
+
+    function startNewContentVersionFromExisting(id, options = {}) {
+      const version = state.contentVersions.find(v => Number(v.id) === Number(id));
+      if (!version) {
+        setGlobalNotice('Version de contenu introuvable.', 'err');
+        return;
+      }
+
+      editingContentVersionId = null;
+      openContentVersionsPage();
+
+      const itemVersions = state.contentVersions.filter(v => Number(v.content_item_id) === Number(version.content_item_id));
+      const maxVersionNo = itemVersions.length
+        ? Math.max(...itemVersions.map(v => Number(v.version_no) || 0))
+        : Number(version.version_no) || 0;
+      const nextVersionNo = maxVersionNo + 1;
+
+      document.getElementById('cv_content_item_id').value = String(version.content_item_id || '');
+      document.getElementById('cv_version_no').value = String(nextVersionNo);
+      document.getElementById('cv_sujet_template').value = version.sujet_template || '';
+      document.getElementById('cv_status').value = dictionaryLabelFromValue(dictionnaires.statutVersion, version.status, 'Publié');
+      document.getElementById('cv_source_ref').value = version.source_ref || 'interne';
+      document.getElementById('cv_change_note').value = 'nouvelle version à partir de la version ' + nextVersionNo;
+      setContentVersionBodyValue(version);
+      updateContentVersionButtons();
+
+      if (options.fromPlanner) {
+        const item = getContentItemById(version.content_item_id);
+        setGlobalNotice(`Nouvelle version de ${item?.code || 'la brique sélectionnée'} préparée à partir de la dernière version. Le numéro ${nextVersionNo} est prérempli.`, 'info');
+      }
+
+      const target = document.getElementById('cv_content_item_id');
+      if (target) target.scrollIntoView({ block: 'start' });
+    }
+
+    function startEditContentVersion(id, options = {}) {
+      const version = state.contentVersions.find(v => Number(v.id) === Number(id));
+      if (!version) {
+        setGlobalNotice('Version de contenu introuvable.', 'err');
+        return;
+      }
+
+      editingContentVersionId = version.id;
+      openContentVersionsPage();
+
+      document.getElementById('cv_content_item_id').value = String(version.content_item_id || '');
+      document.getElementById('cv_version_no').value = String(version.version_no ?? 1);
+      document.getElementById('cv_sujet_template').value = version.sujet_template || '';
+      document.getElementById('cv_status').value = dictionaryLabelFromValue(dictionnaires.statutVersion, version.status, 'Publié');
+      document.getElementById('cv_source_ref').value = version.source_ref || 'interne';
+      document.getElementById('cv_change_note').value = version.change_note || '';
+      setContentVersionBodyValue(version);
+      updateContentVersionButtons();
+
+      if (options.fromPlanner) {
+        const item = getContentItemById(version.content_item_id);
+        setGlobalNotice(`Modification de ${item?.code || 'la brique sélectionnée'} — version ${version.version_no}.`, 'info');
+      }
+
+      const target = document.getElementById('cv_content_item_id');
+      if (target) target.scrollIntoView({ block: 'start' });
+    }
+
+    function editPlannerSelectedContentVersion(btn) {
+      const line = btn.closest('.pl_content_line');
+      const select = line ? line.querySelector('.pl_content_code') : null;
+      const contentCode = select ? select.value : '';
+
+      if (!contentCode) {
+        setGlobalNotice('Choisissez d’abord une brique de contenu à modifier.', 'warn');
+        return;
+      }
+
+      const item = state.contentItems.find(i => i.code === contentCode);
+      if (!item) {
+        setGlobalNotice('Brique de contenu introuvable.', 'err');
+        return;
+      }
+
+      const version = getEditableContentVersionForContentCode(contentCode);
+      if (!version) {
+        editingContentVersionId = null;
+        openContentVersionsPage();
+        document.getElementById('cv_content_item_id').value = String(item.id);
+        updateContentVersionEditorMode();
+        updateNextContentVersionNumber();
+        updateContentVersionButtons();
+        setGlobalNotice(`Aucune version existante pour ${contentCode}. Vous pouvez en créer une depuis ce formulaire.`, 'warn');
+        return;
+      }
+
+      startNewContentVersionFromExisting(version.id, { fromPlanner: true });
+    }
+
+    function cancelEditContentVersion() {
+      editingContentVersionId = null;
+      clearContentVersionForm();
+      updateContentVersionButtons();
+    }
+
+    function updateContentVersionButtons() {
+      const submitBtn = document.getElementById('cv_submit_btn');
+      const cancelBtn = document.getElementById('cv_cancel_edit_btn');
+      if (!submitBtn || !cancelBtn) return;
+
+      if (editingContentVersionId) {
+        submitBtn.textContent = 'Mettre à jour la version';
+        cancelBtn.classList.remove('hidden');
+      } else {
+        submitBtn.textContent = 'Créer la version';
+        cancelBtn.classList.add('hidden');
       }
     }
 
@@ -1258,6 +1420,43 @@ async function deleteScenarioStep(id) {
         await refreshAll();
       } catch (e) {
         setGlobalNotice(e.message || 'Erreur lors de la création de la brique.', 'err');
+      }
+    }
+
+    async function submitContentVersion() {
+      if (editingContentVersionId) {
+        await updateContentVersion();
+      } else {
+        await createContentVersion();
+      }
+    }
+
+    async function updateContentVersion() {
+      try {
+        const payload = {
+          content_item_id: Number(val('cv_content_item_id')),
+          version_no: Number(val('cv_version_no')),
+          sujet_template: val('cv_sujet_template'),
+          corps_template: getContentVersionBodyValue(),
+          status: dictionnaires.statutVersion[val('cv_status')],
+          source_ref: val('cv_source_ref'),
+          change_note: val('cv_change_note')
+        };
+
+        const { error } = await db()
+          .from('content_versions')
+          .update(payload)
+          .eq('id', editingContentVersionId);
+
+        if (error) throw error;
+
+        setGlobalNotice('La version a été mise à jour.', 'ok');
+        editingContentVersionId = null;
+        clearContentVersionForm();
+        updateContentVersionButtons();
+        await refreshAll();
+      } catch (e) {
+        setGlobalNotice(e.message || 'Erreur lors de la mise à jour de la version.', 'err');
       }
     }
 
@@ -1512,6 +1711,7 @@ async function deleteScenarioStep(id) {
     }
 
     function clearContentVersionForm() {
+      editingContentVersionId = null;
       document.getElementById('cv_sujet_template').value = '';
       document.getElementById('cv_corps_template').value = '';
     
@@ -1525,6 +1725,7 @@ async function deleteScenarioStep(id) {
       updateNextContentVersionNumber();
       document.getElementById('cv_source_ref').value = 'interne';
       document.getElementById('cv_change_note').value = 'création manuelle';
+      updateContentVersionButtons();
     }
 
     function clearTriggerTypeForm() {
@@ -1626,6 +1827,7 @@ async function deleteScenarioStep(id) {
       return `
         <div class="pl_content_line">
           ${`<select class="pl_content_code">${options.join('')}</select>`}
+          <button class="secondary" type="button" onclick="editPlannerSelectedContentVersion(this)">Modifier</button>
           <button class="secondary" type="button" onclick="removePlannerContentSelect(this)">Retirer</button>
         </div>
       `;
@@ -1924,7 +2126,11 @@ async function deleteScenarioStep(id) {
       if (e.target && e.target.id === 'ss_window_ref') updateStepWindowHelp();
       if (e.target && e.target.id === 'ss_scenario_id') updateNextStepOrder();
       if (e.target && e.target.id === 'cv_content_item_id') {
-        prefillContentVersionFromPrevious();
+        if (editingContentVersionId) {
+          updateContentVersionEditorMode();
+        } else {
+          prefillContentVersionFromPrevious();
+        }
       }
       if (e.target && e.target.id === 'pl_scenario_id') {
         renderScenarioPlanner();
@@ -1949,6 +2155,7 @@ async function deleteScenarioStep(id) {
       updateScenarioAggregationHelp();
       updateStepWindowHelp();
       updateContentVersionEditorMode();
+      updateContentVersionButtons();
       updateScenarioButtons();
       updateScenarioStepButtons();
       if (db()) {
