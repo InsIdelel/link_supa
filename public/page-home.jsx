@@ -254,7 +254,7 @@ function HomePage({ setPage, t }) {
               <a className="btn btn-primary btn-lg" href="mailto:hello@mobisur.fr">
                 Réserver une démo de 20 min <Icon name="arrow" size={18} stroke={2.5} />
               </a>
-              <a className="btn  btn-dark" href="#" style="padding-left:12px">
+              <a className="btn  btn-dark" href="#" style="padding-left: 12 px">
                   Retour <Icon name="arrow" size={18} stroke={2.5} />
               </a>
             </div>
