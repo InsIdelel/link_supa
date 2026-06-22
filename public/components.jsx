@@ -40,7 +40,7 @@ function Footer({ setPage }) {
           <div className="footer-col">
             <img src="assets/logo-mobisur.png" alt="MobiSûr" style={{ height: 44, marginBottom: 18 }} />
             <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "rgba(253,250,242,0.7)", maxWidth: 320 }}>
-              La prévention routière des PME, livrée aux salariés au bon moment, signée par leur direction.<br></br> Pour 2€ HT&nbsp;/&nbsp;salarié&nbsp;/&nbsp;mois.
+              Prévention routière des PME, livrée aux salariés au bon moment, signée par leur direction.<br></br> Pour 2€ HT&nbsp;/&nbsp;salarié&nbsp;/&nbsp;mois.
             </p>
           </div>
           <div className="footer-col">
