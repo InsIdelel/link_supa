@@ -34,7 +34,7 @@ function LoiPage({ setPage, t }) {
           </p>
           <div className="fact-grid">
             <div className="fact">
-              <div className="big">1<sup style={{ fontSize: "0.5em" }}>re</sup></div>
+              <div className="big">1<sup style={{ fontSize: "0.5em" }}>ère</sup></div>
               <div className="lab">cause de mortalité au travail — devant les chutes et les accidents de machines.</div>
             </div>
             <div className="fact">
