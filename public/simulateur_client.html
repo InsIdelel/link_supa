@@ -1091,7 +1091,7 @@
             <div class="sms-body">
               <div class="bubble">
                 <strong>${escapeHtml(message.subject)}</strong><br>
-                ${escapeHtml(message.bodyText)}
+                ${message.bodyText}
                 <div class="time">${escapeHtml(formatDate(message.plannedAt))}</div>
               </div>
               ${noteBubble}
