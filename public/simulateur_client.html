@@ -1053,9 +1053,9 @@
     function buildEmailPreview(message, note) {
       const cleanNote = String(note || "").trim();
       const noteBlock = cleanNote ? `
-        <div class="manager-note">
+        
           ${escapeHtml(cleanNote).replace(/\n/g, "<br>")}
-        </div>
+        
       ` : "";
 
       return `
@@ -1067,7 +1067,9 @@
           <div class="body">
             <div class="auto-message">${message.bodyHtml}</div>
             <p class="cadre-msg">Ce message vous est adressé dans le cadre du programme de sensibilisation à la sécurité routière mise en place par votre entreprise</p>
-            <p class="sign">${noteBlock}<strong>Michel Dupont</strong><br>Directeur détablissement</p>
+            <div class="manager-note">
+              ${noteBlock}
+              <p class="sign"><strong>Michel Dupont</strong><br>Directeur détablissement</p>
           </div>
         </div>
       `;
