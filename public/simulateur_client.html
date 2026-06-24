@@ -1055,7 +1055,6 @@
       const noteBlock = cleanNote ? `
         <div class="manager-note">
           ${escapeHtml(cleanNote).replace(/\n/g, "<br>")}
-          <p class="sign"><strong>Michel Dupont</strong><br>Directeur d'établissement</p>
         </div>
       ` : "";
 
@@ -1068,7 +1067,7 @@
           <div class="body">
             <div class="auto-message">${message.bodyHtml}</div>
             <p class="cadre-msg">Ce message vous est adressé dans le cadre du programme de sensibilisation à la sécurité routière mise en place par votre entreprise</p>
-            ${noteBlock}
+            <p class="sign">${noteBlock}<trong>Michel Dupont</strong><br>Directeur détablissement</p>
           </div>
         </div>
       `;
@@ -1078,7 +1077,7 @@
       const cleanNote = String(note || "").trim();
       const noteBubble = cleanNote ? `
         <div class="bubble">
-          <strong>Message du responsable</strong><br>
+          <strong>Directeur d'établissement</strong><br>
           ${escapeHtml(cleanNote).replace(/\n/g, "<br>")}
           <div class="time">${escapeHtml(formatDate(new Date()))}</div>
         </div>
