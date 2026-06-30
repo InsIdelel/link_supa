@@ -185,6 +185,9 @@
     header h1 { color:var(--brand-brown); font-size:22px; letter-spacing:-.02em; }
     header p { color:var(--muted); opacity:1; }
     .badge-status { background: var(--brand-blue-soft) !important; color: var(--brand-blue-dark) !important; border:1px solid #d9d8ff; }
+    .auth-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .logout-form { margin:0; }
+    .logout-btn { white-space:nowrap; }
     aside { background:rgba(255,255,255,.92); }
     .nav-btn { background:#fff; color:var(--brand-brown); border:1px solid var(--line); }
     .nav-btn:hover { border-color:#d9d8ff; background:var(--brand-blue-soft); color:var(--brand-blue-dark); }
@@ -226,7 +229,12 @@
         <p>Créez vos contenus, scénarios, étapes et événements sans manipuler directement la base.</p>
       </div>
     </div>
-    <div class="badge-status" id="connectionBadge">Connexion en cours…</div>
+    <div class="auth-actions">
+      <div class="badge-status" id="connectionBadge">Connexion en cours…</div>
+      <form class="logout-form" method="POST" action="/logout">
+        <button type="submit" class="secondary logout-btn">Déconnexion</button>
+      </form>
+    </div>
   </header>
 
   <div class="app">
